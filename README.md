@@ -8,18 +8,12 @@ React + TypeScript + Vite 기반의 Walkit 프로젝트입니다.
 
 ```env
 # API 설정
-VITE_API_BASE_URL=
-VITE_API_TIMEOUT=
-
-# 앱 설정
-VITE_APP_TITLE=
-VITE_APP_VERSION=
-
-# 개발 환경 설정
-VITE_DEBUG_MODE=
-VITE_PORT=
-VITE_HOST=
-VITE_SOURCEMAP=
+VITE_API_BASE_URL= # 백엔드 API 주소값
+VITE_API_TIMEOUT= # API 요청시 타임아웃 값
+VITE_APP_TITLE= # 브라우저 탭 제목
+VITE_APP_VERSION=  # 애플리케이션 버전
+VITE_PORT= # 개발서버 포트번호
+VITE_HOST= # 개발서버 호스트 (localhost)
 ```
 
 ### 환경변수 사용 방법
