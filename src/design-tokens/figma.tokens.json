@@ -1,0 +1,107 @@
+{
+    "green-main": {
+      "value": "#15803D",
+      "type": "color",
+      "description": "메인테마 색상"
+    },
+    "green-online": {
+      "value": "#22C55e",
+      "type": "color",
+      "description": "그린 - 온라인 색상"
+    },
+    "green-online-background": {
+      "value": "#ECFCCB",
+      "type": "color",
+      "description": "온라인 배경색상\n"
+    },
+    "yellow-star": {
+      "value": "#fbbf24",
+      "type": "color",
+      "description": "별점 색상"
+    },
+    "grey-main": {
+      "value": "#8c8c8c",
+      "type": "color",
+      "description": "메인 그레이 색상 (배경색)"
+    },
+    "grey-light": {
+      "value": "#d9d9d9",
+      "type": "color",
+      "description": "빈 별점등 다양한 범용적인 회색"
+    },
+    "blue-dark": {
+      "value": "#03316F",
+      "type": "color",
+      "description": "날씨 선형 어두운 파란색"
+    },
+    "blue-lessdark": {
+      "value": "#065ED5",
+      "type": "color",
+      "description": "날씨 선형 밝은 파란색"
+    },
+    "blue-sky": {
+      "value": "#5289EB",
+      "type": "color",
+      "description": "밝은 하늘색 - 버스"
+    },
+    "blue": {
+      "value": "#0900FF",
+      "type": "color",
+      "description": "파란색 - 화장실 남자"
+    },
+    "red": {
+      "value": "#FF0000",
+      "type": "color",
+      "description": "빨간색 - 여자"
+    },
+    "blue-marker": {
+      "value": "#375BFA",
+      "type": "color",
+      "description": "마커 파란색"
+    },
+    "grey-layout": {
+      "value": "#F4F6F8",
+      "type": "color",
+      "description": "오버레이 배경색"
+    },
+    "grey-bar": {
+      "value": "#DFE3E8",
+      "type": "color",
+      "description": "오버레이 스크롤바 색상"
+    },
+    "blue-rain": {
+      "value": "#0EA5E9",
+      "type": "color",
+      "description": "파란색(제일 밝음) - 비올때"
+    },
+    "red-sunnyside": {
+      "value": "#EF4444",
+      "type": "color",
+      "description": "밝은 빨간색-날씨 맑음"
+    },
+    "red-delete": {
+      "value": "#DC2626",
+      "type": "color",
+      "description": "삭제관련 빨간색"
+    },
+    "orange-frequest-background": {
+      "value": "#FED7AA",
+      "type": "color",
+      "description": "친구요청 배경색"
+    },
+    "orange-frequest": {
+      "value": "#F97316",
+      "type": "color",
+      "description": "친구요청 주황색"
+    },
+    "blue-freind-background": {
+      "value": "#DBEAFE",
+      "type": "color",
+      "description": "전체친구 배경색"
+    },
+    "blue-friend": {
+      "value": "#3B82F6",
+      "type": "color",
+      "description": "전체친구 파랑색"
+    }
+  }
