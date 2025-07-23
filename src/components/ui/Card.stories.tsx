@@ -148,9 +148,6 @@ export const Interactive: Story = {
       <Card 
         interactive 
         onClick={() => alert('Card clicked!')}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => e.key === 'Enter' && alert('Card clicked!')}
       >
         <CardHeader>
           <CardTitle>Interactive Card</CardTitle>
@@ -164,9 +161,6 @@ export const Interactive: Story = {
         variant="elevated" 
         interactive 
         onClick={() => alert('Elevated card clicked!')}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => e.key === 'Enter' && alert('Elevated card clicked!')}
       >
         <CardHeader>
           <CardTitle>Interactive Elevated</CardTitle>

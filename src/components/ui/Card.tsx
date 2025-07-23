@@ -39,7 +39,7 @@ const Card: React.FC<CardProps> = ({
   };
   
   const interactiveClasses = interactive 
-    ? 'cursor-pointer hover:scale-[1.02] active:scale-[0.98]' 
+    ? 'cursor-pointer hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-500)]' 
     : '';
   
   const cardClasses = `${baseClasses} ${variantClasses[variant]} ${paddingClasses[padding]} ${interactiveClasses} ${className}`;
@@ -48,9 +48,20 @@ const Card: React.FC<CardProps> = ({
     <div 
       className={cardClasses} 
       onClick={onClick}
-      role={role}
-      tabIndex={tabIndex}
-      onKeyDown={onKeyDown}
+      {...(interactive && onClick ? {
+        role: 'button',
+        tabIndex: 0,
+        onKeyDown: (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onClick();
+          }
+        }
+      } : {
+        role,
+        tabIndex,
+        onKeyDown
+      })}
     >
       {children}
     </div>
