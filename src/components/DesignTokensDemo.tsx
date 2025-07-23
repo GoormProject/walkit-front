@@ -1,6 +1,20 @@
 import React from 'react';
 
 const DesignTokensDemo: React.FC = () => {
+  // 하드코딩된 배경색 클래스 배열
+  const bgClasses = [
+    'bg-primary-50',
+    'bg-primary-100', 
+    'bg-primary-200',
+    'bg-primary-300',
+    'bg-primary-400',
+    'bg-primary-500',
+    'bg-primary-600',
+    'bg-primary-700',
+    'bg-primary-800',
+    'bg-primary-900'
+  ];
+
   return (
     <div className="p-8 bg-bg-primary">
       <h1 className="text-4xl font-bold text-text-primary mb-8">
@@ -13,13 +27,10 @@ const DesignTokensDemo: React.FC = () => {
           Color Tokens
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          {[50, 100, 200, 300, 400, 500, 600, 700, 800, 900].map((shade) => (
-            <div key={shade} className="text-center">
-              <div 
-                className={`w-16 h-16 mx-auto mb-2 rounded-lg bg-primary-${shade}`}
-                style={{ backgroundColor: `var(--color-primary-${shade})` }}
-              ></div>
-              <span className="text-sm text-text-secondary">Primary {shade}</span>
+          {bgClasses.map((bgClass, index) => (
+            <div key={index} className="text-center">
+              <div className={`w-16 h-16 mx-auto mb-2 rounded-lg ${bgClass}`}></div>
+              <span className="text-sm text-text-secondary">Primary {50 + index * 100}</span>
             </div>
           ))}
         </div>
@@ -49,23 +60,23 @@ const DesignTokensDemo: React.FC = () => {
         </h2>
         <div className="space-y-4">
           <div className="flex items-center">
-            <div className="bg-primary-500 rounded" style={{ width: 'var(--spacing-xs)', height: 'var(--spacing-xs)' }}></div>
+            <div className="bg-primary-500 rounded w-xs h-xs"></div>
             <span className="ml-2 text-text-secondary">XS (4px)</span>
           </div>
           <div className="flex items-center">
-            <div className="bg-primary-500 rounded" style={{ width: 'var(--spacing-sm)', height: 'var(--spacing-sm)' }}></div>
+            <div className="bg-primary-500 rounded w-sm h-sm"></div>
             <span className="ml-2 text-text-secondary">SM (8px)</span>
           </div>
           <div className="flex items-center">
-            <div className="bg-primary-500 rounded" style={{ width: 'var(--spacing-md)', height: 'var(--spacing-md)' }}></div>
+            <div className="bg-primary-500 rounded w-md h-md"></div>
             <span className="ml-2 text-text-secondary">MD (16px)</span>
           </div>
           <div className="flex items-center">
-            <div className="bg-primary-500 rounded" style={{ width: 'var(--spacing-lg)', height: 'var(--spacing-lg)' }}></div>
+            <div className="bg-primary-500 rounded w-lg h-lg"></div>
             <span className="ml-2 text-text-secondary">LG (24px)</span>
           </div>
           <div className="flex items-center">
-            <div className="bg-primary-500 rounded" style={{ width: 'var(--spacing-xl)', height: 'var(--spacing-xl)' }}></div>
+            <div className="bg-primary-500 rounded w-xl h-xl"></div>
             <span className="ml-2 text-text-secondary">XL (32px)</span>
           </div>
         </div>
