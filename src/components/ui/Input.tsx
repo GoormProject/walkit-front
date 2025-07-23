@@ -44,16 +44,16 @@ const Input: React.FC<InputProps> = ({
   };
   
   const stateClasses = error 
-    ? 'border-error focus:ring-error focus:border-error' 
-    : 'border-gray-300 focus:ring-primary-500 focus:border-primary-500';
+    ? 'border-[var(--color-error)] focus:ring-[var(--color-error)] focus:border-[var(--color-error)]' 
+    : 'border-[var(--color-gray-300)] focus:ring-[var(--color-primary-500)] focus:border-[var(--color-primary-500)]';
   
   const widthClass = fullWidth ? 'w-full' : '';
   
   const inputClasses = `${baseClasses} ${sizeClasses[size]} ${stateClasses} ${widthClass} ${className}`;
   
-  const labelClasses = `block text-sm font-medium text-text-primary mb-1 ${required ? 'after:content-["*"] after:ml-1 after:text-error' : ''}`;
+  const labelClasses = `block text-sm font-medium text-text-primary mb-1 ${required ? 'after:content-["*"] after:ml-1 after:text-[var(--color-error)]' : ''}`;
   
-  const helperClasses = `text-sm mt-1 ${error ? 'text-error' : 'text-text-secondary'}`;
+  const helperClasses = `text-sm mt-1 ${error ? 'text-[var(--color-error)]' : 'text-text-secondary'}`;
   
   return (
     <div className={fullWidth ? 'w-full' : ''}>

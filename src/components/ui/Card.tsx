@@ -26,9 +26,9 @@ const Card: React.FC<CardProps> = ({
   const baseClasses = 'rounded-lg transition-all duration-200';
   
   const variantClasses = {
-    default: 'bg-bg-primary border border-gray-200',
+    default: 'bg-bg-primary border border-[var(--color-gray-200)]',
     elevated: 'bg-bg-primary shadow-md hover:shadow-lg',
-    outlined: 'bg-bg-primary border-2 border-gray-300',
+    outlined: 'bg-bg-primary border-2 border-[var(--color-gray-300)]',
   };
   
   const paddingClasses = {
@@ -109,7 +109,7 @@ export const CardFooter: React.FC<{ children: React.ReactNode; className?: strin
   children, 
   className = '' 
 }) => (
-  <div className={`pt-4 border-t border-gray-200 ${className}`}>
+  <div className={`pt-4 border-t border-[var(--color-gray-200)] ${className}`}>
     {children}
   </div>
 );
