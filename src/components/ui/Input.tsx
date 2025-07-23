@@ -72,10 +72,12 @@ const Input: React.FC<InputProps> = ({
         onFocus={onFocus}
         disabled={disabled}
         required={required}
+        aria-invalid={error}
+        aria-describedby={helperText ? `${id}-helper` : undefined}
         className={inputClasses}
       />
       {helperText && (
-        <p className={helperClasses}>
+        <p id={`${id}-helper`} className={helperClasses}>
           {helperText}
         </p>
       )}
