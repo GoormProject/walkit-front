@@ -13,6 +13,7 @@ export interface FigmaToken {
     spacing?: Record<string, FigmaToken>;
     shadows?: Record<string, FigmaToken>;
     borders?: Record<string, FigmaToken>;
+    breakpoints?: Record<string, FigmaToken>;
   }
   
   /**
@@ -105,6 +106,17 @@ export interface FigmaToken {
       Object.entries(tokens.borders).forEach(([name, token]) => {
         const key = name.toLowerCase().replace(/[^a-z0-9]/g, '-');
         tailwindConfig.theme.extend.borderWidth[key] = `var(--border-${key})`;
+      });
+    }
+    
+    // 브레이크포인트 토큰을 Tailwind screens로 변환 (정적 픽셀 값 사용)
+    if (tokens.breakpoints) {
+      tailwindConfig.theme.extend.screens = {};
+      Object.entries(tokens.breakpoints).forEach(([name, token]) => {
+        const key = name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+        // CSS 변수 대신 정적 픽셀 값 사용
+        const pixelValue = typeof token.value === 'string' ? token.value : `${token.value}px`;
+        tailwindConfig.theme.extend.screens[key] = pixelValue;
       });
     }
     

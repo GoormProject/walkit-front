@@ -110,13 +110,13 @@ export default {
         xl: 'var(--shadow-xl)',
       },
       
-      // Breakpoint Tokens
+      // Breakpoint Tokens (정적 픽셀 값 사용)
       screens: {
-        sm: 'var(--breakpoint-sm)',
-        md: 'var(--breakpoint-md)',
-        lg: 'var(--breakpoint-lg)',
-        xl: 'var(--breakpoint-xl)',
-        '2xl': 'var(--breakpoint-2xl)',
+        sm: '640px',
+        md: '768px',
+        lg: '1024px',
+        xl: '1280px',
+        '2xl': '1536px',
       }
     },
   },
