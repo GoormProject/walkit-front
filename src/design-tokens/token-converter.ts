@@ -59,14 +59,52 @@ export interface FigmaToken {
    * Figma JSON 토큰을 Tailwind 설정으로 변환
    */
   export function convertTokensToTailwind(tokens: DesignTokens): Record<string, any> {
-    const tailwindConfig: Record<string, any> = {};
+    const tailwindConfig: Record<string, any> = {
+      theme: { extend: {} }
+    };
     
     // 색상 토큰을 Tailwind colors로 변환
     if (tokens.colors) {
-      tailwindConfig.colors = {};
+      tailwindConfig.theme.extend.colors = {};
       Object.entries(tokens.colors).forEach(([name, token]) => {
-        const tailwindName = name.toLowerCase().replace(/[^a-z0-9]/g, '-');
-        tailwindConfig.colors[tailwindName] = `var(--color-${tailwindName})`;
+        const key = name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+        tailwindConfig.theme.extend.colors[key] = `var(--color-${key})`;
+      });
+    }
+    
+    // 스페이싱 토큰을 Tailwind spacing으로 변환
+    if (tokens.spacing) {
+      tailwindConfig.theme.extend.spacing = {};
+      Object.entries(tokens.spacing).forEach(([name, token]) => {
+        const key = name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+        tailwindConfig.theme.extend.spacing[key] = `var(--spacing-${key})`;
+      });
+    }
+    
+    // 타이포그래피 토큰을 Tailwind fontSize로 변환
+    if (tokens.typography) {
+      tailwindConfig.theme.extend.fontSize = {};
+      Object.entries(tokens.typography).forEach(([name, token]) => {
+        const key = name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+        tailwindConfig.theme.extend.fontSize[key] = `var(--font-${key})`;
+      });
+    }
+    
+    // 쉐도우 토큰을 Tailwind boxShadow로 변환
+    if (tokens.shadows) {
+      tailwindConfig.theme.extend.boxShadow = {};
+      Object.entries(tokens.shadows).forEach(([name, token]) => {
+        const key = name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+        tailwindConfig.theme.extend.boxShadow[key] = `var(--shadow-${key})`;
+      });
+    }
+    
+    // 보더 토큰을 Tailwind borderWidth로 변환
+    if (tokens.borders) {
+      tailwindConfig.theme.extend.borderWidth = {};
+      Object.entries(tokens.borders).forEach(([name, token]) => {
+        const key = name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+        tailwindConfig.theme.extend.borderWidth[key] = `var(--border-${key})`;
       });
     }
     

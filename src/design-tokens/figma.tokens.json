@@ -50,9 +50,9 @@
       "description": "파란색 - 화장실 남자"
     },
     "red": {
-      "value": "#0900FF",
+      "value": "#FF0000",
       "type": "color",
-      "description": "빨간색 - 여자\n"
+      "description": "빨간색 - 여자"
     },
     "blue-marker": {
       "value": "#375BFA",
