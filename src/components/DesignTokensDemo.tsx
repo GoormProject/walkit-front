@@ -1,18 +1,18 @@
 import React from 'react';
 
 const DesignTokensDemo: React.FC = () => {
-  // 하드코딩된 배경색 클래스 배열
+  // CSS 변수를 사용한 배경색 클래스 배열
   const bgClasses = [
-    'bg-primary-50',
-    'bg-primary-100', 
-    'bg-primary-200',
-    'bg-primary-300',
-    'bg-primary-400',
-    'bg-primary-500',
-    'bg-primary-600',
-    'bg-primary-700',
-    'bg-primary-800',
-    'bg-primary-900'
+    'bg-[var(--color-primary-50)]',
+    'bg-[var(--color-primary-100)]', 
+    'bg-[var(--color-primary-200)]',
+    'bg-[var(--color-primary-300)]',
+    'bg-[var(--color-primary-400)]',
+    'bg-[var(--color-primary-500)]',
+    'bg-[var(--color-primary-600)]',
+    'bg-[var(--color-primary-700)]',
+    'bg-[var(--color-primary-800)]',
+    'bg-[var(--color-primary-900)]'
   ];
 
   return (
@@ -60,23 +60,23 @@ const DesignTokensDemo: React.FC = () => {
         </h2>
         <div className="space-y-4">
           <div className="flex items-center">
-            <div className="bg-primary-500 rounded w-xs h-xs"></div>
+            <div className="bg-[var(--color-primary-500)] rounded w-xs h-xs"></div>
             <span className="ml-2 text-text-secondary">XS (4px)</span>
           </div>
           <div className="flex items-center">
-            <div className="bg-primary-500 rounded w-sm h-sm"></div>
+            <div className="bg-[var(--color-primary-500)] rounded w-sm h-sm"></div>
             <span className="ml-2 text-text-secondary">SM (8px)</span>
           </div>
           <div className="flex items-center">
-            <div className="bg-primary-500 rounded w-md h-md"></div>
+            <div className="bg-[var(--color-primary-500)] rounded w-md h-md"></div>
             <span className="ml-2 text-text-secondary">MD (16px)</span>
           </div>
           <div className="flex items-center">
-            <div className="bg-primary-500 rounded w-lg h-lg"></div>
+            <div className="bg-[var(--color-primary-500)] rounded w-lg h-lg"></div>
             <span className="ml-2 text-text-secondary">LG (24px)</span>
           </div>
           <div className="flex items-center">
-            <div className="bg-primary-500 rounded w-xl h-xl"></div>
+            <div className="bg-[var(--color-primary-500)] rounded w-xl h-xl"></div>
             <span className="ml-2 text-text-secondary">XL (32px)</span>
           </div>
         </div>
@@ -88,16 +88,16 @@ const DesignTokensDemo: React.FC = () => {
           Semantic Colors
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-4 bg-success text-white rounded-lg text-center">
+          <div className="p-4 bg-[var(--color-success)] text-white rounded-lg text-center">
             Success
           </div>
-          <div className="p-4 bg-warning text-white rounded-lg text-center">
+          <div className="p-4 bg-[var(--color-warning)] text-white rounded-lg text-center">
             Warning
           </div>
-          <div className="p-4 bg-error text-white rounded-lg text-center">
+          <div className="p-4 bg-[var(--color-error)] text-white rounded-lg text-center">
             Error
           </div>
-          <div className="p-4 bg-info text-white rounded-lg text-center">
+          <div className="p-4 bg-[var(--color-info)] text-white rounded-lg text-center">
             Info
           </div>
         </div>
