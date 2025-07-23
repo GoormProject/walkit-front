@@ -145,7 +145,13 @@ export const PaddingOptions: Story = {
 export const Interactive: Story = {
   render: () => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <Card interactive onClick={() => alert('Card clicked!')}>
+      <Card 
+        interactive 
+        onClick={() => alert('Card clicked!')}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => e.key === 'Enter' && alert('Card clicked!')}
+      >
         <CardHeader>
           <CardTitle>Interactive Card</CardTitle>
         </CardHeader>
@@ -154,7 +160,14 @@ export const Interactive: Story = {
         </CardContent>
       </Card>
       
-      <Card variant="elevated" interactive onClick={() => alert('Elevated card clicked!')}>
+      <Card 
+        variant="elevated" 
+        interactive 
+        onClick={() => alert('Elevated card clicked!')}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => e.key === 'Enter' && alert('Elevated card clicked!')}
+      >
         <CardHeader>
           <CardTitle>Interactive Elevated</CardTitle>
         </CardHeader>

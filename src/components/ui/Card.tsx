@@ -7,6 +7,9 @@ export interface CardProps {
   className?: string;
   onClick?: () => void;
   interactive?: boolean;
+  role?: string;
+  tabIndex?: number;
+  onKeyDown?: (e: React.KeyboardEvent) => void;
 }
 
 const Card: React.FC<CardProps> = ({
@@ -16,6 +19,9 @@ const Card: React.FC<CardProps> = ({
   className = '',
   onClick,
   interactive = false,
+  role,
+  tabIndex,
+  onKeyDown,
 }) => {
   const baseClasses = 'rounded-lg transition-all duration-200';
   
@@ -39,7 +45,13 @@ const Card: React.FC<CardProps> = ({
   const cardClasses = `${baseClasses} ${variantClasses[variant]} ${paddingClasses[padding]} ${interactiveClasses} ${className}`;
   
   return (
-    <div className={cardClasses} onClick={onClick}>
+    <div 
+      className={cardClasses} 
+      onClick={onClick}
+      role={role}
+      tabIndex={tabIndex}
+      onKeyDown={onKeyDown}
+    >
       {children}
     </div>
   );
