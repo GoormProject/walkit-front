@@ -37,10 +37,8 @@ const appInfo = getAppInfo();
 - `VITE_API_TIMEOUT`: API 요청 타임아웃 시간 (밀리초)
 - `VITE_APP_TITLE`: 애플리케이션 제목
 - `VITE_APP_VERSION`: 애플리케이션 버전
-- `VITE_DEBUG_MODE`: 디버그 모드 활성화 여부 (true/false)
 - `VITE_PORT`: 개발 서버 포트 번호
 - `VITE_HOST`: 개발 서버 호스트
-- `VITE_SOURCEMAP`: 소스맵 생성 여부 (true/false)
 
 ## 설치 및 실행
 
