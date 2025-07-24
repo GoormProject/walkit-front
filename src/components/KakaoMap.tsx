@@ -24,10 +24,7 @@ const KakaoMap: React.FC = () => {
         // 위치 권한 요청 및 실시간 위치 감시
         initGeolocation(
           mapInstance,
-          userMarkerRef.current,
-          (marker) => {
-            userMarkerRef.current = marker;
-          },
+          userMarkerRef,
           setIsLoading
         );
 

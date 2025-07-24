@@ -58,8 +58,7 @@ export const createMap = (coords: Coords): kakao.maps.Map => {
 // 위치 권한 요청 및 실시간 위치 감시
 export const initGeolocation = (
   map: kakao.maps.Map,
-  userMarker: kakao.maps.Marker | null,
-  setUserMarker: (marker: kakao.maps.Marker) => void,
+  userMarkerRef: React.MutableRefObject<kakao.maps.Marker | null>,
   setLoading: (loading: boolean) => void
 ): void => {
   if (!navigator.geolocation) {
@@ -79,16 +78,17 @@ export const initGeolocation = (
       // 지도 중심 이동
       map.setCenter(userLatLng);
       
-      // 사용자 마커 생성 또는 업데이트
-      if (!userMarker) {
-        const newUserMarker = new kakao.maps.Marker({ 
-          map, 
-          position: userLatLng 
-        });
-        setUserMarker(newUserMarker);
-      } else {
-        userMarker.setPosition(userLatLng);
+      // 기존 마커가 있으면 제거
+      if (userMarkerRef.current) {
+        userMarkerRef.current.setMap(null);
       }
+      
+      // 새로운 마커 생성
+      const newUserMarker = new kakao.maps.Marker({ 
+        map, 
+        position: userLatLng 
+      });
+      userMarkerRef.current = newUserMarker;
     },
     (error) => {
       console.warn('위치 권한 또는 위치 수신 에러:', error);
