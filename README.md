@@ -80,6 +80,8 @@ npm run build
 VITE_KAKAO_MAP_API_KEY=your_kakao_map_api_key_here
 ```
 
+**⚠️ 보안 주의사항**: `.env` 파일은 `.gitignore`에 포함되어 있으므로 API 키가 실수로 커밋되지 않습니다.
+
 ### 4. 코드에서 API 키 사용
 `src/utils/kakaoMap.ts` 파일에서 API 키를 환경변수로 사용하도록 수정:
 
