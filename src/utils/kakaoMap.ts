@@ -52,12 +52,6 @@ export const createMap = (coords: Coords): kakao.maps.Map => {
   
   const mapInstance = new kakao.maps.Map(container, options);
   
-  // 기본 마커 생성 (서울 시청)
-  new kakao.maps.Marker({
-    map: mapInstance,
-    position: new kakao.maps.LatLng(coords.lat, coords.lng),
-  });
-  
   return mapInstance;
 };
 

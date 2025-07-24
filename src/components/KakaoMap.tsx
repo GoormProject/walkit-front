@@ -77,10 +77,7 @@ const KakaoMap: React.FC = () => {
           • 기본 위치: 서울 시청 (위치 권한 허용 시 실시간 위치로 이동)
         </p>
         <p className="text-[var(--color-text-secondary)] text-sm">
-          • 파란색 마커: 현재 위치
-        </p>
-        <p className="text-[var(--color-text-secondary)] text-sm">
-          • 빨간색 마커: 서울 시청 (기본 위치)
+          • 파란색 마커: 사용자의 현재 위치 (실시간 업데이트)
         </p>
       </div>
     </div>
