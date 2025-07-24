@@ -33,7 +33,7 @@ export const loadKakaoMapSDK = (): Promise<void> => {
 
 
 // 지도 생성
-export const createMap = (coords: Coords): kakao.maps.KakaoMap => {
+export const createMap = (coords: Coords): kakao.maps.Map => {
   const container = document.getElementById('map');
   if (!container) {
     throw new Error('지도를 표시할 컨테이너를 찾을 수 없습니다.');
@@ -44,14 +44,14 @@ export const createMap = (coords: Coords): kakao.maps.KakaoMap => {
     level: 4,
   };
   
-  const mapInstance = new window.kakao.maps.KakaoMap(container, options);
+  const mapInstance = new window.kakao.maps.Map(container, options);
   
   return mapInstance;
 };
 
 // 위치 권한 요청 및 실시간 위치 감시
 export const initGeolocation = (
-  map: kakao.maps.KakaoMap,
+  map: kakao.maps.Map,
   onLocationUpdate: (marker: kakao.maps.Marker) => void,
   onLoadingChange: (loading: boolean) => void,
   onError: (error: GeolocationPositionError) => void

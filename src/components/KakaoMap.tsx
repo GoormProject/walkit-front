@@ -5,7 +5,7 @@ import LoadingSpinner from './LoadingSpinner';
 const KakaoMap: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const mapRef = useRef<kakao.maps.KakaoMap | null>(null);
+  const mapRef = useRef<kakao.maps.Map | null>(null);
   const userMarkerRef = useRef<kakao.maps.Marker | null>(null);
 
   useEffect(() => {
