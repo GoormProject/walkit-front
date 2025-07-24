@@ -21,7 +21,7 @@ declare global {
     kakao: {
       maps: {
         load: (callback: () => void) => void;
-        Map: new (container: HTMLElement, options: kakao.maps.MapOptions) => kakao.maps.Map;
+        KakaoMap: new (container: HTMLElement, options: kakao.maps.MapOptions) => kakao.maps.KakaoMap;
         LatLng: new (lat: number, lng: number) => kakao.maps.LatLng;
         Marker: new (options: kakao.maps.MarkerOptions) => kakao.maps.Marker;
         MapOptions: {
@@ -29,7 +29,7 @@ declare global {
           level: number;
         };
         MarkerOptions: {
-          map: kakao.maps.Map;
+          map: kakao.maps.KakaoMap;
           position: kakao.maps.LatLng;
         };
       };
@@ -38,7 +38,7 @@ declare global {
   
   namespace kakao {
     namespace maps {
-      class Map {
+      class KakaoMap {
         constructor(container: HTMLElement, options: MapOptions);
         setCenter(latLng: LatLng): void;
       }
@@ -52,7 +52,7 @@ declare global {
       class Marker {
         constructor(options: MarkerOptions);
         setPosition(latLng: LatLng): void;
-        setMap(map: Map | null): void;
+        setMap(map: KakaoMap | null): void;
       }
       
       interface MapOptions {
@@ -61,7 +61,7 @@ declare global {
       }
       
       interface MarkerOptions {
-        map: Map;
+        map: KakaoMap;
         position: LatLng;
       }
     }
