@@ -29,8 +29,32 @@ const KakaoMap: React.FC = () => {
         // 위치 권한 요청 및 실시간 위치 감시
         initGeolocation(
           mapInstance,
-          userMarkerRef,
-          setIsLoading
+          (marker) => {
+            // 기존 마커가 있으면 제거
+            if (userMarkerRef.current) {
+              userMarkerRef.current.setMap(null);
+            }
+            userMarkerRef.current = marker;
+          },
+          setIsLoading,
+          (error) => {
+            console.warn('위치 권한 또는 위치 수신 에러:', error);
+            
+            // 에러 타입에 따른 사용자 안내
+            switch (error.code) {
+              case error.PERMISSION_DENIED:
+                alert('위치 권한이 거부되었습니다. 기본 위치(서울 시청)로 표시됩니다.');
+                break;
+              case error.POSITION_UNAVAILABLE:
+                alert('위치 정보를 사용할 수 없습니다. 기본 위치(서울 시청)로 표시됩니다.');
+                break;
+              case error.TIMEOUT:
+                alert('위치 요청 시간이 초과되었습니다. 기본 위치(서울 시청)로 표시됩니다.');
+                break;
+              default:
+                alert('위치 정보를 가져오는 중 오류가 발생했습니다. 기본 위치(서울 시청)로 표시됩니다.');
+            }
+          }
         );
 
       } catch (err) {

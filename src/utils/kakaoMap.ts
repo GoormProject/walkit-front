@@ -52,56 +52,39 @@ export const createMap = (coords: Coords): kakao.maps.KakaoMap => {
 // 위치 권한 요청 및 실시간 위치 감시
 export const initGeolocation = (
   map: kakao.maps.KakaoMap,
-  userMarkerRef: React.MutableRefObject<kakao.maps.Marker | null>,
-  setLoading: (loading: boolean) => void
+  onLocationUpdate: (marker: kakao.maps.Marker) => void,
+  onLoadingChange: (loading: boolean) => void,
+  onError: (error: GeolocationPositionError) => void
 ): void => {
   if (!navigator.geolocation) {
     alert('Geolocation API를 지원하지 않습니다.');
-    setLoading(false);
+    onLoadingChange(false);
     return;
   }
 
-  setLoading(true);
+  onLoadingChange(true);
 
   navigator.geolocation.watchPosition(
     (position) => {
-      setLoading(false);
+      onLoadingChange(false);
       const { latitude, longitude } = position.coords;
       const userLatLng = new kakao.maps.LatLng(latitude, longitude);
       
       // 지도 중심 이동
       map.setCenter(userLatLng);
       
-      // 기존 마커가 있으면 제거
-      if (userMarkerRef.current) {
-        userMarkerRef.current.setMap(null);
-      }
-      
       // 새로운 마커 생성
       const newUserMarker = new kakao.maps.Marker({ 
         map, 
         position: userLatLng 
       });
-      userMarkerRef.current = newUserMarker;
+      
+      // 콜백으로 마커 전달
+      onLocationUpdate(newUserMarker);
     },
     (error) => {
-      console.warn('위치 권한 또는 위치 수신 에러:', error);
-      setLoading(false);
-      
-      // 에러 타입에 따른 사용자 안내
-      switch (error.code) {
-        case error.PERMISSION_DENIED:
-          alert('위치 권한이 거부되었습니다. 기본 위치(서울 시청)로 표시됩니다.');
-          break;
-        case error.POSITION_UNAVAILABLE:
-          alert('위치 정보를 사용할 수 없습니다. 기본 위치(서울 시청)로 표시됩니다.');
-          break;
-        case error.TIMEOUT:
-          alert('위치 요청 시간이 초과되었습니다. 기본 위치(서울 시청)로 표시됩니다.');
-          break;
-        default:
-          alert('위치 정보를 가져오는 중 오류가 발생했습니다. 기본 위치(서울 시청)로 표시됩니다.');
-      }
+      onLoadingChange(false);
+      onError(error);
     },
     { 
       enableHighAccuracy: true, 
