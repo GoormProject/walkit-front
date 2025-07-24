@@ -30,13 +30,7 @@ export const loadKakaoMapSDK = (): Promise<void> => {
   });
 };
 
-// 로딩 스피너 표시/숨김
-export const showLoading = (show: boolean): void => {
-  const loadingEl = document.getElementById('loading');
-  if (loadingEl) {
-    loadingEl.style.display = show ? 'block' : 'none';
-  }
-};
+
 
 // 지도 생성
 export const createMap = (coords: Coords): kakao.maps.KakaoMap => {
@@ -63,7 +57,7 @@ export const initGeolocation = (
 ): void => {
   if (!navigator.geolocation) {
     alert('Geolocation API를 지원하지 않습니다.');
-    showLoading(false);
+    setLoading(false);
     return;
   }
 
