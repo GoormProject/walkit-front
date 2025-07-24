@@ -14,6 +14,11 @@ const KakaoMap: React.FC = () => {
         setIsLoading(true);
         setError(null);
 
+        // 환경 변수 검증
+        if (!import.meta.env.VITE_KAKAO_MAP_API_KEY) {
+          throw new Error('카카오 맵 API 키가 설정되지 않았습니다. README.md를 참조하여 환경 변수를 설정해주세요.');
+        }
+
         // 카카오 맵 SDK 로드
         await loadKakaoMapSDK();
 
