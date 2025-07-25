@@ -88,20 +88,13 @@ const TrailPathLayer: React.FC<TrailPathLayerProps> = ({
     };
   }, [paths, createPolyline]);
 
-  // 선택된 경로 하이라이트 (간단한 버전)
+  // 선택된 경로 하이라이트 업데이트
   useEffect(() => {
-    // 선택된 경로가 변경되면 모든 폴리라인을 다시 렌더링
-    polylinesRef.current.forEach(polyline => {
-      polyline.setMap(null);
+    polylinesRef.current.forEach((polyline, pathId) => {
+      // zIndex만 업데이트하여 성능 최적화
+      (polyline as any).setZIndex?.(selectedTrailId === pathId ? 2 : 1);
     });
-    polylinesRef.current.clear();
-
-    paths.forEach(path => {
-      const isSelected = selectedTrailId === path.id;
-      const polyline = createPolyline(path, isSelected);
-      polylinesRef.current.set(path.id, polyline);
-    });
-  }, [selectedTrailId, paths, createPolyline]);
+  }, [selectedTrailId]);
 
   return null; // 이 컴포넌트는 UI를 렌더링하지 않고 카카오맵에 직접 그립니다
 };
