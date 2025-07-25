@@ -102,9 +102,16 @@ const AnimatedTrailPath: React.FC<AnimatedTrailPathProps> = ({
         zIndex: 1
       });
 
-      startAnimation();
+      // startAnimation을 직접 호출하지 않고 조건부로 실행
+      if (isMountedRef.current) {
+        startAnimation();
+      }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isVisible, map, path.style.strokeWeight, path.style.strokeColor, path.style.strokeOpacity, path.style.strokeStyle]);
 
+  // 컴포넌트 언마운트 시 cleanup
+  useEffect(() => {
     return () => {
       cleanupAnimation();
       if (polylineRef.current) {
@@ -112,7 +119,7 @@ const AnimatedTrailPath: React.FC<AnimatedTrailPathProps> = ({
         polylineRef.current = null;
       }
     };
-  }, [isVisible, map, path, startAnimation, cleanupAnimation]);
+  }, [cleanupAnimation]);
 
   // 가시성 변경 시 애니메이션
   useEffect(() => {
