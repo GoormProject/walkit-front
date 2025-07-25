@@ -108,9 +108,9 @@ export const useTrailPathsSafe = (): UseTrailPathsSafeReturn => {
 };
 
 /**
- * 특정 코스 타입의 경로만 필터링하는 커스텀 훅
+ * 특정 코스 타입의 경로만 필터링하는 커스텀 훅 (카카오 맵 SDK 사용)
  */
-export const useTrailPathsByCourseType = (courseType: string) => {
+export const useTrailPathsByCourseType = (courseType: string): UseTrailPathsReturn => {
   const { trailPaths, isLoading, error, refetch, clearError } = useTrailPaths();
   
   const filteredPaths = trailPaths.filter(path => 
@@ -129,7 +129,7 @@ export const useTrailPathsByCourseType = (courseType: string) => {
 /**
  * 특정 코스 타입의 경로만 필터링하는 커스텀 훅 (안전 버전)
  */
-export const useTrailPathsByCourseTypeSafe = (courseType: string) => {
+export const useTrailPathsByCourseTypeSafe = (courseType: string): UseTrailPathsSafeReturn => {
   const { trailPaths, isLoading, error, refetch, clearError } = useTrailPathsSafe();
   
   const filteredPaths = trailPaths.filter(path => 
@@ -146,7 +146,7 @@ export const useTrailPathsByCourseTypeSafe = (courseType: string) => {
 };
 
 /**
- * 경로 데이터 통계를 제공하는 커스텀 훅
+ * 경로 데이터 통계를 제공하는 커스텀 훅 (카카오 맵 SDK 사용)
  */
 export const useTrailPathsStats = () => {
   const { trailPaths } = useTrailPaths();
