@@ -5,6 +5,7 @@ docs/
 .env
 env/
 .env.*
+.prettierrc
 
 # Logs
 logs

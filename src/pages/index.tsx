@@ -33,8 +33,7 @@ const Home = () => {
       >
         reviews 페이지로 이동
       </Link>
-      {/* Design Tokens Demo */}
-      <DesignTokensDemo />
+      
       <br></br>
     </div>
   )

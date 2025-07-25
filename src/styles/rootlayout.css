@@ -1,0 +1,40 @@
+/*
+    전체 width 설정
+*/
+
+/* 기본: 모바일 */
+.app {
+  position: relative;
+  max-width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg-primary);
+}
+
+/* 태블릿: 768~1023px */
+@media (min-width: 768px) {
+  .app {
+    max-width: 720px;
+    border-inline: 1px solid var(--border-color-light);
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* 데스크탑: 1024px~ */
+@media (min-width: 1024px) {
+  .app {
+    max-width: 720px;
+    border-inline: 1px solid var(--border-color-light);
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* 메인 콘텐츠 영역이 남은 공간을 모두 차지하도록 */
+.app main {
+  flex: 1;
+}
