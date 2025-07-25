@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import type { GeoJSONFeatureCollection, TrailPathData } from '../types/trail';
 import { getTrailPaths } from '../utils/mockTrailApi';
 import TrailPathLayer from './TrailPathLayer';
