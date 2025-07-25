@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 interface AnimatedPanelProps {
   children: React.ReactNode;
@@ -18,6 +18,7 @@ const AnimatedPanel: React.FC<AnimatedPanelProps> = ({
   const [isAnimating, setIsAnimating] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
+  const isMountedRef = useRef(true);
 
   // 위치별 스타일 계산
   const getPositionStyles = () => {
@@ -37,6 +38,30 @@ const AnimatedPanel: React.FC<AnimatedPanelProps> = ({
     }
   };
 
+  // 컴포넌트 마운트/언마운트 추적
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  // 안전한 애니메이션 실행 함수
+  const safeAnimateIn = useCallback(() => {
+    if (panelRef.current && shouldRender && isMountedRef.current) {
+      panelRef.current.style.transform = 'translateY(0) scale(1)';
+      panelRef.current.style.opacity = '1';
+    }
+  }, [shouldRender]);
+
+  // 안전한 애니메이션 아웃 함수
+  const safeAnimateOut = useCallback(() => {
+    if (panelRef.current && isMountedRef.current) {
+      panelRef.current.style.transform = 'translateY(-20px) scale(0.95)';
+      panelRef.current.style.opacity = '0';
+    }
+  }, []);
+
   // 애니메이션 시작
   useEffect(() => {
     if (isVisible && !shouldRender) {
@@ -44,28 +69,21 @@ const AnimatedPanel: React.FC<AnimatedPanelProps> = ({
       setIsAnimating(true);
       
       // 다음 프레임에서 애니메이션 시작
-      requestAnimationFrame(() => {
-        if (panelRef.current) {
-          panelRef.current.style.transform = 'translateY(0) scale(1)';
-          panelRef.current.style.opacity = '1';
-        }
-      });
+      requestAnimationFrame(safeAnimateIn);
     } else if (!isVisible && shouldRender) {
       setIsAnimating(true);
-      
-      if (panelRef.current) {
-        panelRef.current.style.transform = 'translateY(-20px) scale(0.95)';
-        panelRef.current.style.opacity = '0';
-      }
+      safeAnimateOut();
       
       // 애니메이션 완료 후 컴포넌트 제거
       setTimeout(() => {
-        setShouldRender(false);
-        setIsAnimating(false);
-        onAnimationComplete?.();
+        if (isMountedRef.current) {
+          setShouldRender(false);
+          setIsAnimating(false);
+          onAnimationComplete?.();
+        }
       }, 300);
     }
-  }, [isVisible, shouldRender, onAnimationComplete]);
+  }, [isVisible, shouldRender, onAnimationComplete, safeAnimateIn, safeAnimateOut]);
 
   // 초기 스타일 설정
   useEffect(() => {
