@@ -4,7 +4,6 @@ import type {
   WalkRecord,
   CreateWalkRecordRequest,
   CreateWalkRecordResponse,
-  ApiErrorResponse,
   ApiResponse,
   WalkPath,
   WalkPathDetailResponse,
@@ -68,12 +67,6 @@ const createSuccessResponse = <T>(data: T, message: string): ApiResponse<T> => (
   httpStatus: 200,
   message,
   data
-});
-
-const createErrorResponse = (status: number, message: string): ApiErrorResponse => ({
-  httpStatus: status,
-  message,
-  timestamp: new Date().toISOString()
 });
 
 /**
