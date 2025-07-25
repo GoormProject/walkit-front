@@ -7,6 +7,7 @@ import Profile from './pages/profile'
 import ProfileEdit from './pages/profile/edit'
 import Signup from './pages/signup'
 import Login from './pages/login'
+import TestPage from './pages/test'
 import './App.css'
 
 function App() {
@@ -33,6 +34,9 @@ function App() {
         
         {/* 로그인 페이지 - src/pages/login/index.tsx */}
         <Route path="/login" element={<Login />} />
+        
+        {/* 테스트 페이지 - src/pages/test/index.tsx */}
+        <Route path="/test" element={<TestPage />} />
         
         {/* 404 페이지 - src/pages/notfound/index.tsx */}
         <Route path="*" element={<NotFound />} />

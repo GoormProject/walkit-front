@@ -20,12 +20,31 @@ export const convertToLatLng = (coordinates: [number, number]): kakao.maps.LatLn
 };
 
 /**
+ * GeoJSON 좌표를 순수 좌표 객체로 변환 (카카오 맵 SDK 없이 사용)
+ * @param coordinates GeoJSON 좌표 [경도, 위도]
+ * @returns 좌표 객체
+ */
+export const convertToCoordinates = (coordinates: [number, number]): { lat: number; lng: number } => {
+  const [lng, lat] = coordinates; // GeoJSON은 [경도, 위도] 순서
+  return { lat, lng };
+};
+
+/**
  * GeoJSON LineString을 카카오 맵 LatLng 배열로 변환
  * @param lineString GeoJSON LineString
  * @returns 카카오 맵 LatLng 배열
  */
 export const convertLineStringToLatLngArray = (lineString: GeoJSONLineString): kakao.maps.LatLng[] => {
   return lineString.coordinates.map(convertToLatLng);
+};
+
+/**
+ * GeoJSON LineString을 순수 좌표 배열로 변환 (카카오 맵 SDK 없이 사용)
+ * @param lineString GeoJSON LineString
+ * @returns 좌표 배열
+ */
+export const convertLineStringToCoordinatesArray = (lineString: GeoJSONLineString): { lat: number; lng: number }[] => {
+  return lineString.coordinates.map(convertToCoordinates);
 };
 
 /**
@@ -110,6 +129,31 @@ export const convertFeatureToTrailPath = (feature: GeoJSONFeature): TrailPathDat
 };
 
 /**
+ * GeoJSON Feature를 TrailPathData로 변환 (카카오 맵 SDK 없이 사용)
+ * @param feature GeoJSON Feature
+ * @returns 변환된 경로 데이터
+ */
+export const convertFeatureToTrailPathSafe = (feature: GeoJSONFeature): Omit<TrailPathData, 'coordinates'> & { coordinates: { lat: number; lng: number }[] } | null => {
+  if (feature.geometry.type === 'LineString') {
+    const lineString = feature.geometry as GeoJSONLineString;
+    const coordinates = convertLineStringToCoordinatesArray(lineString);
+    const courseType = feature.properties.courseType || 'default';
+    const style = getCourseStyle(courseType);
+
+    return {
+      id: feature.properties.id || `trail-${Date.now()}`,
+      name: feature.properties.name || 'Unnamed Trail',
+      courseType,
+      coordinates,
+      style,
+      properties: feature.properties
+    };
+  }
+
+  return null;
+};
+
+/**
  * GeoJSON FeatureCollection을 TrailPathData 배열로 변환
  * @param featureCollection GeoJSON FeatureCollection
  * @returns 변환된 경로 데이터 배열
@@ -120,6 +164,19 @@ export const convertFeatureCollectionToTrailPaths = (
   return featureCollection.features
     .map(convertFeatureToTrailPath)
     .filter((path): path is TrailPathData => path !== null);
+};
+
+/**
+ * GeoJSON FeatureCollection을 TrailPathData 배열로 변환 (카카오 맵 SDK 없이 사용)
+ * @param featureCollection GeoJSON FeatureCollection
+ * @returns 변환된 경로 데이터 배열
+ */
+export const convertFeatureCollectionToTrailPathsSafe = (
+  featureCollection: GeoJSONFeatureCollection
+): (Omit<TrailPathData, 'coordinates'> & { coordinates: { lat: number; lng: number }[] })[] => {
+  return featureCollection.features
+    .map(convertFeatureToTrailPathSafe)
+    .filter((path): path is Omit<TrailPathData, 'coordinates'> & { coordinates: { lat: number; lng: number }[] } => path !== null);
 };
 
 /**
