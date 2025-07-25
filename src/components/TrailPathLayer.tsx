@@ -30,8 +30,31 @@ const TrailPathLayer: React.FC<TrailPathLayerProps> = ({
       zIndex: selectedTrailId === path.id ? 2 : 1
     });
 
+    // 클릭 이벤트 핸들러 추가
+    if (onTrailClick) {
+      // 카카오맵 API 이벤트 리스너 추가 (타입 안전성을 위해 any 사용)
+      (window.kakao.maps as any).event?.addListener(polyline, 'click', () => {
+        onTrailClick(path.id);
+      });
+    }
+
+    // 호버 이벤트 핸들러 추가
+    if (onTrailHover) {
+      (window.kakao.maps as any).event?.addListener(polyline, 'mouseover', () => {
+        onTrailHover(path.id);
+        // 호버 시 시각적 피드백 (투명도 증가)
+        (polyline as any).setStrokeOpacity?.(Math.min(path.style.strokeOpacity + 0.2, 1.0));
+      });
+
+      (window.kakao.maps as any).event?.addListener(polyline, 'mouseout', () => {
+        onTrailHover(null);
+        // 원래 투명도로 복원
+        (polyline as any).setStrokeOpacity?.(path.style.strokeOpacity);
+      });
+    }
+
     return polyline;
-  }, [map, selectedTrailId]);
+  }, [map, selectedTrailId, onTrailClick, onTrailHover]);
 
 
 
