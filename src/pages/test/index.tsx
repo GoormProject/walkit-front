@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { useTrailPathsSafe } from '../../hooks/useTrailPaths';
 import { useWalkPaths } from '../../hooks/useWalkRecords';
 
-import { parseWktLineString } from '../../utils/pathConverter';
-import { getApiModeInfo } from '../../utils/api';
-import { getCourseStyle } from '../../utils/trailConverter';
+import { parseWktLineString } from '@/utils/converter';
+import { getApiModeInfo } from '@/utils/backendApi';
+import { getCourseStyle } from '@/utils/converter';
 
 const TestPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'trail' | 'walk' | 'converter'>('trail');

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { GeoJSONFeatureCollection, TrailPathData } from '../types/trail';
-import { getTrailPaths } from '../utils/api';
-import { convertFeatureCollectionToTrailPathsSafe, convertFeatureCollectionToTrailPaths } from '../utils/trailConverter';
+import { getTrailPaths } from '@/utils/backendApi';
+import { convertFeatureCollectionToTrailPathsSafe, convertFeatureCollectionToTrailPaths } from '@/utils/converter';
 
 interface UseTrailPathsReturn {
   trailPaths: TrailPathData[];

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { WalkRecord, WalkPath } from '../types/walk';
-import { getWalkRecords, getWalkRecordById, createWalkRecord, getWalkPathById, getWalkPaths } from '../utils/api';
+import { getWalkRecords, getWalkRecordById, createWalkRecord, getWalkPathById, getWalkPaths } from '@/utils/backendApi';
 
 interface UseWalkRecordsReturn {
   walkRecords: WalkRecord[];
