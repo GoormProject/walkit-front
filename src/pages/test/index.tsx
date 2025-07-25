@@ -4,6 +4,7 @@ import { useWalkPaths } from '../../hooks/useWalkRecords';
 
 import { convertWalkPathToPolylineOptions, parseWktLineString } from '../../utils/pathConverter';
 import { getApiModeInfo } from '../../utils/api';
+import { getCourseStyle } from '../../utils/trailConverter';
 
 const TestPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'trail' | 'walk' | 'converter'>('trail');
@@ -274,20 +275,18 @@ const ConverterTest: React.FC = () => {
           </div>
         </div>
 
-        {/* 스타일 테스트 */}
+                {/* 스타일 테스트 */}
         <div>
           <h3 className="text-lg font-medium mb-3">코스별 스타일 테스트</h3>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             {['easy', 'medium', 'hard', 'scenic', 'default'].map((courseType) => {
-              const styleMap = {
-                easy: { color: '#4CAF50', weight: 3, style: 'solid' },
-                medium: { color: '#FF9800', weight: 4, style: 'solid' },
-                hard: { color: '#F44336', weight: 5, style: 'solid' },
-                scenic: { color: '#2196F3', weight: 3, style: 'dashed' },
-                default: { color: '#9C27B0', weight: 3, style: 'solid' }
+              const courseStyle = getCourseStyle(courseType);
+              const style = {
+                color: courseStyle.strokeColor,
+                weight: courseStyle.strokeWeight,
+                style: courseStyle.strokeStyle === 'dashed' ? 'dashed' : 'solid'
               };
-              const style = styleMap[courseType as keyof typeof styleMap];
-              
+
               return (
                 <div key={courseType} className="border border-gray-200 rounded-lg p-3 text-center">
                   <div className="text-sm font-medium mb-2">{courseType}</div>
@@ -295,7 +294,7 @@ const ConverterTest: React.FC = () => {
                     className="h-4 rounded mb-2"
                     style={{
                       backgroundColor: style.color,
-                      opacity: 0.8,
+                      opacity: courseStyle.strokeOpacity,
                       borderTop: style.style === 'dashed' ? '2px dashed white' : 'none'
                     }}
                   ></div>
