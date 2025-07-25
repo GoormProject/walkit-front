@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useTrailPathsSafe } from '../../hooks/useTrailPaths';
+import { useTrailPathsSafe, useTrailPaths } from '../../hooks/useTrailPaths';
 import { useWalkPaths } from '../../hooks/useWalkRecords';
 
 import { convertWalkPathToPolylineOptions, parseWktLineString } from '../../utils/pathConverter';
