@@ -121,4 +121,33 @@
   --breakpoint-lg: 1024px;
   --breakpoint-xl: 1280px;
   --breakpoint-2xl: 1536px;
+
+  /* ===================================
+     GOOGLE LOGIN BUTTON TOKENS
+     =================================== */
+  
+  /* Google Brand Colors */
+  --google-red: #EA4335;
+  --google-blue: #4285F4;
+  --google-yellow: #FBBC05;
+  --google-green: #34A853;
+  
+  /* Google Button Colors */
+  --google-button-bg: #ffffff;
+  --google-button-border: #747775;
+  --google-button-text: #1f1f1f;
+  --google-button-hover-overlay: #303030;
+  --google-button-disabled-bg: #ffffff61;
+  --google-button-disabled-border: #1f1f1f1f;
+  
+  /* Google Button Shadows */
+  --google-button-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.30), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+
+  /* ===================================
+     Toast message box color
+     =================================== */  
+   --toast-message-success: #4CAF50;
+   --toast-message-error: #F44336;
+   --toast-message-infomation: #2196F3;
+   --toast-message-warning: #FFC107;
 } 
