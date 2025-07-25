@@ -89,7 +89,7 @@ const AnimatedTrailPath: React.FC<AnimatedTrailPathProps> = ({
     }, delay);
   }, [path, map, isVisible, duration, delay, onAnimationComplete]);
 
-  // 폴리라인 생성
+  // 폴리라인 생성 및 가시성 관리
   useEffect(() => {
     if (isVisible && !polylineRef.current) {
       polylineRef.current = new window.kakao.maps.Polyline({
@@ -106,6 +106,20 @@ const AnimatedTrailPath: React.FC<AnimatedTrailPathProps> = ({
       if (isMountedRef.current) {
         startAnimation();
       }
+    } else if (!isVisible && polylineRef.current) {
+      // 애니메이션 정리
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+        animationRef.current = null;
+      }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      // 폴리라인 제거
+      polylineRef.current.setMap(null);
+      polylineRef.current = null;
+      setIsAnimating(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isVisible, map, path.style.strokeWeight, path.style.strokeColor, path.style.strokeOpacity, path.style.strokeStyle]);
@@ -121,18 +135,7 @@ const AnimatedTrailPath: React.FC<AnimatedTrailPathProps> = ({
     };
   }, [cleanupAnimation]);
 
-  // 가시성 변경 시 애니메이션
-  useEffect(() => {
-    if (isVisible && polylineRef.current && !isAnimating) {
-      startAnimation();
-    } else if (!isVisible && polylineRef.current) {
-      // 애니메이션 정리
-      cleanupAnimation();
-      // 즉시 제거 (API 제한으로 인해)
-      polylineRef.current.setMap(null);
-      polylineRef.current = null;
-    }
-  }, [isVisible, isAnimating, startAnimation, cleanupAnimation]);
+
 
   return null;
 };
