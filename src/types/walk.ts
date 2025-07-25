@@ -39,6 +39,30 @@ export interface CreateWalkRecordRequest {
 // 산책 기록 등록 응답
 export interface CreateWalkRecordResponse extends ApiResponse<WalkRecord> {}
 
+// 산책 경로 데이터 타입
+export interface WalkPath {
+  pathId: number;
+  path: string; // LINESTRING 형식 (WKT)
+  name?: string;
+  description?: string;
+  courseType?: string;
+  difficulty?: string;
+  distance?: number;
+  duration?: number;
+}
+
+// 산책 기록 상세 조회 응답 (경로 정보 포함)
+export interface WalkRecordWithPath extends WalkRecord {
+  pathId: number;
+  path?: WalkPath; // 경로 상세 정보 (별도 API 호출 시)
+}
+
+// 산책 경로 상세 조회 응답
+export interface WalkPathDetailResponse extends ApiResponse<WalkPath> {}
+
+// 산책 경로 목록 조회 응답
+export interface WalkPathsResponse extends ApiResponse<WalkPath[]> {}
+
 // API 에러 응답
 export interface ApiErrorResponse {
   httpStatus: number;

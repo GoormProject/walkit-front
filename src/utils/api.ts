@@ -3,13 +3,17 @@ import type {
   WalkRecordsResponse, 
   WalkRecordDetailResponse, 
   CreateWalkRecordRequest,
-  CreateWalkRecordResponse 
+  CreateWalkRecordResponse,
+  WalkPathDetailResponse,
+  WalkPathsResponse
 } from '../types/walk';
 import { getTrailPaths as getMockTrailPaths } from './mockTrailApi';
 import { 
   getWalkRecords as getMockWalkRecords,
   getWalkRecordById as getMockWalkRecordById,
-  createWalkRecord as createMockWalkRecord
+  createWalkRecord as createMockWalkRecord,
+  getWalkPathById as getMockWalkPathById,
+  getWalkPaths as getMockWalkPaths
 } from './mockWalkApi';
 
 /**
@@ -145,6 +149,70 @@ export const createWalkRecord = async (request: CreateWalkRecordRequest): Promis
   } else {
     console.log('🚀 실제 산책 기록 등록 API 모드로 실행 중');
     return createRealWalkRecord(request);
+  }
+};
+
+/**
+ * 실제 산책 경로 상세 조회 API (백엔드 구현 후 사용)
+ */
+const getRealWalkPathById = async (pathId: string): Promise<WalkPathDetailResponse> => {
+  const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/paths/${pathId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`API 호출 실패: ${response.status}`);
+  }
+
+  return response.json();
+};
+
+/**
+ * 실제 산책 경로 목록 조회 API (백엔드 구현 후 사용)
+ */
+const getRealWalkPaths = async (): Promise<WalkPathsResponse> => {
+  const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/paths`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`API 호출 실패: ${response.status}`);
+  }
+
+  return response.json();
+};
+
+/**
+ * 산책 경로 상세 조회 (환경에 따라 Mock/실제 API 선택)
+ */
+export const getWalkPathById = async (pathId: string): Promise<WalkPathDetailResponse> => {
+  if (isMockMode()) {
+    console.log('🔧 Mock 산책 경로 상세 API 모드로 실행 중');
+    return getMockWalkPathById(pathId);
+  } else {
+    console.log('🚀 실제 산책 경로 상세 API 모드로 실행 중');
+    return getRealWalkPathById(pathId);
+  }
+};
+
+/**
+ * 산책 경로 목록 조회 (환경에 따라 Mock/실제 API 선택)
+ */
+export const getWalkPaths = async (): Promise<WalkPathsResponse> => {
+  if (isMockMode()) {
+    console.log('🔧 Mock 산책 경로 목록 API 모드로 실행 중');
+    return getMockWalkPaths();
+  } else {
+    console.log('🚀 실제 산책 경로 목록 API 모드로 실행 중');
+    return getRealWalkPaths();
   }
 };
 

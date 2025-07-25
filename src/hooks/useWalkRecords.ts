@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { WalkRecord } from '../types/walk';
-import { getWalkRecords, getWalkRecordById, createWalkRecord } from '../utils/api';
+import type { WalkRecord, WalkPath } from '../types/walk';
+import { getWalkRecords, getWalkRecordById, createWalkRecord, getWalkPathById, getWalkPaths } from '../utils/api';
 
 interface UseWalkRecordsReturn {
   walkRecords: WalkRecord[];
@@ -178,4 +178,90 @@ export const useWalkRecordsStats = () => {
   };
 
   return stats;
+};
+
+/**
+ * 산책 경로 상세 정보를 관리하는 커스텀 훅
+ */
+export const useWalkPathDetail = (pathId: string) => {
+  const [walkPath, setWalkPath] = useState<WalkPath | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchWalkPathDetail = useCallback(async () => {
+    if (!pathId) return;
+
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const response = await getWalkPathById(pathId);
+      setWalkPath(response.data);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '산책 경로 상세 정보를 불러오는데 실패했습니다.';
+      setError(errorMessage);
+      console.error('산책 경로 상세 로드 실패:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [pathId]);
+
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
+  // pathId가 변경될 때마다 데이터 로드
+  useEffect(() => {
+    fetchWalkPathDetail();
+  }, [fetchWalkPathDetail]);
+
+  return {
+    walkPath,
+    isLoading,
+    error,
+    refetch: fetchWalkPathDetail,
+    clearError,
+  };
+};
+
+/**
+ * 산책 경로 목록을 관리하는 커스텀 훅
+ */
+export const useWalkPaths = () => {
+  const [walkPaths, setWalkPaths] = useState<WalkPath[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchWalkPaths = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const response = await getWalkPaths();
+      setWalkPaths(response.data);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '산책 경로를 불러오는데 실패했습니다.';
+      setError(errorMessage);
+      console.error('산책 경로 로드 실패:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
+  // 컴포넌트 마운트 시 데이터 로드
+  useEffect(() => {
+    fetchWalkPaths();
+  }, [fetchWalkPaths]);
+
+  return {
+    walkPaths,
+    isLoading,
+    error,
+    refetch: fetchWalkPaths,
+    clearError,
+  };
 }; 
