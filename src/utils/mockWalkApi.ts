@@ -111,7 +111,7 @@ export const createWalkRecord = async (request: CreateWalkRecordRequest): Promis
   
   // 새로운 산책 기록 생성
   const newWalkRecord: WalkRecord = {
-    walkId: Math.max(...mockWalkRecords.map(r => r.walkId)) + 1,
+    walkId: mockWalkRecords.length > 0 ? Math.max(...mockWalkRecords.map(r => r.walkId)) + 1 : 1,
     memberId: request.memberId,
     date: request.date,
     startedAt: request.startedAt,
