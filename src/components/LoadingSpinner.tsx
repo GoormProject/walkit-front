@@ -13,18 +13,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   size = 'large',
   variant = 'overlay'
 }) => {
-  const [isVisible, setIsVisible] = useState(false);
   const [dots, setDots] = useState('');
-
-  // 부드러운 페이드 인/아웃
-  useEffect(() => {
-    if (show) {
-      setIsVisible(true);
-    } else {
-      const timer = setTimeout(() => setIsVisible(false), 200);
-      return () => clearTimeout(timer);
-    }
-  }, [show]);
 
   // 로딩 점 애니메이션
   useEffect(() => {
@@ -57,8 +46,6 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
     return 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
   };
 
-  if (!isVisible) return null;
-
   const containerClass = getVariantStyles();
   const spinnerClass = `animate-spin rounded-full border-b-2 border-[var(--color-primary-600)] ${getSizeStyles()}`;
 
@@ -78,8 +65,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   return (
     <div 
       id="loading"
-      className={containerClass}
-      style={{ display: show ? 'flex' : 'none' }}
+      className={`${containerClass} transition-opacity duration-200 ${show ? 'opacity-100' : 'opacity-0'}`}
     >
       <div className="bg-white rounded-lg p-6 flex flex-col items-center shadow-lg">
         <div className={`${spinnerClass} mb-4`}></div>
