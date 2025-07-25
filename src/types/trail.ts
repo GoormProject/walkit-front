@@ -19,7 +19,7 @@ export interface GeoJSONFeature {
     difficulty?: string;
     distance?: number;
     duration?: number;
-    [key: string]: any;
+    [key: string]: string | number | boolean | null | undefined;
   };
 }
 
@@ -65,5 +65,5 @@ export interface TrailPathData {
   courseType: string;
   coordinates: kakao.maps.LatLng[];
   style: CourseStyle;
-  properties: Record<string, any>;
+  properties: Record<string, string | number | boolean | null | undefined>;
 } 
