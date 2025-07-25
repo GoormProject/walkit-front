@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { GeoJSONFeatureCollection, TrailPathData } from '../types/trail';
 import { getTrailPaths } from '../utils/api';
 import { convertFeatureCollectionToTrailPathsSafe, convertFeatureCollectionToTrailPaths } from '../utils/trailConverter';
@@ -18,6 +18,38 @@ interface UseTrailPathsSafeReturn {
   refetch: () => Promise<void>;
   clearError: () => void;
 }
+
+interface TrailPathsStats {
+  total: number;
+  byCourseType: Record<string, number>;
+  totalDistance: number;
+  averageDistance: number;
+}
+
+/**
+ * 경로 데이터로부터 통계를 계산하는 유틸리티 함수
+ */
+const calculateTrailStats = (trailPaths: TrailPathData[] | (Omit<TrailPathData, 'coordinates'> & { coordinates: { lat: number; lng: number }[] })[]): TrailPathsStats => {
+  const total = trailPaths.length;
+  
+  const byCourseType = trailPaths.reduce((acc, path) => {
+    acc[path.courseType] = (acc[path.courseType] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  
+  const totalDistance = trailPaths.reduce((sum, path) => 
+    sum + (path.properties.distance || 0), 0
+  );
+  
+  const averageDistance = total > 0 ? totalDistance / total : 0;
+  
+  return {
+    total,
+    byCourseType,
+    totalDistance,
+    averageDistance,
+  };
+};
 
 /**
  * 산책 경로 데이터를 관리하는 커스텀 훅 (카카오 맵 SDK 사용)
@@ -148,22 +180,10 @@ export const useTrailPathsByCourseTypeSafe = (courseType: string): UseTrailPaths
 /**
  * 경로 데이터 통계를 제공하는 커스텀 훅 (카카오 맵 SDK 사용)
  */
-export const useTrailPathsStats = () => {
+export const useTrailPathsStats = (): TrailPathsStats => {
   const { trailPaths } = useTrailPaths();
   
-  const stats = {
-    total: trailPaths.length,
-    byCourseType: trailPaths.reduce((acc, path) => {
-      acc[path.courseType] = (acc[path.courseType] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>),
-    totalDistance: trailPaths.reduce((sum, path) => 
-      sum + (path.properties.distance || 0), 0
-    ),
-    averageDistance: trailPaths.length > 0 
-      ? trailPaths.reduce((sum, path) => sum + (path.properties.distance || 0), 0) / trailPaths.length
-      : 0,
-  };
+  const stats = useMemo(() => calculateTrailStats(trailPaths), [trailPaths]);
 
   return stats;
 };
@@ -171,22 +191,10 @@ export const useTrailPathsStats = () => {
 /**
  * 경로 데이터 통계를 제공하는 커스텀 훅 (안전 버전)
  */
-export const useTrailPathsStatsSafe = () => {
+export const useTrailPathsStatsSafe = (): TrailPathsStats => {
   const { trailPaths } = useTrailPathsSafe();
   
-  const stats = {
-    total: trailPaths.length,
-    byCourseType: trailPaths.reduce((acc, path) => {
-      acc[path.courseType] = (acc[path.courseType] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>),
-    totalDistance: trailPaths.reduce((sum, path) => 
-      sum + (path.properties.distance || 0), 0
-    ),
-    averageDistance: trailPaths.length > 0 
-      ? trailPaths.reduce((sum, path) => sum + (path.properties.distance || 0), 0) / trailPaths.length
-      : 0,
-  };
+  const stats = useMemo(() => calculateTrailStats(trailPaths), [trailPaths]);
 
   return stats;
 }; 
