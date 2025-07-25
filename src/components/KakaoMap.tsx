@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { loadKakaoMapSDK, createMap, initGeolocation, DEFAULT_COORDS } from '../utils/kakaoMap';
+import { loadKakaoMapSDK, createMap, initGeolocation, DEFAULT_COORDS } from '@/utils/kakaoMapApi';
 import LoadingSpinner from './LoadingSpinner';
 
 const KakaoMap: React.FC = () => {
