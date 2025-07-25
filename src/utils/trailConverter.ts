@@ -222,17 +222,17 @@ export const createMarkerOptions = (
 
 /**
  * 단일 좌표 배열을 카카오 맵 폴리라인 옵션으로 변환
- * @param coordinates 좌표 배열 [[위도, 경도], ...]
+ * @param latLngPairs 좌표 배열 [[위도, 경도], ...] (주의: GeoJSON과 순서가 다름)
  * @param map 카카오 맵 인스턴스
  * @param style 스타일 옵션
  * @returns 폴리라인 옵션
  */
 export const createPolylineFromCoordinates = (
-  coordinates: [number, number][],
+  latLngPairs: [number, number][],
   map: kakao.maps.Map,
   style: Partial<CourseStyle> = {}
 ): KakaoMapPolylineOptions => {
-  const latLngArray = coordinates.map(([lat, lng]) => new kakao.maps.LatLng(lat, lng));
+  const latLngArray = latLngPairs.map(([lat, lng]) => new kakao.maps.LatLng(lat, lng));
   const defaultStyle = getCourseStyle('default');
 
   return {
