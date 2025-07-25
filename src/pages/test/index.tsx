@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { useTrailPathsSafe, useTrailPaths } from '../../hooks/useTrailPaths';
+import { useTrailPathsSafe } from '../../hooks/useTrailPaths';
 import { useWalkPaths } from '../../hooks/useWalkRecords';
 
-import { convertWalkPathToPolylineOptions, parseWktLineString } from '../../utils/pathConverter';
+import { parseWktLineString } from '../../utils/pathConverter';
 import { getApiModeInfo } from '../../utils/api';
 import { getCourseStyle } from '../../utils/trailConverter';
 
