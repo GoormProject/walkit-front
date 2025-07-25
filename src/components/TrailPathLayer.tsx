@@ -19,7 +19,7 @@ const TrailPathLayer: React.FC<TrailPathLayerProps> = ({
   const polylinesRef = useRef<Map<string, kakao.maps.Polyline>>(new Map());
 
   // 폴리라인 생성
-  const createPolyline = useCallback((path: TrailPathData): kakao.maps.Polyline => {
+  const createPolyline = useCallback((path: TrailPathData, isSelected: boolean): kakao.maps.Polyline => {
     const polyline = new window.kakao.maps.Polyline({
       map,
       path: path.coordinates,
@@ -27,7 +27,7 @@ const TrailPathLayer: React.FC<TrailPathLayerProps> = ({
       strokeColor: path.style.strokeColor,
       strokeOpacity: path.style.strokeOpacity,
       strokeStyle: path.style.strokeStyle,
-      zIndex: selectedTrailId === path.id ? 2 : 1
+      zIndex: isSelected ? 2 : 1
     });
 
     // 클릭 이벤트 핸들러 추가
@@ -54,7 +54,7 @@ const TrailPathLayer: React.FC<TrailPathLayerProps> = ({
     }
 
     return polyline;
-  }, [map, selectedTrailId, onTrailClick, onTrailHover]);
+  }, [map, onTrailClick, onTrailHover]);
 
 
 
@@ -64,7 +64,8 @@ const TrailPathLayer: React.FC<TrailPathLayerProps> = ({
     
     // 새로운 경로들 렌더링
     paths.forEach(path => {
-      const polyline = createPolyline(path);
+      const isSelected = selectedTrailId === path.id;
+      const polyline = createPolyline(path, isSelected);
       currentPolylines.set(path.id, polyline);
     });
 
@@ -96,7 +97,8 @@ const TrailPathLayer: React.FC<TrailPathLayerProps> = ({
     polylinesRef.current.clear();
 
     paths.forEach(path => {
-      const polyline = createPolyline(path);
+      const isSelected = selectedTrailId === path.id;
+      const polyline = createPolyline(path, isSelected);
       polylinesRef.current.set(path.id, polyline);
     });
   }, [selectedTrailId, paths, createPolyline]);
