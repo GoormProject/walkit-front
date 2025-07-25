@@ -1,8 +1,21 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { loadKakaoMapSDK, createMap, initGeolocation, DEFAULT_COORDS } from '@/utils/kakaoMapApi';
 import LoadingSpinner from './LoadingSpinner';
+import TrailVisualization from './TrailVisualization';
 
-const KakaoMap: React.FC = () => {
+interface KakaoMapProps {
+  showTrailPaths?: boolean;
+  selectedTrailId?: string;
+  onTrailClick?: (trailId: string) => void;
+  onTrailHover?: (trailId: string | null) => void;
+}
+
+const KakaoMap: React.FC<KakaoMapProps> = ({
+  showTrailPaths = false,
+  selectedTrailId,
+  onTrailClick,
+  onTrailHover
+}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const mapRef = useRef<kakao.maps.Map | null>(null);
@@ -83,6 +96,17 @@ const KakaoMap: React.FC = () => {
         style={{ minHeight: '500px' }}
       />
       
+      {/* 산책 경로 시각화 */}
+      {showTrailPaths && mapRef.current && (
+        <TrailVisualization
+          map={mapRef.current}
+          showTrailPaths={showTrailPaths}
+          selectedTrailId={selectedTrailId}
+          onTrailClick={onTrailClick}
+          onTrailHover={onTrailHover}
+        />
+      )}
+      
       {/* 로딩 스피너 */}
       <LoadingSpinner show={isLoading} />
       
@@ -105,6 +129,11 @@ const KakaoMap: React.FC = () => {
         <p className="text-[var(--color-text-secondary)] text-sm">
           • 파란색 마커: 사용자의 현재 위치 (실시간 업데이트)
         </p>
+        {showTrailPaths && (
+          <p className="text-[var(--color-text-secondary)] text-sm">
+            • 컬러 라인: 산책 경로 (클릭하여 상세 정보 확인)
+          </p>
+        )}
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ import ProfileEdit from './pages/profile/edit'
 import Signup from './pages/signup'
 import Login from './pages/login'
 import TestPage from './pages/test'
+import TrailVisualizationTest from './pages/test/trail-visualization'
 import './App.css'
 
 function App() {
@@ -37,6 +38,9 @@ function App() {
         
         {/* 테스트 페이지 - src/pages/test/index.tsx */}
         <Route path="/test" element={<TestPage />} />
+        
+        {/* 산책 경로 시각화 테스트 페이지 */}
+        <Route path="/test/trail-visualization" element={<TrailVisualizationTest />} />
         
         {/* 404 페이지 - src/pages/notfound/index.tsx */}
         <Route path="*" element={<NotFound />} />
