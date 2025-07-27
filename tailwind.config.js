@@ -1,9 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
 
   theme: {
     extend: {
@@ -46,9 +43,9 @@ export default {
           primary: 'var(--color-text-primary)',
           secondary: 'var(--color-text-secondary)',
           tertiary: 'var(--color-text-tertiary)',
-        }
+        },
       },
-      
+
       // Typography Tokens
       fontSize: {
         xs: 'var(--font-size-xs)',
@@ -72,7 +69,7 @@ export default {
         normal: 'var(--line-height-normal)',
         relaxed: 'var(--line-height-relaxed)',
       },
-      
+
       // Spacing Tokens
       spacing: {
         xs: 'var(--spacing-xs)',
@@ -83,7 +80,7 @@ export default {
         '2xl': 'var(--spacing-2xl)',
         '3xl': 'var(--spacing-3xl)',
       },
-      
+
       // Border Tokens
       borderRadius: {
         sm: 'var(--border-radius-sm)',
@@ -97,7 +94,7 @@ export default {
         normal: 'var(--border-width-normal)',
         thick: 'var(--border-width-thick)',
       },
-      
+
       // Shadow Tokens
       boxShadow: {
         sm: 'var(--shadow-sm)',
@@ -105,7 +102,15 @@ export default {
         lg: 'var(--shadow-lg)',
         xl: 'var(--shadow-xl)',
       },
-      
+
+      // Height Tokens
+      height: {
+        'header-sm': 'var(--height-header-sm)',
+        'header-md': 'var(--height-header-md)',
+        'header-lg': 'var(--height-header-lg)',
+        'header-xl': 'var(--height-header-xl)',
+      },
+
       // Breakpoint Tokens (정적 픽셀 값 사용)
       screens: {
         sm: '640px',
@@ -113,8 +118,8 @@ export default {
         lg: '1024px',
         xl: '1280px',
         '2xl': '1536px',
-      }
+      },
     },
   },
   plugins: [],
-} 
+};
