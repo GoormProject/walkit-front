@@ -1,14 +1,23 @@
 interface HeaderProps {
-  height?: string
-  className?: string
+  height?: 'sm' | 'md' | 'lg' | 'xl';
+  className?: string;
 }
 
 /**
  * 헤더 컴포넌트
  */
-const Header = ({ height = '100px', className = '' }: HeaderProps) => {
+const Header = ({ height = 'lg', className = '' }: HeaderProps) => {
+  const heightClasses = {
+    sm: 'h-header-sm',
+    md: 'h-header-md',
+    lg: 'h-header-lg',
+    xl: 'h-header-xl',
+  };
+
   return (
-    <header className={`bg-white shadow-sm ${className}`} style={{ height, borderBottom: '1px solid var(--color-gray-200)' }}>
+    <header
+      className={`bg-white shadow-sm border-b border-gray-200 ${heightClasses[height]} ${className}`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-center items-center h-full">
           <div className="flex items-center space-x-4 md:space-x-8">
@@ -20,7 +29,7 @@ const Header = ({ height = '100px', className = '' }: HeaderProps) => {
         </div>
       </div>
     </header>
-  )
-}
+  );
+};
 
-export default Header 
+export default Header;
