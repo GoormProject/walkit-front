@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { loadKakaoMapSDK, createMap, initGeolocation, DEFAULT_COORDS } from '@/utils/kakaoMapApi';
 import LoadingSpinner from './LoadingSpinner';
 import TrailVisualization from './TrailVisualization';
+import { GPSTracker } from './GPSTracker';
 
 interface KakaoMapProps {
   showTrailPaths?: boolean;
@@ -10,7 +11,7 @@ interface KakaoMapProps {
   onTrailHover?: (trailId: string | null) => void;
 }
 
-const KakaoMap: React.FC<KakaoMapProps> = ({
+export const KakaoMap: React.FC<KakaoMapProps> = ({
   showTrailPaths = false,
   selectedTrailId,
   onTrailClick,
@@ -87,6 +88,8 @@ const KakaoMap: React.FC<KakaoMapProps> = ({
     };
   }, []);
 
+  if (!mapRef.current) return null;
+
   return (
     <div className="relative w-full h-full">
       {/* 지도 컨테이너 */}
@@ -94,7 +97,9 @@ const KakaoMap: React.FC<KakaoMapProps> = ({
         id="map" 
         className="w-full h-[500px] rounded-lg shadow-lg"
         style={{ minHeight: '500px' }}
-      />
+      >
+        <GPSTracker map={mapRef.current} />
+      </div>
       
       {/* 산책 경로 시각화 */}
       {showTrailPaths && mapRef.current && (

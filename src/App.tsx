@@ -11,6 +11,7 @@ import Signup from '@/pages/signup';
 import Login from '@/pages/login';
 import TestPage from '@/pages/test';
 import TrailVisualizationTest from '@/pages/test/trail-visualization';
+import GPSTestPage from '@/pages/test/gps-test';
 import '@/App.css';
 
 function App() {
@@ -27,6 +28,12 @@ function App() {
         <Route
           path="/test/trail-visualization"
           element={<TrailVisualizationTest />}
+        />
+
+        {/* GPS 테스트 페이지 */}
+        <Route
+          path="/test/gps"
+          element={<GPSTestPage />}
         />
 
         {/* 모든 페이지에 RootLayout 적용 */}
