@@ -43,61 +43,63 @@ export const GPSSimulator: React.FC<GPSSimulatorProps> = ({ onPositionChange }) 
   const currentAccuracy = MOCK_ACCURACY_VALUES[currentAccuracyIndex];
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-lg w-[300px]">
-      <h3 className="text-lg font-bold mb-4">GPS 시뮬레이터</h3>
+    <div className="space-y-4">
+      <h3 className="text-lg font-bold">GPS 시뮬레이터</h3>
       
-      <div className="space-y-4">
-        {/* 현재 위치 정보 */}
-        <div className="text-sm space-y-1">
-          <p>현재 위치: {currentPosition.lat.toFixed(6)}, {currentPosition.lng.toFixed(6)}</p>
-          <p>정확도: {currentAccuracy}m</p>
-        </div>
+      {/* 현재 위치 정보 */}
+      <div className="text-sm space-y-1 p-3 bg-white rounded-lg border border-gray-200">
+        <p>현재 위치:</p>
+        <p className="font-mono text-xs">
+          {currentPosition.lat.toFixed(6)}, {currentPosition.lng.toFixed(6)}
+        </p>
+        <p className="mt-2">정확도: <span className="font-semibold">{currentAccuracy}m</span></p>
+      </div>
 
-        {/* 위치 제어 버튼 */}
-        <div className="flex space-x-2">
-          <button
-            onClick={handlePrevPosition}
-            className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 flex-1"
-          >
-            ← 이전 위치
-          </button>
-          <button
-            onClick={handleNextPosition}
-            className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 flex-1"
-          >
-            다음 위치 →
-          </button>
-        </div>
-
-        {/* 정확도 제어 */}
+      {/* 위치 제어 버튼 */}
+      <div className="flex space-x-2">
         <button
-          onClick={handleChangeAccuracy}
-          className="w-full px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+          onClick={handlePrevPosition}
+          className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex-1 text-sm"
         >
-          정확도 변경 ({currentAccuracy}m)
+          ← 이전 위치
         </button>
+        <button
+          onClick={handleNextPosition}
+          className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex-1 text-sm"
+        >
+          다음 위치 →
+        </button>
+      </div>
 
-        {/* 에러 시뮬레이션 */}
-        <div className="space-y-2">
-          <button
-            onClick={() => handleSimulateError(0)}
-            className="w-full px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-          >
-            권한 거부 에러
-          </button>
-          <button
-            onClick={() => handleSimulateError(1)}
-            className="w-full px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-          >
-            신호 없음 에러
-          </button>
-          <button
-            onClick={() => handleSimulateError(2)}
-            className="w-full px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-          >
-            타임아웃 에러
-          </button>
-        </div>
+      {/* 정확도 제어 */}
+      <button
+        onClick={handleChangeAccuracy}
+        className="w-full px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
+      >
+        정확도 변경 ({currentAccuracy}m)
+      </button>
+
+      {/* 에러 시뮬레이션 */}
+      <div className="space-y-2 pt-2 border-t border-gray-200">
+        <p className="text-sm font-medium text-gray-700">에러 시뮬레이션</p>
+        <button
+          onClick={() => handleSimulateError(0)}
+          className="w-full px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
+        >
+          권한 거부 에러
+        </button>
+        <button
+          onClick={() => handleSimulateError(1)}
+          className="w-full px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
+        >
+          신호 없음 에러
+        </button>
+        <button
+          onClick={() => handleSimulateError(2)}
+          className="w-full px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
+        >
+          타임아웃 에러
+        </button>
       </div>
     </div>
   );
