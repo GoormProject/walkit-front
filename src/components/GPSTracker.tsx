@@ -2,18 +2,29 @@ import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { useGPSStore } from '@/features/gps/gpsSlice';
 import { getGPSErrorInfo, getAccuracyWarning } from '@/utils/gpsErrorHandler';
+import { CustomMarker } from './CustomMarker';
 
 interface GPSTrackerProps {
   map: kakao.maps.Map;
 }
 
 export const GPSTracker: React.FC<GPSTrackerProps> = ({ map }) => {
-  const userMarker = useRef<kakao.maps.Marker | null>(null);
+  const userMarkerRef = useRef<kakao.maps.CustomOverlay | null>(null);
   const watchId = useRef<number | null>(null);
+  const lastPosition = useRef<kakao.maps.LatLng | null>(null);
   
   const { setError, setAccuracy, setLoading } = useGPSStore(state => state.actions);
   const error = useGPSStore(state => state.error);
   
+  // 이동 방향 계산 (도 단위, 0-360)
+  const calculateHeading = (prev: kakao.maps.LatLng, current: kakao.maps.LatLng): number => {
+    const dy = current.getLat() - prev.getLat();
+    const dx = current.getLng() - prev.getLng();
+    const rad = Math.atan2(dy, dx);
+    const deg = rad * (180 / Math.PI);
+    return (deg + 360) % 360;
+  };
+
   // 에러 상태 변경 시에만 토스트 표시
   useEffect(() => {
     if (error) {
@@ -29,14 +40,8 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map }) => {
   }, [error]);
 
   useEffect(() => {
-    // 마커 초기 생성 (지도 중심에)
-    if (!userMarker.current) {
-      const center = map.getCenter();
-      userMarker.current = new kakao.maps.Marker({ 
-        map,
-        position: center
-      });
-    }
+    const center = map.getCenter();
+    lastPosition.current = center;
 
     if (!navigator.geolocation) {
       setError({
@@ -59,10 +64,12 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map }) => {
         const { latitude, longitude, accuracy } = position.coords;
         const userLatLng = new kakao.maps.LatLng(latitude, longitude);
         
-        // 마커 위치만 업데이트
-        if (userMarker.current) {
-          userMarker.current.setPosition(userLatLng);
+        // 이동 방향 계산
+        let heading = 0;
+        if (lastPosition.current) {
+          heading = calculateHeading(lastPosition.current, userLatLng);
         }
+        lastPosition.current = userLatLng;
         
         // 지도 중심 이동
         map.setCenter(userLatLng);
@@ -90,9 +97,8 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map }) => {
       if (watchId.current !== null) {
         navigator.geolocation.clearWatch(watchId.current);
       }
-      if (userMarker.current) {
-        userMarker.current.setMap(null);
-        userMarker.current = null;
+      if (userMarkerRef.current) {
+        userMarkerRef.current.setMap(null);
       }
       setError(null);
       setAccuracy(null);
