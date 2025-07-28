@@ -46,14 +46,20 @@ export const GPSSimulator: React.FC<GPSSimulatorProps> = ({ onPositionChange }) 
 
   // GPS 에러 시뮬레이션
   const handleSimulateError = (errorCode: number) => {
-    // GeolocationPositionError 객체 생성
-    const error = {
+    // 더 정확한 GeolocationPositionError 시뮬레이션
+    const messages = {
+      1: 'User denied the request for Geolocation.',
+      2: 'Location information is unavailable.',
+      3: 'The request to get user location timed out.'
+    };
+    
+    const error = Object.assign(new Error(), {
       code: errorCode,
-      message: '',
-      PERMISSION_DENIED: 1,
-      POSITION_UNAVAILABLE: 2,
-      TIMEOUT: 3
-    } as unknown as GeolocationPositionError;
+      message: messages[errorCode as keyof typeof messages] || 'Unknown error',
+      PERMISSION_DENIED: 1 as const,
+      POSITION_UNAVAILABLE: 2 as const,
+      TIMEOUT: 3 as const
+    }) as GeolocationPositionError;
 
     // 에러 정보 가져오기
     const errorInfo = getGPSErrorInfo(error);
