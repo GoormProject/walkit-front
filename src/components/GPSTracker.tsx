@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useGPSStore } from '@/features/gps/gpsSlice';
 import { getGPSErrorInfo, getAccuracyWarning } from '@/utils/gpsErrorHandler';
@@ -9,7 +9,8 @@ interface GPSTrackerProps {
 }
 
 export const GPSTracker: React.FC<GPSTrackerProps> = ({ map }) => {
-  const userMarkerRef = useRef<kakao.maps.CustomOverlay | null>(null);
+  const [currentPosition, setCurrentPosition] = useState<kakao.maps.LatLng | null>(null);
+  const [heading, setHeading] = useState(0);
   const watchId = useRef<number | null>(null);
   const lastPosition = useRef<kakao.maps.LatLng | null>(null);
   
@@ -41,6 +42,7 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map }) => {
 
   useEffect(() => {
     const center = map.getCenter();
+    setCurrentPosition(center);
     lastPosition.current = center;
 
     if (!navigator.geolocation) {
@@ -65,11 +67,14 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map }) => {
         const userLatLng = new kakao.maps.LatLng(latitude, longitude);
         
         // 이동 방향 계산
-        let heading = 0;
         if (lastPosition.current) {
-          heading = calculateHeading(lastPosition.current, userLatLng);
+          const newHeading = calculateHeading(lastPosition.current, userLatLng);
+          setHeading(newHeading);
         }
         lastPosition.current = userLatLng;
+        
+        // 위치 업데이트
+        setCurrentPosition(userLatLng);
         
         // 지도 중심 이동
         map.setCenter(userLatLng);
@@ -97,14 +102,20 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map }) => {
       if (watchId.current !== null) {
         navigator.geolocation.clearWatch(watchId.current);
       }
-      if (userMarkerRef.current) {
-        userMarkerRef.current.setMap(null);
-      }
       setError(null);
       setAccuracy(null);
       setLoading(false);
     };
   }, [map, setError, setAccuracy, setLoading]);
 
-  return null;
+  // 현재 위치가 있을 때만 마커 렌더링
+  if (!currentPosition) return null;
+
+  return (
+    <CustomMarker
+      map={map}
+      position={currentPosition}
+      heading={heading}
+    />
+  );
 }; 

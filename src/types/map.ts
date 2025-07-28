@@ -1,5 +1,10 @@
 declare global {
   namespace kakao.maps {
+    interface Map {
+      getCenter(): LatLng;
+      setCenter(latlng: LatLng): void;
+    }
+
     interface CustomOverlayOptions {
       content: HTMLElement;
       map?: Map;
@@ -9,7 +14,7 @@ declare global {
       zIndex?: number;
     }
 
-    class CustomOverlay extends AbstractOverlay {
+    class CustomOverlay {
       constructor(options: CustomOverlayOptions);
       setMap(map: Map | null): void;
       setPosition(position: LatLng): void;
