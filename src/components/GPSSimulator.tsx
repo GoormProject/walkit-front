@@ -43,7 +43,7 @@ export const GPSSimulator: React.FC<GPSSimulatorProps> = ({ onPositionChange }) 
   const currentAccuracy = MOCK_ACCURACY_VALUES[currentAccuracyIndex];
 
   return (
-    <div className="fixed bottom-4 left-4 bg-white p-4 rounded-lg shadow-lg z-50 max-w-sm">
+    <div className="bg-white p-4 rounded-lg shadow-lg w-[300px]">
       <h3 className="text-lg font-bold mb-4">GPS 시뮬레이터</h3>
       
       <div className="space-y-4">
