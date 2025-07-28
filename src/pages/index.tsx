@@ -4,6 +4,7 @@ import { toast, Toaster } from 'sonner';
 import KakaoMap from '../components/KakaoMap';
 import { GPSTracker } from '@/components/GPSTracker';
 import { useGPSStore } from '@/features/gps/gpsSlice';
+import { calculateDistance as calculateCoordinateDistance } from '@/utils/converter/pathConverter';
 
 const Home = () => {
   const [isWalking, setIsWalking] = useState(false);
@@ -43,17 +44,10 @@ const Home = () => {
 
   // 두 지점 간의 거리 계산 (km)
   const calculateDistance = (pos1: kakao.maps.LatLng, pos2: kakao.maps.LatLng): number => {
-    const R = 6371; // 지구의 반경 (km)
-    const lat1 = pos1.getLat() * Math.PI / 180;
-    const lat2 = pos2.getLat() * Math.PI / 180;
-    const dLat = lat2 - lat1;
-    const dLon = (pos2.getLng() - pos1.getLng()) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(lat1) * Math.cos(lat2) * 
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
+    return calculateCoordinateDistance(
+      { lat: pos1.getLat(), lng: pos1.getLng() },
+      { lat: pos2.getLat(), lng: pos2.getLng() }
+    );
   };
 
   // 위치 업데이트 시 경로 그리기
