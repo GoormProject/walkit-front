@@ -16,7 +16,6 @@ const Login = () => {
       >
         회원가입 하러가기
       </Link>
-
       <div style={{ gap: '2rem' }} className="flex flex-col items-center">
         <GoogleLoginButton />
         <KakaoLoginButton />

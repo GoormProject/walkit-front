@@ -39,10 +39,7 @@ function App() {
         <Route path="/test/shadcn-dialog" element={<ShadcnDialogTestPage />} />
 
         {/* GPS 테스트 페이지 */}
-        <Route
-          path="/test/gps"
-          element={<GPSTestPage />}
-        />
+        <Route path="/test/gps" element={<GPSTestPage />} />
 
         {/* 모든 페이지에 RootLayout 적용 */}
         <Route element={<RootLayout />}>

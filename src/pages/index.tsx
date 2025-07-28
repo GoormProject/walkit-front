@@ -18,7 +18,7 @@ const Home = () => {
     setIsWalking(true);
     setPathPositions([]);
     toast.success('산책을 시작합니다!', {
-      description: 'GPS 신호가 안정적인 실외에서 이용해주세요.'
+      description: 'GPS 신호가 안정적인 실외에서 이용해주세요.',
     });
   };
 
@@ -27,7 +27,7 @@ const Home = () => {
     setIsWalking(false);
     // TODO: 산책 기록 저장 로직 추가
     toast.success('산책이 종료되었습니다!', {
-      description: `총 거리: ${calculateTotalDistance(pathPositions).toFixed(2)}km`
+      description: `총 거리: ${calculateTotalDistance(pathPositions).toFixed(2)}km`,
     });
   };
 
@@ -43,7 +43,10 @@ const Home = () => {
   };
 
   // 두 지점 간의 거리 계산 (km)
-  const calculateDistance = (pos1: kakao.maps.LatLng, pos2: kakao.maps.LatLng): number => {
+  const calculateDistance = (
+    pos1: kakao.maps.LatLng,
+    pos2: kakao.maps.LatLng
+  ): number => {
     return calculateCoordinateDistance(
       { lat: pos1.getLat(), lng: pos1.getLng() },
       { lat: pos2.getLat(), lng: pos2.getLng() }
@@ -73,7 +76,7 @@ const Home = () => {
       strokeWeight: 4,
       strokeColor: '#3b82f6',
       strokeOpacity: 0.8,
-      strokeStyle: 'solid'
+      strokeStyle: 'solid',
     });
 
     return () => {
@@ -86,12 +89,21 @@ const Home = () => {
   return (
     <div className="flex flex-col h-screen">
       <Toaster position="top-center" richColors />
-      
+
       {/* 지도 영역 */}
       <div className="relative flex-1">
-        <KakaoMap onMapLoad={(mapInstance) => { map.current = mapInstance; }} />
-        {map.current && <GPSTracker map={map.current} onPositionUpdate={handlePositionUpdate} />}
-        
+        <KakaoMap
+          onMapLoad={mapInstance => {
+            map.current = mapInstance;
+          }}
+        />
+        {map.current && (
+          <GPSTracker
+            map={map.current}
+            onPositionUpdate={handlePositionUpdate}
+          />
+        )}
+
         {/* 상단 버튼 */}
         <div className="absolute top-4 left-4 right-4 flex justify-between items-center">
           <div className="flex gap-2">
@@ -125,26 +137,26 @@ const Home = () => {
 
       {/* 네비게이션 */}
       <nav className="bg-white p-4 shadow-md">
-        <div className="container mx-auto flex justify-around items-center">
-          <Link 
-            to="/profile" 
+        <div className="container mx-auto flex flex-col items-center space-y-4">
+          <Link
+            to="/profile"
             className="flex flex-col items-center text-gray-600 hover:text-gray-900"
           >
-            <span className="material-icons mb-1">person</span>
+            <span className="material-icons mb-1">profile</span>
             <span>프로필</span>
           </Link>
-          <Link 
-            to="/friends" 
+          <Link
+            to="/friends"
             className="flex flex-col items-center text-gray-600 hover:text-gray-900"
           >
-            <span className="material-icons mb-1">group</span>
-            <span>친구</span>
+            <span className="material-icons mb-1">My friends</span>
+            <span>친구</span>s
           </Link>
-          <Link 
-            to="/reviews" 
+          <Link
+            to="/reviews"
             className="flex flex-col items-center text-gray-600 hover:text-gray-900"
           >
-            <span className="material-icons mb-1">star</span>
+            <span className="material-icons mb-1">reviews</span>
             <span>리뷰</span>
           </Link>
         </div>
