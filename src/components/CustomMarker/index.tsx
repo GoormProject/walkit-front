@@ -2,23 +2,28 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Navigation } from 'lucide-react';
 import './styles.css';
 
-// 줌 레벨별 마커 크기 설정 (마커크기, 아이콘크기)
-const MARKER_SIZES: Record<number, [number, number]> = {
-  1: [24, 16],   // 가장 축소됐을 때
-  2: [28, 18],
-  3: [32, 20],
-  4: [36, 22],
-  5: [40, 24],   // 기본 크기
-  6: [44, 26],
-  7: [48, 28],
-  8: [52, 30],
-  9: [56, 32],   // 가장 확대됐을 때
-};
+// 기본 크기와 스케일 팩터 설정
+const BASE_MARKER_SIZE = 24;
+const BASE_ICON_SIZE = 16;
+const SCALE_FACTOR = 1.1;
+
+// 줌 레벨별 마커 크기 계산
+const MARKER_SIZES: Record<number, [number, number]> = Array.from({ length: 9 }, (_, index) => {
+  const level = index + 1;
+  const scale = Math.pow(SCALE_FACTOR, level - 1);
+  const markerSize = Math.round(BASE_MARKER_SIZE * scale);
+  const iconSize = Math.round(BASE_ICON_SIZE * scale);
+  return [level, [markerSize, iconSize]] as [number, [number, number]];
+}).reduce((acc, [level, sizes]) => ({
+  ...acc,
+  [level.toString()]: sizes
+}), {} as Record<number, [number, number]>);
 
 // 줌 레벨에 따른 크기 계산
 const getMarkerSize = (level: number): [number, number] => {
-  // 기본값은 레벨 5 크기
-  return MARKER_SIZES[level] || MARKER_SIZES[5];
+  // 범위를 1-9로 제한
+  const normalizedLevel = Math.max(1, Math.min(9, level));
+  return MARKER_SIZES[normalizedLevel] || MARKER_SIZES[1];
 };
 
 interface CustomMarkerProps {
