@@ -1,11 +1,6 @@
 import type { WalkPath } from '../../types/walk';
+import type { Coordinate } from '../../types/map';
 import { getCourseStyle } from './trailConverter';
-
-// 좌표 타입 정의
-export interface Coordinate {
-  lat: number;
-  lng: number;
-}
 
 /**
  * 두 좌표를 WKT LINESTRING 형식으로 변환

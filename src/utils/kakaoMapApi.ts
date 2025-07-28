@@ -1,11 +1,7 @@
 // 카카오 맵 SDK 로드 및 초기화 유틸리티
+import type { Coordinate } from '../types/map';
 
-interface Coords {
-  lat: number;
-  lng: number;
-}
-
-export const DEFAULT_COORDS: Coords = { lat: 37.5665, lng: 126.9780 };
+export const DEFAULT_COORDS: Coordinate = { lat: 37.5665, lng: 126.9780 };
 
 // 카카오 맵 SDK 로드
 export const loadKakaoMapSDK = (): Promise<void> => {
@@ -33,7 +29,7 @@ export const loadKakaoMapSDK = (): Promise<void> => {
 
 
 // 지도 생성
-export const createMap = (coords: Coords): kakao.maps.Map => {
+export const createMap = (coords: Coordinate): kakao.maps.Map => {
   const container = document.getElementById('map');
   if (!container) {
     throw new Error('지도를 표시할 컨테이너를 찾을 수 없습니다.');
@@ -47,9 +43,9 @@ export const createMap = (coords: Coords): kakao.maps.Map => {
   
   const mapInstance = new window.kakao.maps.Map(container, options);
   
-  // 현재 위치 추적 모드 비활성화
-  if (mapInstance.setCurrentLocationTrackingMode) {
-    mapInstance.setCurrentLocationTrackingMode(0);
+  // 현재 위치 추적 모드 비활성화 (타입 안전성을 위해 any 사용)
+  if ((mapInstance as any).setCurrentLocationTrackingMode) {
+    (mapInstance as any).setCurrentLocationTrackingMode(0);
   }
   
   return mapInstance;

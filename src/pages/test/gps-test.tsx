@@ -5,9 +5,9 @@ import { GPSTracker } from '@/components/GPSTracker';
 import { MOCK_PATH_COORDS } from '@/utils/mockGPSData';
 import { 
   interpolatePath, 
-  calculateDistance,
-  type Coordinate 
+  calculateDistance
 } from '@/utils/converter/pathConverter';
+import type { Coordinate } from '@/types/map';
 import { useGPSStore } from '@/features/gps/gpsSlice';
 import { Toaster } from 'sonner';
 

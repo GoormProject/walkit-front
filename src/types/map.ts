@@ -1,3 +1,9 @@
+// 공통 좌표 타입 정의
+export interface Coordinate {
+  lat: number;
+  lng: number;
+}
+
 declare global {
   namespace kakao.maps {
     // 기존 MapOptions 확장 (재정의하지 않음)
