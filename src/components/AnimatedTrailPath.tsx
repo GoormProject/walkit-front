@@ -122,14 +122,7 @@ const AnimatedTrailPath: React.FC<AnimatedTrailPathProps> = ({
       setIsAnimating(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    isVisible,
-    map,
-    path.style.strokeWeight,
-    path.style.strokeColor,
-    path.style.strokeOpacity,
-    path.style.strokeStyle,
-  ]);
+  }, [isVisible, map, JSON.stringify(path.style)]);
 
   // 컴포넌트 언마운트 시 cleanup
   useEffect(() => {

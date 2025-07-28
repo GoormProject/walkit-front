@@ -67,6 +67,8 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
             viewBox="0 0 48 48"
             xmlnsXlink="http://www.w3.org/1999/xlink"
             className="block w-full h-full"
+            role="img"
+            aria-label="Google logo"
           >
             <path
               fill="var(--google-red)"

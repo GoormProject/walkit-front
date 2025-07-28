@@ -13,22 +13,23 @@ const KakaoSignupButton: React.FC<KakaoSignupButtonProps> = ({
   className = '',
   size = 90,
 }) => {
-  // 이미지 크기에 맞춰 버튼 크기 조정
-  const getSizeClasses = (size: number) => {
-    // 카카오 버튼 이미지의 실제 크기 (300x45px)
-    const imageWidth = 300;
-    const imageHeight = 45;
+  // 카카오 버튼 이미지의 실제 크기 (300x45px)
+  const imageWidth = 300;
+  const imageHeight = 45;
 
-    // size를 높이 기준으로 스케일링
-    const scale = size / imageHeight;
-    const widthRem = (imageWidth * scale) / 16;
-    const heightRem = (imageHeight * scale) / 16;
+  // size를 높이 기준으로 스케일링하여 rem 단위로 변환
+  const scale = size / imageHeight;
+  const widthRem = (imageWidth * scale) / 16;
+  const heightRem = (imageHeight * scale) / 16;
 
-    const sizeClasses = `w-[${widthRem}rem] h-[${heightRem}rem]`;
-    console.log('Size:', size, 'Classes:', sizeClasses, 'Scale:', scale);
-
-    return sizeClasses;
+  // Tailwind 클래스와 인라인 스타일에서 공통으로 사용할 크기 값
+  const sizeClasses = `w-[${widthRem}rem] h-[${heightRem}rem]`;
+  const sizeStyles = {
+    width: `${widthRem}rem`,
+    height: `${heightRem}rem`,
   };
+
+  console.log('Size:', size, 'Classes:', sizeClasses, 'Scale:', scale);
 
   return (
     <button
@@ -41,14 +42,13 @@ const KakaoSignupButton: React.FC<KakaoSignupButtonProps> = ({
         hover:opacity-90
         focus:opacity-90
         disabled:cursor-default disabled:opacity-60
-        ${getSizeClasses(size)}
+        ${sizeClasses}
         ${className}
       `}
       style={{
         border: 'none',
         background: 'transparent',
-        width: `${(300 * (size / 45)) / 16}rem`,
-        height: `${(45 * (size / 45)) / 16}rem`,
+        ...sizeStyles,
       }}
       onClick={onClick}
       disabled={disabled}

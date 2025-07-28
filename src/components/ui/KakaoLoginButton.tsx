@@ -13,9 +13,9 @@ const KakaoLoginButton: React.FC<KakaoLoginButtonProps> = ({
   className = '',
   size = 90,
 }) => {
-  // 600x90px 크기를 rem 단위로 변환
-  const widthRem = (600 * (size / 90)) / 16;
-  const heightRem = (90 * (size / 90)) / 16;
+  // 300x45px 크기를 rem 단위로 변환 (KakaoSignupButton과 일치)
+  const widthRem = (300 * (size / 45)) / 16;
+  const heightRem = (45 * (size / 45)) / 16;
 
   return (
     <button

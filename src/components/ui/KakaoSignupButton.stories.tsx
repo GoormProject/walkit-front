@@ -11,6 +11,7 @@ const meta = {
   argTypes: {
     onClick: { action: 'clicked' },
     disabled: { control: 'boolean' },
+    size: { control: 'number' },
   },
 } satisfies Meta<typeof KakaoSignupButton>;
 
@@ -34,5 +35,17 @@ export const Disabled: Story = {
 export const CustomWidth: Story = {
   args: {
     className: 'w-80',
+  },
+};
+
+export const LargeSize: Story = {
+  args: {
+    size: 120,
+  },
+};
+
+export const SmallSize: Story = {
+  args: {
+    size: 60,
   },
 };
