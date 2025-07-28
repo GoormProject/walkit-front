@@ -43,12 +43,12 @@ export const GPSSimulator: React.FC<GPSSimulatorProps> = ({ onPositionChange }) 
   const currentAccuracy = MOCK_ACCURACY_VALUES[currentAccuracyIndex];
 
   return (
-    <div className="fixed bottom-4 left-4 bg-white p-4 rounded-lg shadow-lg z-50">
+    <div className="fixed bottom-4 left-4 bg-white p-4 rounded-lg shadow-lg z-50 max-w-sm">
       <h3 className="text-lg font-bold mb-4">GPS 시뮬레이터</h3>
       
       <div className="space-y-4">
         {/* 현재 위치 정보 */}
-        <div className="text-sm">
+        <div className="text-sm space-y-1">
           <p>현재 위치: {currentPosition.lat.toFixed(6)}, {currentPosition.lng.toFixed(6)}</p>
           <p>정확도: {currentAccuracy}m</p>
         </div>
@@ -57,15 +57,15 @@ export const GPSSimulator: React.FC<GPSSimulatorProps> = ({ onPositionChange }) 
         <div className="flex space-x-2">
           <button
             onClick={handlePrevPosition}
-            className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+            className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 flex-1"
           >
-            이전 위치
+            ← 이전 위치
           </button>
           <button
             onClick={handleNextPosition}
-            className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+            className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 flex-1"
           >
-            다음 위치
+            다음 위치 →
           </button>
         </div>
 
@@ -74,7 +74,7 @@ export const GPSSimulator: React.FC<GPSSimulatorProps> = ({ onPositionChange }) 
           onClick={handleChangeAccuracy}
           className="w-full px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
         >
-          정확도 변경
+          정확도 변경 ({currentAccuracy}m)
         </button>
 
         {/* 에러 시뮬레이션 */}
