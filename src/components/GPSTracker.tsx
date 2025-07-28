@@ -11,6 +11,7 @@ interface GPSTrackerProps {
 export const GPSTracker: React.FC<GPSTrackerProps> = ({ map }) => {
   const [currentPosition, setCurrentPosition] = useState<kakao.maps.LatLng | null>(null);
   const [heading, setHeading] = useState(0);
+  const [accuracy, setCurrentAccuracy] = useState<number | null>(null);
   const watchId = useRef<number | null>(null);
   const lastPosition = useRef<kakao.maps.LatLng | null>(null);
   
@@ -63,7 +64,7 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map }) => {
     watchId.current = navigator.geolocation.watchPosition(
       (position) => {
         setLoading(false);
-        const { latitude, longitude, accuracy } = position.coords;
+        const { latitude, longitude, accuracy: gpsAccuracy } = position.coords;
         const userLatLng = new kakao.maps.LatLng(latitude, longitude);
         
         // 이동 방향 계산
@@ -75,13 +76,14 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map }) => {
         
         // 위치 업데이트
         setCurrentPosition(userLatLng);
+        setCurrentAccuracy(gpsAccuracy);
         
         // 지도 중심 이동
         map.setCenter(userLatLng);
         
         // 정확도 상태 업데이트 및 경고
-        setAccuracy(accuracy);
-        const warning = getAccuracyWarning(accuracy);
+        setAccuracy(gpsAccuracy);
+        const warning = getAccuracyWarning(gpsAccuracy);
         if (warning) {
           toast.warning(warning);
         }
@@ -116,6 +118,7 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map }) => {
       map={map}
       position={currentPosition}
       heading={heading}
+      accuracy={accuracy || undefined}
     />
   );
 }; 
