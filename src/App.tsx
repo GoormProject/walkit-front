@@ -11,6 +11,8 @@ import Signup from '@/pages/signup';
 import Login from '@/pages/login';
 import TestPage from '@/pages/test';
 import TrailVisualizationTest from '@/pages/test/trail-visualization';
+import BottomSheetTestPage from '@/pages/test/bottom-sheet';
+import ShadcnDialogTestPage from '@/pages/test/shadcn-dialog';
 import '@/App.css';
 
 function App() {
@@ -28,6 +30,12 @@ function App() {
           path="/test/trail-visualization"
           element={<TrailVisualizationTest />}
         />
+
+        {/* BottomSheet 테스트 페이지 */}
+        <Route path="/test/bottom-sheet" element={<BottomSheetTestPage />} />
+
+        {/* shadcn/ui Dialog 테스트 페이지 */}
+        <Route path="/test/shadcn-dialog" element={<ShadcnDialogTestPage />} />
 
         {/* 모든 페이지에 RootLayout 적용 */}
         <Route element={<RootLayout />}>

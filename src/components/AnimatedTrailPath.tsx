@@ -16,7 +16,7 @@ const AnimatedTrailPath: React.FC<AnimatedTrailPathProps> = ({
   isVisible,
   delay = 0,
   duration = 1000,
-  onAnimationComplete
+  onAnimationComplete,
 }) => {
   const polylineRef = useRef<kakao.maps.Polyline | null>(null);
   const animationRef = useRef<number | null>(null);
@@ -57,13 +57,13 @@ const AnimatedTrailPath: React.FC<AnimatedTrailPathProps> = ({
         setIsAnimating(false);
         return;
       }
-      
+
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      
+
       // 이징 함수 (부드러운 시작과 끝)
       const easeProgress = 1 - Math.pow(1 - progress, 3);
-      
+
       const currentPointCount = Math.floor(easeProgress * totalPoints);
       const currentCoordinates = path.coordinates.slice(0, currentPointCount);
 
@@ -99,7 +99,7 @@ const AnimatedTrailPath: React.FC<AnimatedTrailPathProps> = ({
         strokeColor: path.style.strokeColor,
         strokeOpacity: path.style.strokeOpacity,
         strokeStyle: path.style.strokeStyle,
-        zIndex: 1
+        zIndex: 1,
       });
 
       // startAnimation을 직접 호출하지 않고 조건부로 실행
@@ -122,7 +122,7 @@ const AnimatedTrailPath: React.FC<AnimatedTrailPathProps> = ({
       setIsAnimating(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isVisible, map, path.style.strokeWeight, path.style.strokeColor, path.style.strokeOpacity, path.style.strokeStyle]);
+  }, [isVisible, map, JSON.stringify(path.style)]);
 
   // 컴포넌트 언마운트 시 cleanup
   useEffect(() => {
@@ -135,9 +135,7 @@ const AnimatedTrailPath: React.FC<AnimatedTrailPathProps> = ({
     };
   }, [cleanupAnimation]);
 
-
-
   return null;
 };
 
-export default AnimatedTrailPath; 
+export default AnimatedTrailPath;

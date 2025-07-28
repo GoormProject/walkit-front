@@ -1,19 +1,19 @@
 import React from 'react';
 
-export interface GoogleLoginButtonProps {
+export interface GoogleSignupButtonProps {
   onClick?: () => void;
   disabled?: boolean;
   className?: string;
   children?: React.ReactNode;
   size?: number;
-  iconScale?: number; // 로고 크기 배율 (기본값: 0.6)
+  iconScale?: number; // 로고 크기 배율 (기본값: 1.0)
 }
 
-const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
+const GoogleSignupButton: React.FC<GoogleSignupButtonProps> = ({
   onClick,
   disabled = false,
   className = '',
-  children = 'Sign in with Google',
+  children = 'Sign up with Google',
   size = 90,
   iconScale = 0.6,
 }) => {
@@ -99,4 +99,4 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({
   );
 };
 
-export default GoogleLoginButton;
+export default GoogleSignupButton;
