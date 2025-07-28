@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import { Navigation } from 'lucide-react';
 import './styles.css';
 
@@ -44,7 +44,7 @@ export const CustomMarker: React.FC<CustomMarkerProps> = ({
   const markerElementRef = useRef<HTMLDivElement | null>(null);
 
   // 마커 엘리먼트 생성
-  const createMarkerElement = () => {
+  const createMarkerElement = useCallback(() => {
     const [markerWidth, iconSize] = getMarkerSize(map.getLevel());
 
     const container = document.createElement('div');
@@ -78,7 +78,7 @@ export const CustomMarker: React.FC<CustomMarkerProps> = ({
     container.appendChild(iconWrapper);
 
     return container;
-  };
+  }, [map, heading]);
 
   // 줌 레벨 변경 감지
   useEffect(() => {
@@ -95,7 +95,7 @@ export const CustomMarker: React.FC<CustomMarkerProps> = ({
     return () => {
       map.removeListener('zoom_changed', handleZoomChanged);
     };
-  }, [map, heading]);
+  }, [map, createMarkerElement]);
 
   // 마커 초기화 및 정리
   useEffect(() => {
