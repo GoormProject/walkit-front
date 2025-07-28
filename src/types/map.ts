@@ -1,11 +1,19 @@
 declare global {
   namespace kakao.maps {
+    // 기존 MapOptions 확장 (재정의하지 않음)
     interface MapOptions {
-      center: LatLng;
-      level?: number;
       currentLocationMarker?: boolean;
     }
 
+    // 기존 Map 클래스에 메서드 추가 (interface로 확장)
+    interface Map {
+      getLevel(): number;
+      addListener(eventName: string, handler: Function): void;
+      removeListener(eventName: string, handler: Function): void;
+      setBounds(bounds: LatLngBounds): void;
+    }
+
+    // 새로운 타입들만 정의
     interface CircleOptions {
       center: LatLng;
       radius: number;
@@ -30,15 +38,6 @@ declare global {
       extend(latLng: LatLng): void;
       getSouthWest(): LatLng;
       getNorthEast(): LatLng;
-    }
-
-    interface Map {
-      getCenter(): LatLng;
-      setCenter(latlng: LatLng): void;
-      getLevel(): number;
-      addListener(eventName: string, handler: Function): void;
-      removeListener(eventName: string, handler: Function): void;
-      setBounds(bounds: LatLngBounds): void;
     }
 
     interface CustomOverlayOptions {
