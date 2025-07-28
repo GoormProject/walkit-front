@@ -15,12 +15,24 @@ export const coordinatesToWKT = (start: Coordinate, end: Coordinate): string => 
 };
 
 /**
+ * 두 좌표 사이의 거리를 직접 계산 (km) - Haversine 공식
+ */
+const calculateDistanceDirect = (start: Coordinate, end: Coordinate): number => {
+  const R = 6371; // 지구 반지름 (km)
+  const dLat = (end.lat - start.lat) * Math.PI / 180;
+  const dLng = (end.lng - start.lng) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(start.lat * Math.PI / 180) * Math.cos(end.lat * Math.PI / 180) *
+    Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
+/**
  * 두 좌표 사이의 거리를 계산 (km)
  */
 export const calculateDistance = (start: Coordinate, end: Coordinate): number => {
-  return calculatePathDistance({
-    path: coordinatesToWKT(start, end)
-  } as WalkPath);
+  return calculateDistanceDirect(start, end);
 };
 
 // 이징 함수들
@@ -48,9 +60,7 @@ export const interpolateCoordinates = (
   count: number
 ): { lat: number; lng: number }[] => {
   const points: { lat: number; lng: number }[] = [];
-  const distance = calculatePathDistance({
-    path: `LINESTRING(${start.lng} ${start.lat}, ${end.lng} ${end.lat})`
-  } as WalkPath);
+  const distance = calculateDistanceDirect(start, end);
   
   // 거리에 따라 보간 방식 조정
   const easingFn = distance > 0.1 ? easing.easeInOutCubic : easing.easeInOutQuad;
@@ -86,9 +96,7 @@ export const interpolatePath = (
   for (let i = 0; i < path.length - 1; i++) {
     const start = path[i];
     const end = path[i + 1];
-    totalDistance += calculatePathDistance({
-      path: `LINESTRING(${start.lng} ${start.lat}, ${end.lng} ${end.lat})`
-    } as WalkPath);
+    totalDistance += calculateDistanceDirect(start, end);
   }
 
   // 평균 세그먼트 길이 계산 (km)
@@ -97,9 +105,7 @@ export const interpolatePath = (
   for (let i = 0; i < path.length - 1; i++) {
     const start = path[i];
     const end = path[i + 1];
-    const segmentDistance = calculatePathDistance({
-      path: `LINESTRING(${start.lng} ${start.lat}, ${end.lng} ${end.lat})`
-    } as WalkPath);
+    const segmentDistance = calculateDistanceDirect(start, end);
     
     // 거리에 따른 보간 포인트 수 동적 조정
     // 1. 기본 포인트 수를 거리 비율로 조정
