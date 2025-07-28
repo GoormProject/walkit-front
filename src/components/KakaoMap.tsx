@@ -9,13 +9,15 @@ interface KakaoMapProps {
   selectedTrailId?: string;
   onTrailClick?: (trailId: string) => void;
   onTrailHover?: (trailId: string | null) => void;
+  onMapLoad?: (map: kakao.maps.Map) => void;
 }
 
 export const KakaoMap: React.FC<KakaoMapProps> = ({
   showTrailPaths = false,
   selectedTrailId,
   onTrailClick,
-  onTrailHover
+  onTrailHover,
+  onMapLoad
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,6 +80,9 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
           }
         );
 
+        // 지도 인스턴스 콜백
+        onMapLoad?.(mapInstance);
+
         setIsLoading(false);
       } catch (err) {
         console.error('카카오 맵 초기화 실패:', err);
@@ -87,15 +92,14 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
     };
 
     initMap();
-  }, []);
+  }, [onMapLoad]);
 
   return (
     <div className="relative w-full h-full">
       {/* 지도 컨테이너 */}
       <div 
         ref={containerRef}
-        className="w-full h-[500px] rounded-lg shadow-lg"
-        style={{ minHeight: '500px' }}
+        className="w-full h-full rounded-lg shadow-lg"
       >
         {mapRef.current && <GPSTracker map={mapRef.current} />}
       </div>
@@ -121,24 +125,6 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
           <span className="block sm:inline">{error}</span>
         </div>
       )}
-      
-      {/* 지도 정보 */}
-      <div className="mt-4 p-4 bg-white rounded-lg shadow">
-        <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
-          🗺️ 실시간 위치 기반 산책 지도
-        </h3>
-        <p className="text-[var(--color-text-secondary)] text-sm">
-          • 기본 위치: 서울 시청 (위치 권한 허용 시 실시간 위치로 이동)
-        </p>
-        <p className="text-[var(--color-text-secondary)] text-sm">
-          • 파란색 마커: 사용자의 현재 위치 (실시간 업데이트)
-        </p>
-        {showTrailPaths && (
-          <p className="text-[var(--color-text-secondary)] text-sm">
-            • 컬러 라인: 산책 경로 (클릭하여 상세 정보 확인)
-          </p>
-        )}
-      </div>
     </div>
   );
 };

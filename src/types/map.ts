@@ -25,14 +25,20 @@ declare global {
       setRadius(radius: number): void;
     }
 
+    class LatLngBounds {
+      constructor();
+      extend(latLng: LatLng): void;
+      getSouthWest(): LatLng;
+      getNorthEast(): LatLng;
+    }
+
     interface Map {
       getCenter(): LatLng;
       setCenter(latlng: LatLng): void;
       getLevel(): number;
       addListener(eventName: string, handler: Function): void;
       removeListener(eventName: string, handler: Function): void;
-      setCurrentLocationMarker?(enabled: boolean): void;
-      setCurrentLocationTrackingMode?(mode: number): void;
+      setBounds(bounds: LatLngBounds): void;
     }
 
     interface CustomOverlayOptions {

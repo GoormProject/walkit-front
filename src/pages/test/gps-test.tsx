@@ -16,7 +16,14 @@ const GPSTestPage: React.FC = () => {
       new kakao.maps.LatLng(coord.lat, coord.lng)
     );
 
+    // 기존 폴리라인 제거
+    if (polyline.current) {
+      polyline.current.setMap(null);
+    }
+
+    // 새 폴리라인 생성
     polyline.current = new kakao.maps.Polyline({
+      map: map.current,
       path,
       strokeWeight: 3,
       strokeColor: '#db4040',
@@ -24,14 +31,17 @@ const GPSTestPage: React.FC = () => {
       strokeStyle: 'solid'
     });
 
-    polyline.current.setMap(map.current);
+    // 지도 중심과 레벨 조정
+    const bounds = new kakao.maps.LatLngBounds();
+    path.forEach(coord => bounds.extend(coord));
+    map.current.setBounds(bounds);
 
     return () => {
       if (polyline.current) {
         polyline.current.setMap(null);
       }
     };
-  }, []);
+  }, [map.current]);
 
   // 위치 변경 핸들러
   const handlePositionChange = (lat: number, lng: number) => {
