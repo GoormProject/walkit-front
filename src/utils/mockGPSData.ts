@@ -21,27 +21,25 @@ export const MOCK_ACCURACY_VALUES = [
   25,  // 더 개선
 ];
 
+// GPS 에러 코드 상수 (브라우저 표준)
+export const GPS_ERROR_CODES = {
+  PERMISSION_DENIED: 1,
+  POSITION_UNAVAILABLE: 2,
+  TIMEOUT: 3
+} as const;
+
 // GPS 에러 모의 데이터
-export const MOCK_GPS_ERRORS = [
+export const MOCK_GPS_ERRORS: Partial<GeolocationPositionError>[] = [
   {
-    code: 1,
-    message: "User denied Geolocation",
-    PERMISSION_DENIED: 1,
-    POSITION_UNAVAILABLE: 2,
-    TIMEOUT: 3
+    code: GPS_ERROR_CODES.PERMISSION_DENIED,
+    message: "User denied Geolocation"
   },
   {
-    code: 2,
-    message: "Position unavailable",
-    PERMISSION_DENIED: 1,
-    POSITION_UNAVAILABLE: 2,
-    TIMEOUT: 3
+    code: GPS_ERROR_CODES.POSITION_UNAVAILABLE,
+    message: "Position unavailable"
   },
   {
-    code: 3,
-    message: "Timeout",
-    PERMISSION_DENIED: 1,
-    POSITION_UNAVAILABLE: 2,
-    TIMEOUT: 3
+    code: GPS_ERROR_CODES.TIMEOUT,
+    message: "Timeout"
   }
-] as GeolocationPositionError[]; 
+]; 
