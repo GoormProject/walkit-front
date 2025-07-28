@@ -21,12 +21,19 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
   const [error, setError] = useState<string | null>(null);
   const mapRef = useRef<kakao.maps.Map | null>(null);
   const userMarkerRef = useRef<kakao.maps.Marker | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const initMap = async () => {
+      // 컨테이너가 없으면 초기화하지 않음
+      if (!containerRef.current) return;
+
       try {
         setIsLoading(true);
         setError(null);
+
+        // 이미 초기화된 경우 중복 초기화 방지
+        if (mapRef.current) return;
 
         // 환경 변수 검증
         if (!import.meta.env.VITE_KAKAO_MAP_API_KEY) {
@@ -37,7 +44,10 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
         await loadKakaoMapSDK();
 
         // 지도 생성 (기본 좌표: 서울 시청)
-        const mapInstance = createMap(DEFAULT_COORDS);
+        const mapInstance = new kakao.maps.Map(containerRef.current, {
+          center: new kakao.maps.LatLng(DEFAULT_COORDS.lat, DEFAULT_COORDS.lng),
+          level: 4
+        });
         mapRef.current = mapInstance;
 
         // 위치 권한 요청 및 실시간 위치 감시
@@ -71,6 +81,7 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
           }
         );
 
+        setIsLoading(false);
       } catch (err) {
         console.error('카카오 맵 초기화 실패:', err);
         setError('지도를 불러오는 중 오류가 발생했습니다.');
@@ -88,17 +99,15 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
     };
   }, []);
 
-  if (!mapRef.current) return null;
-
   return (
     <div className="relative w-full h-full">
       {/* 지도 컨테이너 */}
       <div 
-        id="map" 
+        ref={containerRef}
         className="w-full h-[500px] rounded-lg shadow-lg"
         style={{ minHeight: '500px' }}
       >
-        <GPSTracker map={mapRef.current} />
+        {mapRef.current && <GPSTracker map={mapRef.current} />}
       </div>
       
       {/* 산책 경로 시각화 */}
