@@ -13,6 +13,7 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map }) => {
   const [heading, setHeading] = useState(0);
   const watchId = useRef<number | null>(null);
   const lastPosition = useRef<kakao.maps.LatLng | null>(null);
+  const markerRef = useRef<kakao.maps.Marker | null>(null);
   
   const { setError, setAccuracy, setLoading } = useGPSStore(state => state.actions);
   const error = useGPSStore(state => state.error);
@@ -59,6 +60,14 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map }) => {
 
     setLoading(true);
 
+    // 기존 마커 생성
+    if (!markerRef.current) {
+      markerRef.current = new kakao.maps.Marker({
+        position: center,
+        map: map
+      });
+    }
+
     // watchPosition 시작
     watchId.current = navigator.geolocation.watchPosition(
       (position) => {
@@ -75,6 +84,11 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map }) => {
         
         // 위치 업데이트
         setCurrentPosition(userLatLng);
+        
+        // 마커 위치 업데이트
+        if (markerRef.current) {
+          markerRef.current.setPosition(userLatLng);
+        }
         
         // 지도 중심 이동
         map.setCenter(userLatLng);
@@ -101,6 +115,10 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map }) => {
     return () => {
       if (watchId.current !== null) {
         navigator.geolocation.clearWatch(watchId.current);
+      }
+      if (markerRef.current) {
+        markerRef.current.setMap(null);
+        markerRef.current = null;
       }
       setError(null);
       setAccuracy(null);
