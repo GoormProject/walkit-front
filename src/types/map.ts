@@ -3,12 +3,17 @@ declare global {
     interface MapOptions {
       center: LatLng;
       level?: number;
-      currentLocationMarker?: boolean;
+    }
+
+    interface LocationMarker {
+      setMap(map: Map | null): void;
     }
 
     interface Map {
       getCenter(): LatLng;
       setCenter(latlng: LatLng): void;
+      getLocationMarker?(): LocationMarker | null;
+      setCurrentLocationTrackingMode?(mode: number): void;
     }
 
     interface CustomOverlayOptions {
