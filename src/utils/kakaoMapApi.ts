@@ -47,16 +47,13 @@ export const createMap = (coords: Coords): kakao.maps.Map => {
   const mapInstance = new window.kakao.maps.Map(container, options);
   
   // 현재 위치 마커 비활성화
-  if (mapInstance.getLocationMarker) {
-    const locationMarker = mapInstance.getLocationMarker();
-    if (locationMarker) {
-      locationMarker.setMap(null);
-    }
+  if (mapInstance.setCurrentLocationMarker) {
+    mapInstance.setCurrentLocationMarker(false);
   }
 
   // 현재 위치 추적 모드 비활성화
   if (mapInstance.setCurrentLocationTrackingMode) {
-    mapInstance.setCurrentLocationTrackingMode(0); // 0: 추적 없음
+    mapInstance.setCurrentLocationTrackingMode(0);
   }
   
   return mapInstance;

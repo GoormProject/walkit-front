@@ -3,6 +3,7 @@ declare global {
     interface MapOptions {
       center: LatLng;
       level?: number;
+      currentLocationMarker?: boolean;
     }
 
     interface CircleOptions {
@@ -30,6 +31,8 @@ declare global {
       getLevel(): number;
       addListener(eventName: string, handler: Function): void;
       removeListener(eventName: string, handler: Function): void;
+      setCurrentLocationMarker?(enabled: boolean): void;
+      setCurrentLocationTrackingMode?(mode: number): void;
     }
 
     interface CustomOverlayOptions {
