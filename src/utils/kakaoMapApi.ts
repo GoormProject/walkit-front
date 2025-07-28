@@ -42,6 +42,7 @@ export const createMap = (coords: Coords): kakao.maps.Map => {
   const options: kakao.maps.MapOptions = {
     center: new kakao.maps.LatLng(coords.lat, coords.lng),
     level: 4,
+    currentLocationMarker: false  // 기본 현재 위치 마커 비활성화
   };
   
   const mapInstance = new window.kakao.maps.Map(container, options);

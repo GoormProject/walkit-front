@@ -1,5 +1,11 @@
 declare global {
   namespace kakao.maps {
+    interface MapOptions {
+      center: LatLng;
+      level?: number;
+      currentLocationMarker?: boolean;
+    }
+
     interface Map {
       getCenter(): LatLng;
       setCenter(latlng: LatLng): void;
