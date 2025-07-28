@@ -20,7 +20,6 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const mapRef = useRef<kakao.maps.Map | null>(null);
-  const userMarkerRef = useRef<kakao.maps.Marker | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -46,19 +45,17 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
         // 지도 생성 (기본 좌표: 서울 시청)
         const mapInstance = new kakao.maps.Map(containerRef.current, {
           center: new kakao.maps.LatLng(DEFAULT_COORDS.lat, DEFAULT_COORDS.lng),
-          level: 4
+          level: 4,
+          currentLocationMarker: false  // 기본 현재 위치 마커 비활성화
         });
         mapRef.current = mapInstance;
 
         // 위치 권한 요청 및 실시간 위치 감시
         initGeolocation(
           mapInstance,
-          (marker) => {
-            // 기존 마커가 있으면 제거
-            if (userMarkerRef.current) {
-              userMarkerRef.current.setMap(null);
-            }
-            userMarkerRef.current = marker;
+          (position) => {
+            // 지도 중심 이동
+            mapInstance.setCenter(position);
           },
           setIsLoading,
           (error) => {
@@ -90,13 +87,6 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
     };
 
     initMap();
-
-    // 컴포넌트 언마운트 시 정리
-    return () => {
-      if (userMarkerRef.current) {
-        userMarkerRef.current.setMap(null);
-      }
-    };
   }, []);
 
   return (
