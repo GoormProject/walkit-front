@@ -1,11 +1,7 @@
 // 카카오 맵 SDK 로드 및 초기화 유틸리티
+import type { Coordinate } from '../types/map';
 
-interface Coords {
-  lat: number;
-  lng: number;
-}
-
-export const DEFAULT_COORDS: Coords = { lat: 37.5665, lng: 126.9780 };
+export const DEFAULT_COORDS: Coordinate = { lat: 37.5665, lng: 126.9780 };
 
 // 카카오 맵 SDK 로드
 export const loadKakaoMapSDK = (): Promise<void> => {
@@ -33,7 +29,7 @@ export const loadKakaoMapSDK = (): Promise<void> => {
 
 
 // 지도 생성
-export const createMap = (coords: Coords): kakao.maps.Map => {
+export const createMap = (coords: Coordinate): kakao.maps.Map => {
   const container = document.getElementById('map');
   if (!container) {
     throw new Error('지도를 표시할 컨테이너를 찾을 수 없습니다.');
@@ -42,9 +38,15 @@ export const createMap = (coords: Coords): kakao.maps.Map => {
   const options: kakao.maps.MapOptions = {
     center: new kakao.maps.LatLng(coords.lat, coords.lng),
     level: 4,
+    currentLocationMarker: false  // 현재 위치 마커 비활성화
   };
   
   const mapInstance = new window.kakao.maps.Map(container, options);
+  
+  // 현재 위치 추적 모드 비활성화 (타입 안전성을 위해 any 사용)
+  if ((mapInstance as any).setCurrentLocationTrackingMode) {
+    (mapInstance as any).setCurrentLocationTrackingMode(0);
+  }
   
   return mapInstance;
 };
@@ -52,7 +54,7 @@ export const createMap = (coords: Coords): kakao.maps.Map => {
 // 위치 권한 요청 및 실시간 위치 감시
 export const initGeolocation = (
   map: kakao.maps.Map,
-  onLocationUpdate: (marker: kakao.maps.Marker) => void,
+  onLocationUpdate: (position: kakao.maps.LatLng) => void,
   onLoadingChange: (loading: boolean) => void,
   onError: (error: GeolocationPositionError) => void
 ): void => {
@@ -73,14 +75,8 @@ export const initGeolocation = (
       // 지도 중심 이동
       map.setCenter(userLatLng);
       
-      // 새로운 마커 생성
-      const newUserMarker = new kakao.maps.Marker({ 
-        map, 
-        position: userLatLng 
-      });
-      
-      // 콜백으로 마커 전달
-      onLocationUpdate(newUserMarker);
+      // 콜백으로 위치 전달
+      onLocationUpdate(userLatLng);
     },
     (error) => {
       onLoadingChange(false);

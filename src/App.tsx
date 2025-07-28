@@ -13,6 +13,7 @@ import TestPage from '@/pages/test';
 import TrailVisualizationTest from '@/pages/test/trail-visualization';
 import BottomSheetTestPage from '@/pages/test/bottom-sheet';
 import ShadcnDialogTestPage from '@/pages/test/shadcn-dialog';
+import GPSTestPage from '@/pages/test/gps-test';
 import '@/App.css';
 
 function App() {
@@ -36,6 +37,12 @@ function App() {
 
         {/* shadcn/ui Dialog 테스트 페이지 */}
         <Route path="/test/shadcn-dialog" element={<ShadcnDialogTestPage />} />
+
+        {/* GPS 테스트 페이지 */}
+        <Route
+          path="/test/gps"
+          element={<GPSTestPage />}
+        />
 
         {/* 모든 페이지에 RootLayout 적용 */}
         <Route element={<RootLayout />}>

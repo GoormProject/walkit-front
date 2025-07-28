@@ -1,0 +1,43 @@
+.custom-marker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+  box-shadow: 0 2px 10px rgba(59, 130, 246, 0.5),
+              0 0 0 4px rgba(59, 130, 246, 0.1);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.custom-marker:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.6),
+              0 0 0 6px rgba(59, 130, 246, 0.15);
+}
+
+.custom-marker .icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* 회전 중심점 설정 */
+  transform-origin: center center;
+}
+
+.custom-marker .icon-wrapper svg {
+  color: white;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+/* 정확도 표시 원 */
+.accuracy-circle {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid rgba(59, 130, 246, 0.3);
+  background: rgba(59, 130, 246, 0.1);
+  pointer-events: none;
+  transition: all 0.3s ease;
+} 
