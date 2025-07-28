@@ -1,4 +1,23 @@
-import { GPSErrorCode } from '@/features/gps/gpsSlice';
+// GPS 에러 코드
+export const GPSErrorCode = {
+  PERMISSION_DENIED: 1,
+  POSITION_UNAVAILABLE: 2,
+  TIMEOUT: 3,
+} as const;
+
+// GPS 에러 메시지 생성
+export const handleGPSError = (error: GeolocationPositionError): string => {
+  switch (error.code) {
+    case GPSErrorCode.PERMISSION_DENIED:
+      return '위치 권한이 거부되었습니다.';
+    case GPSErrorCode.POSITION_UNAVAILABLE:
+      return '위치 정보를 사용할 수 없습니다.';
+    case GPSErrorCode.TIMEOUT:
+      return '위치 요청 시간이 초과되었습니다.';
+    default:
+      return '위치 정보를 가져오는 중 오류가 발생했습니다.';
+  }
+};
 
 interface GPSErrorInfo {
   message: string;

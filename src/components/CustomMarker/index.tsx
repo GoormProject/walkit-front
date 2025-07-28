@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Navigation } from 'lucide-react';
 import './styles.css';
 
@@ -40,33 +40,81 @@ export const CustomMarker: React.FC<CustomMarkerProps> = ({
   accuracy
 }) => {
   const overlayRef = useRef<kakao.maps.CustomOverlay | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const accuracyCircleRef = useRef<kakao.maps.Circle | null>(null);
-  const [markerSize, setMarkerSize] = useState<[number, number]>(getMarkerSize(map.getLevel()));
+  const markerElementRef = useRef<HTMLDivElement | null>(null);
+
+  // 마커 엘리먼트 생성
+  const createMarkerElement = () => {
+    const [markerWidth, iconSize] = getMarkerSize(map.getLevel());
+
+    const container = document.createElement('div');
+    container.className = 'custom-marker';
+    container.style.width = `${markerWidth}px`;
+    container.style.height = `${markerWidth}px`;
+
+    const iconWrapper = document.createElement('div');
+    iconWrapper.className = 'icon-wrapper';
+    iconWrapper.style.transform = `rotate(${heading}deg)`;
+    iconWrapper.style.width = `${iconSize}px`;
+    iconWrapper.style.height = `${iconSize}px`;
+
+    // SVG 아이콘 생성 (Navigation 아이콘)
+    const svgIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svgIcon.setAttribute('width', `${iconSize}`);
+    svgIcon.setAttribute('height', `${iconSize}`);
+    svgIcon.setAttribute('viewBox', '0 0 24 24');
+    svgIcon.setAttribute('fill', 'none');
+    svgIcon.setAttribute('stroke', 'currentColor');
+    svgIcon.setAttribute('stroke-width', '2');
+    svgIcon.setAttribute('stroke-linecap', 'round');
+    svgIcon.setAttribute('stroke-linejoin', 'round');
+
+    // Navigation 아이콘의 실제 경로
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', 'M3 11l19-9-9 19-2-8-8-2z');
+
+    svgIcon.appendChild(path);
+    iconWrapper.appendChild(svgIcon);
+    container.appendChild(iconWrapper);
+
+    return container;
+  };
 
   // 줌 레벨 변경 감지
   useEffect(() => {
     const handleZoomChanged = () => {
-      const level = map.getLevel();
-      setMarkerSize(getMarkerSize(level));
+      if (overlayRef.current && markerElementRef.current) {
+        const newMarkerElement = createMarkerElement();
+        overlayRef.current.setContent(newMarkerElement);
+        markerElementRef.current = newMarkerElement;
+      }
     };
 
-    // 줌 변경 이벤트 리스너 등록
     map.addListener('zoom_changed', handleZoomChanged);
 
     return () => {
-      // 이벤트 리스너 제거
       map.removeListener('zoom_changed', handleZoomChanged);
     };
-  }, [map]);
+  }, [map, heading]);
 
+  // 마커 초기화 및 정리
   useEffect(() => {
-    if (!containerRef.current) return;
+    // 기존 객체들 정리
+    if (overlayRef.current) {
+      overlayRef.current.setMap(null);
+    }
+    if (accuracyCircleRef.current) {
+      accuracyCircleRef.current.setMap(null);
+    }
 
-    // 커스텀 오버레이 생성
+    // 새 마커 엘리먼트 생성
+    const markerElement = createMarkerElement();
+    markerElementRef.current = markerElement;
+
+    // 새 오버레이 생성
     overlayRef.current = new kakao.maps.CustomOverlay({
       position,
-      content: containerRef.current,
+      content: markerElement,
       map,
       yAnchor: 0.5,
       xAnchor: 0.5,
@@ -96,42 +144,8 @@ export const CustomMarker: React.FC<CustomMarkerProps> = ({
         accuracyCircleRef.current.setMap(null);
       }
     };
-  }, [map]);
+  }, [map, position, heading, accuracy]);
 
-  // 위치 업데이트
-  useEffect(() => {
-    if (overlayRef.current) {
-      overlayRef.current.setPosition(position);
-    }
-    if (accuracyCircleRef.current) {
-      accuracyCircleRef.current.setCenter(position);
-      if (accuracy) {
-        accuracyCircleRef.current.setRadius(accuracy);
-      }
-    }
-  }, [position, accuracy]);
-
-  const [markerWidth, iconSize] = markerSize;
-
-  return (
-    <div 
-      ref={containerRef} 
-      className="custom-marker"
-      style={{
-        width: `${markerWidth}px`,
-        height: `${markerWidth}px`
-      }}
-    >
-      <div 
-        className="icon-wrapper"
-        style={{ 
-          transform: `rotate(${heading}deg)`,
-          width: `${iconSize}px`,
-          height: `${iconSize}px`
-        }}
-      >
-        <Navigation style={{ width: `${iconSize}px`, height: `${iconSize}px` }} />
-      </div>
-    </div>
-  );
+  // 컴포넌트는 실제 DOM을 렌더링하지 않음
+  return null;
 }; 

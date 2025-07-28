@@ -21,27 +21,27 @@ export const MOCK_ACCURACY_VALUES = [
   25,  // 더 개선
 ];
 
-// GPS 에러 시뮬레이션
+// GPS 에러 모의 데이터
 export const MOCK_GPS_ERRORS = [
   {
-    code: 1, // PERMISSION_DENIED
-    message: "위치 권한이 거부되었습니다",
+    code: 1,
+    message: "User denied Geolocation",
     PERMISSION_DENIED: 1,
     POSITION_UNAVAILABLE: 2,
     TIMEOUT: 3
   },
   {
-    code: 2, // POSITION_UNAVAILABLE
-    message: "GPS 신호를 찾을 수 없습니다",
+    code: 2,
+    message: "Position unavailable",
     PERMISSION_DENIED: 1,
     POSITION_UNAVAILABLE: 2,
     TIMEOUT: 3
   },
   {
-    code: 3, // TIMEOUT
-    message: "GPS 신호 수신 시간이 초과되었습니다",
+    code: 3,
+    message: "Timeout",
     PERMISSION_DENIED: 1,
     POSITION_UNAVAILABLE: 2,
     TIMEOUT: 3
   }
-]; 
+] as GeolocationPositionError[]; 

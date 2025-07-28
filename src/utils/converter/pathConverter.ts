@@ -1,5 +1,128 @@
-import type { WalkPath } from '../types/walk';
+import type { WalkPath } from '../../types/walk';
 import { getCourseStyle } from './trailConverter';
+
+// 좌표 타입 정의
+export interface Coordinate {
+  lat: number;
+  lng: number;
+}
+
+/**
+ * 두 좌표를 WKT LINESTRING 형식으로 변환
+ */
+export const coordinatesToWKT = (start: Coordinate, end: Coordinate): string => {
+  return `LINESTRING(${start.lng} ${start.lat}, ${end.lng} ${end.lat})`;
+};
+
+/**
+ * 두 좌표 사이의 거리를 계산 (km)
+ */
+export const calculateDistance = (start: Coordinate, end: Coordinate): number => {
+  return calculatePathDistance({
+    path: coordinatesToWKT(start, end)
+  } as WalkPath);
+};
+
+// 이징 함수들
+const easing = {
+  // 부드러운 가속
+  easeInOutQuad: (t: number): number => {
+    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+  },
+  // 더 자연스러운 가속/감속
+  easeInOutCubic: (t: number): number => {
+    return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+  }
+};
+
+/**
+ * 두 좌표 사이의 중간 좌표들을 생성합니다 (이징 적용).
+ * @param start 시작 좌표
+ * @param end 끝 좌표
+ * @param count 생성할 중간 좌표의 개수
+ * @returns 보간된 좌표 배열 (시작점과 끝점 포함)
+ */
+export const interpolateCoordinates = (
+  start: { lat: number; lng: number },
+  end: { lat: number; lng: number },
+  count: number
+): { lat: number; lng: number }[] => {
+  const points: { lat: number; lng: number }[] = [];
+  const distance = calculatePathDistance({
+    path: `LINESTRING(${start.lng} ${start.lat}, ${end.lng} ${end.lat})`
+  } as WalkPath);
+  
+  // 거리에 따라 보간 방식 조정
+  const easingFn = distance > 0.1 ? easing.easeInOutCubic : easing.easeInOutQuad;
+  
+  for (let i = 0; i <= count; i++) {
+    const t = i / count;
+    const easedT = easingFn(t);
+    points.push({
+      lat: start.lat + (end.lat - start.lat) * easedT,
+      lng: start.lng + (end.lng - start.lng) * easedT
+    });
+  }
+  
+  return points;
+};
+
+/**
+ * 경로의 모든 좌표들 사이에 중간 좌표를 생성합니다.
+ * @param path 원본 경로 좌표 배열
+ * @param pointsPerSegment 각 세그먼트 당 생성할 기본 중간 좌표의 개수
+ * @returns 보간된 전체 경로 좌표 배열
+ */
+export const interpolatePath = (
+  path: { lat: number; lng: number }[],
+  pointsPerSegment: number
+): { lat: number; lng: number }[] => {
+  if (path.length < 2) return path;
+
+  const interpolatedPath: { lat: number; lng: number }[] = [];
+  
+  // 전체 경로의 총 거리 계산
+  let totalDistance = 0;
+  for (let i = 0; i < path.length - 1; i++) {
+    const start = path[i];
+    const end = path[i + 1];
+    totalDistance += calculatePathDistance({
+      path: `LINESTRING(${start.lng} ${start.lat}, ${end.lng} ${end.lat})`
+    } as WalkPath);
+  }
+
+  // 평균 세그먼트 길이 계산 (km)
+  const avgSegmentLength = totalDistance / (path.length - 1);
+  
+  for (let i = 0; i < path.length - 1; i++) {
+    const start = path[i];
+    const end = path[i + 1];
+    const segmentDistance = calculatePathDistance({
+      path: `LINESTRING(${start.lng} ${start.lat}, ${end.lng} ${end.lat})`
+    } as WalkPath);
+    
+    // 거리에 따른 보간 포인트 수 동적 조정
+    // 1. 기본 포인트 수를 거리 비율로 조정
+    const distanceRatio = segmentDistance / avgSegmentLength;
+    // 2. 최소 포인트 수 보장
+    const basePoints = Math.max(pointsPerSegment, Math.floor(pointsPerSegment * distanceRatio));
+    // 3. 거리에 따른 추가 포인트
+    const additionalPoints = Math.floor(segmentDistance * 100); // 100m당 1포인트 추가
+    // 4. 최종 포인트 수 결정 (최소 기본 포인트 수 보장)
+    const finalPoints = Math.max(basePoints + additionalPoints, pointsPerSegment);
+    
+    const segment = interpolateCoordinates(start, end, finalPoints);
+    
+    // 마지막 점은 다음 세그먼트의 시작점과 중복되므로 제외
+    if (i < path.length - 2) {
+      segment.pop();
+    }
+    
+    interpolatedPath.push(...segment);
+  }
+  
+  return interpolatedPath;
+};
 
 /**
  * WKT LINESTRING을 파싱하여 좌표 배열로 변환

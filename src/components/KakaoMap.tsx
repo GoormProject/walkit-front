@@ -1,8 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { toast } from 'sonner';
 import { loadKakaoMapSDK, createMap, initGeolocation, DEFAULT_COORDS } from '@/utils/kakaoMapApi';
 import LoadingSpinner from './LoadingSpinner';
 import TrailVisualization from './TrailVisualization';
 import { GPSTracker } from './GPSTracker';
+import { useGPSStore } from '@/features/gps/gpsSlice';
+import { handleGPSError } from '@/utils/gpsErrorHandler';
 
 interface KakaoMapProps {
   showTrailPaths?: boolean;
@@ -23,6 +26,7 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
   const [error, setError] = useState<string | null>(null);
   const mapRef = useRef<kakao.maps.Map | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { setError: setGPSError } = useGPSStore(state => state.actions);
 
   useEffect(() => {
     const initMap = async () => {
@@ -63,20 +67,14 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
           (error) => {
             console.warn('위치 권한 또는 위치 수신 에러:', error);
             
-            // 에러 타입에 따른 사용자 안내
-            switch (error.code) {
-              case error.PERMISSION_DENIED:
-                alert('위치 권한이 거부되었습니다. 기본 위치(서울 시청)로 표시됩니다.');
-                break;
-              case error.POSITION_UNAVAILABLE:
-                alert('위치 정보를 사용할 수 없습니다. 기본 위치(서울 시청)로 표시됩니다.');
-                break;
-              case error.TIMEOUT:
-                alert('위치 요청 시간이 초과되었습니다. 기본 위치(서울 시청)로 표시됩니다.');
-                break;
-              default:
-                alert('위치 정보를 가져오는 중 오류가 발생했습니다. 기본 위치(서울 시청)로 표시됩니다.');
-            }
+            // GPS 에러 상태 업데이트
+            setGPSError(error);
+            
+            // 에러 메시지 표시
+            const errorMessage = handleGPSError(error);
+            toast.error(errorMessage, {
+              description: '기본 위치(서울 시청)로 표시됩니다.'
+            });
           }
         );
 
@@ -87,12 +85,13 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
       } catch (err) {
         console.error('카카오 맵 초기화 실패:', err);
         setError('지도를 불러오는 중 오류가 발생했습니다.');
+        toast.error('지도를 불러오는 중 오류가 발생했습니다.');
         setIsLoading(false);
       }
     };
 
     initMap();
-  }, [onMapLoad]);
+  }, [onMapLoad, setGPSError]);
 
   return (
     <div className="relative w-full h-full">

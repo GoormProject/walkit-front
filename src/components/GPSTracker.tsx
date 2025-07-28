@@ -1,22 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
 import { useGPSStore } from '@/features/gps/gpsSlice';
-import { getGPSErrorInfo, getAccuracyWarning } from '@/utils/gpsErrorHandler';
 import { CustomMarker } from './CustomMarker';
 import { initGeolocation } from '@/utils/kakaoMapApi';
 
 interface GPSTrackerProps {
   map: kakao.maps.Map;
+  onPositionUpdate?: (position: kakao.maps.LatLng) => void;
 }
 
-export const GPSTracker: React.FC<GPSTrackerProps> = ({ map }) => {
-  const [currentPosition, setCurrentPosition] = useState<kakao.maps.LatLng | null>(null);
+export const GPSTracker: React.FC<GPSTrackerProps> = ({ map, onPositionUpdate }) => {
   const [heading, setHeading] = useState(0);
-  const watchId = useRef<number | null>(null);
   const lastPosition = useRef<kakao.maps.LatLng | null>(null);
+  const markerKey = useRef(0);
   
-  const { setError, setAccuracy, setLoading } = useGPSStore(state => state.actions);
+  const { setError, setAccuracy, setLoading, setPosition } = useGPSStore(state => state.actions);
   const error = useGPSStore(state => state.error);
+  const currentPosition = useGPSStore(state => state.position);
   
   // 이동 방향 계산 (도 단위, 0-360)
   const calculateHeading = (prev: kakao.maps.LatLng, current: kakao.maps.LatLng): number => {
@@ -27,27 +26,21 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map }) => {
     return (deg + 360) % 360;
   };
 
-  // 에러 상태 변경 시에만 토스트 표시
+  // 위치가 변경될 때마다 마커 키를 업데이트
   useEffect(() => {
-    if (error) {
-      const errorInfo = getGPSErrorInfo(error);
-      toast.error(errorInfo.message, {
-        description: errorInfo.guideText,
-        action: errorInfo.guideLink ? {
-          label: '자세히 보기',
-          onClick: () => window.location.href = errorInfo.guideLink!
-        } : undefined
-      });
+    if (currentPosition) {
+      markerKey.current += 1;
+      onPositionUpdate?.(currentPosition);
     }
-  }, [error]);
+  }, [currentPosition, onPositionUpdate]);
 
   useEffect(() => {
     const center = map.getCenter();
-    setCurrentPosition(center);
+    setPosition(center);
     lastPosition.current = center;
 
     // 위치 추적 초기화
-    initGeolocation(
+    const cleanup = initGeolocation(
       map,
       (position) => {
         // 이동 방향 계산
@@ -58,27 +51,27 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map }) => {
         lastPosition.current = position;
         
         // 위치 업데이트
-        setCurrentPosition(position);
+        setPosition(position);
       },
       setLoading,
       setError
     );
 
     return () => {
-      if (watchId.current !== null) {
-        navigator.geolocation.clearWatch(watchId.current);
-      }
+      cleanup?.();
       setError(null);
       setAccuracy(null);
       setLoading(false);
+      setPosition(null);
     };
-  }, [map, setError, setAccuracy, setLoading]);
+  }, [map, setError, setAccuracy, setLoading, setPosition]);
 
   // 현재 위치가 있을 때만 마커 렌더링
   if (!currentPosition) return null;
 
   return (
     <CustomMarker
+      key={markerKey.current}
       map={map}
       position={currentPosition}
       heading={heading}

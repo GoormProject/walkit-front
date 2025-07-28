@@ -23,20 +23,9 @@ const RootLayout = () => {
     <ToastProvider ref={toastRef}>
       <div className="app">
         {shouldShowHeader && <Header />}
-
-        {/* 메인 콘텐츠 영역 */}
         <main>
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              메인 콘텐츠 영역
-            </h2>
-            <div className="p-4 bg-gray-100 rounded text-sm text-gray-600">
-              여기에 실제 페이지 콘텐츠가 들어갑니다
-            </div>
-            <Outlet />
-          </div>
+          <Outlet />
         </main>
-
         <Footer />
       </div>
     </ToastProvider>
