@@ -27,8 +27,9 @@ declare global {
     interface Map {
       getCenter(): LatLng;
       setCenter(latlng: LatLng): void;
-      getLocationMarker?(): LocationMarker | null;
-      setCurrentLocationTrackingMode?(mode: number): void;
+      getLevel(): number;
+      addListener(eventName: string, handler: Function): void;
+      removeListener(eventName: string, handler: Function): void;
     }
 
     interface CustomOverlayOptions {
