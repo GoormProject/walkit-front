@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { useGPSStore } from '@/features/gps/gpsSlice';
 import { getGPSErrorInfo, getAccuracyWarning } from '@/utils/gpsErrorHandler';
 import { CustomMarker } from './CustomMarker';
+import { initGeolocation } from '@/utils/kakaoMapApi';
 
 interface GPSTrackerProps {
   map: kakao.maps.Map;
@@ -11,7 +12,6 @@ interface GPSTrackerProps {
 export const GPSTracker: React.FC<GPSTrackerProps> = ({ map }) => {
   const [currentPosition, setCurrentPosition] = useState<kakao.maps.LatLng | null>(null);
   const [heading, setHeading] = useState(0);
-  const [accuracy, setCurrentAccuracy] = useState<number | null>(null);
   const watchId = useRef<number | null>(null);
   const lastPosition = useRef<kakao.maps.LatLng | null>(null);
   
@@ -46,60 +46,24 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map }) => {
     setCurrentPosition(center);
     lastPosition.current = center;
 
-    if (!navigator.geolocation) {
-      setError({
-        code: 2, // POSITION_UNAVAILABLE
-        message: 'Geolocation API를 지원하지 않습니다.',
-        PERMISSION_DENIED: 1,
-        POSITION_UNAVAILABLE: 2,
-        TIMEOUT: 3
-      });
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-
-    // watchPosition 시작
-    watchId.current = navigator.geolocation.watchPosition(
+    // 위치 추적 초기화
+    initGeolocation(
+      map,
       (position) => {
-        setLoading(false);
-        const { latitude, longitude, accuracy: gpsAccuracy } = position.coords;
-        const userLatLng = new kakao.maps.LatLng(latitude, longitude);
-        
         // 이동 방향 계산
         if (lastPosition.current) {
-          const newHeading = calculateHeading(lastPosition.current, userLatLng);
+          const newHeading = calculateHeading(lastPosition.current, position);
           setHeading(newHeading);
         }
-        lastPosition.current = userLatLng;
+        lastPosition.current = position;
         
         // 위치 업데이트
-        setCurrentPosition(userLatLng);
-        setCurrentAccuracy(gpsAccuracy);
-        
-        // 지도 중심 이동
-        map.setCenter(userLatLng);
-        
-        // 정확도 상태 업데이트 및 경고
-        setAccuracy(gpsAccuracy);
-        const warning = getAccuracyWarning(gpsAccuracy);
-        if (warning) {
-          toast.warning(warning);
-        }
+        setCurrentPosition(position);
       },
-      (error) => {
-        setLoading(false);
-        setError(error);
-      },
-      { 
-        enableHighAccuracy: true, 
-        maximumAge: 10000, 
-        timeout: 10000 
-      }
+      setLoading,
+      setError
     );
 
-    // 클린업 함수
     return () => {
       if (watchId.current !== null) {
         navigator.geolocation.clearWatch(watchId.current);
@@ -118,7 +82,6 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map }) => {
       map={map}
       position={currentPosition}
       heading={heading}
-      accuracy={accuracy || undefined}
     />
   );
 }; 

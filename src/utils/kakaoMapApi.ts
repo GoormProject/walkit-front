@@ -41,16 +41,12 @@ export const createMap = (coords: Coords): kakao.maps.Map => {
 
   const options: kakao.maps.MapOptions = {
     center: new kakao.maps.LatLng(coords.lat, coords.lng),
-    level: 4
+    level: 4,
+    currentLocationMarker: false  // 현재 위치 마커 비활성화
   };
   
   const mapInstance = new window.kakao.maps.Map(container, options);
   
-  // 현재 위치 마커 비활성화
-  if (mapInstance.setCurrentLocationMarker) {
-    mapInstance.setCurrentLocationMarker(false);
-  }
-
   // 현재 위치 추적 모드 비활성화
   if (mapInstance.setCurrentLocationTrackingMode) {
     mapInstance.setCurrentLocationTrackingMode(0);
@@ -62,7 +58,7 @@ export const createMap = (coords: Coords): kakao.maps.Map => {
 // 위치 권한 요청 및 실시간 위치 감시
 export const initGeolocation = (
   map: kakao.maps.Map,
-  onLocationUpdate: (marker: kakao.maps.Marker) => void,
+  onLocationUpdate: (position: kakao.maps.LatLng) => void,
   onLoadingChange: (loading: boolean) => void,
   onError: (error: GeolocationPositionError) => void
 ): void => {
@@ -74,38 +70,17 @@ export const initGeolocation = (
 
   onLoadingChange(true);
 
-  // 기본 위치 추적 모드 비활성화
-  const disableDefaultTracking = () => {
-    // @ts-ignore
-    if (map.setCurrentLocationTrackingMode) {
-      // @ts-ignore
-      map.setCurrentLocationTrackingMode(0);
-    }
-  };
-
-  // 초기에 한 번 호출
-  disableDefaultTracking();
-
   navigator.geolocation.watchPosition(
     (position) => {
       onLoadingChange(false);
       const { latitude, longitude } = position.coords;
       const userLatLng = new kakao.maps.LatLng(latitude, longitude);
       
-      // 위치가 업데이트될 때마다 기본 추적 모드 비활성화
-      disableDefaultTracking();
-      
       // 지도 중심 이동
       map.setCenter(userLatLng);
       
-      // 새로운 마커 생성
-      const newUserMarker = new kakao.maps.Marker({ 
-        map, 
-        position: userLatLng 
-      });
-      
-      // 콜백으로 마커 전달
-      onLocationUpdate(newUserMarker);
+      // 콜백으로 위치 전달
+      onLocationUpdate(userLatLng);
     },
     (error) => {
       onLoadingChange(false);
