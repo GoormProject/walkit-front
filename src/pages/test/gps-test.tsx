@@ -33,6 +33,7 @@ const GPSTestPage: React.FC = () => {
   const currentIndexRef = useRef(0);
   const interpolatedPathRef = useRef<Coordinate[]>([]);
   const { setPosition } = useGPSStore(state => state.actions);
+  const currentGPSPosition = useGPSStore(state => state.position);
 
   // 산책 경로 진행률 추적 관련 상태
   const [showProgress, setShowProgress] = useState(false);
@@ -47,7 +48,7 @@ const GPSTestPage: React.FC = () => {
     return (distance / speed) * 3600 * 1000; // milliseconds
   };
 
-  // 경로 표시
+  // 경로 표시 (붉은색 - 자유 이동 경로)
   useEffect(() => {
     if (!map.current) return;
 
@@ -56,22 +57,41 @@ const GPSTestPage: React.FC = () => {
       polyline.current.setMap(null);
     }
 
-    // 새 폴리라인 생성
-    polyline.current = new kakao.maps.Polyline({
-      map: map.current,
-      path: pathPositions,
-      strokeWeight: 3,
-      strokeColor: '#db4040',
-      strokeOpacity: 0.7,
-      strokeStyle: 'solid'
-    });
+    // 진행률 추적 모드가 아닐 때만 붉은색 폴리라인 표시
+    if (!showProgress && pathPositions.length > 0) {
+      polyline.current = new kakao.maps.Polyline({
+        map: map.current,
+        path: pathPositions,
+        strokeWeight: 3,
+        strokeColor: '#db4040',
+        strokeOpacity: 0.7,
+        strokeStyle: 'solid'
+      });
+    }
 
     return () => {
       if (polyline.current) {
         polyline.current.setMap(null);
       }
     };
-  }, [pathPositions]);
+  }, [pathPositions, showProgress]);
+
+  // 진행률 추적 모드 변경 시 폴리라인 관리
+  useEffect(() => {
+    if (!map.current) return;
+
+    if (showProgress) {
+      // 진행률 추적 모드 활성화 시 붉은색 폴리라인 제거
+      if (polyline.current) {
+        polyline.current.setMap(null);
+      }
+    } else {
+      // 진행률 추적 모드 비활성화 시 붉은색 폴리라인 다시 표시
+      if (pathPositions.length > 0 && polyline.current) {
+        polyline.current.setMap(map.current);
+      }
+    }
+  }, [showProgress, map.current]);
 
   // 초기 지도 설정
   useEffect(() => {
@@ -220,6 +240,11 @@ const GPSTestPage: React.FC = () => {
     currentIndexRef.current = 0;
     // 경로 다시 보간
     interpolatedPathRef.current = interpolatePath(MOCK_PATH_COORDS, smoothness * 5);
+    
+    // 진행률 추적 모드가 활성화되어 있으면 기존 폴리라인 제거
+    if (showProgress && polyline.current) {
+      polyline.current.setMap(null);
+    }
   };
 
   // 위치 변경 핸들러 (수동 이동용)
@@ -293,6 +318,10 @@ const GPSTestPage: React.FC = () => {
         {/* 산책 경로 진행률 추적 컨트롤 */}
         <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
           <h3 className="text-lg font-semibold text-blue-800 mb-3">🏃‍♂️ 산책 경로 진행률 추적</h3>
+          <p className="text-sm text-blue-700 mb-3">
+            <strong>🔵 파란색 폴리라인:</strong> 현재 GPS 위치 기준으로 테스트 경로 진행률 추적<br/>
+            <strong>🔴 붉은색 폴리라인:</strong> 자유 이동 경로 (진행률 추적 비활성화 시)
+          </p>
           <div className="flex items-center gap-4 flex-wrap">
             <div className="flex items-center gap-2">
               <input
@@ -371,13 +400,13 @@ const GPSTestPage: React.FC = () => {
           <KakaoMap onMapLoad={(mapInstance) => { map.current = mapInstance; }} />
           {map.current && <GPSTracker map={map.current} />}
           
-          {/* 산책 경로 진행률 추적 */}
+          {/* 산책 경로 진행률 추적 (파란색) */}
           {map.current && testPath && showProgress && (
             <AnimatedTrailPath
               path={testPath}
               map={map.current}
               isVisible={true}
-              currentPosition={pathPositions[pathPositions.length - 1] || undefined}
+              currentPosition={currentGPSPosition || undefined}
               showProgress={showProgress}
               easingType={easingType}
               onProgressChange={setCurrentProgress}
