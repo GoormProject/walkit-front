@@ -270,7 +270,7 @@ const TrailProgressTest: React.FC = () => {
 
           {/* 지도 */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="bg-white rounded-lg shadow-lg overflow-hidden h-96">
               <KakaoMap onMapLoad={(map) => { mapRef.current = map; }} />
               {mapRef.current && testPath && (
                 <AnimatedTrailPath
