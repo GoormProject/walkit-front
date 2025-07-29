@@ -22,23 +22,30 @@ const TrailProgressTest: React.FC = () => {
 
   useEffect(() => {
     // kakao 객체가 로드된 후에 경로 데이터 생성
-    if (window.kakao && window.kakao.maps) {
-      const path: TrailPathData = {
-        id: 'test-trail',
-        name: '테스트 산책로',
-        courseType: 'walking',
-        coordinates: MOCK_PATH_COORDS.map(coord => new window.kakao.maps.LatLng(coord.lat, coord.lng)),
-        style: {
-          strokeColor: '#3b82f6',
-          strokeWeight: 4,
-          strokeOpacity: 0.8,
-          strokeStyle: 'solid'
-        },
-        properties: {}
-      };
-      setTestPath(path);
-      setIsLoading(false);
-    }
+    const checkKakaoLoaded = () => {
+      if (window.kakao && window.kakao.maps) {
+        const path: TrailPathData = {
+          id: 'test-trail',
+          name: '테스트 산책로',
+          courseType: 'walking',
+          coordinates: MOCK_PATH_COORDS.map(coord => new window.kakao.maps.LatLng(coord.lat, coord.lng)),
+          style: {
+            strokeColor: '#3b82f6',
+            strokeWeight: 4,
+            strokeOpacity: 0.8,
+            strokeStyle: 'solid'
+          },
+          properties: {}
+        };
+        setTestPath(path);
+        setIsLoading(false);
+      } else {
+        // kakao 객체가 아직 로드되지 않았다면 잠시 후 다시 시도
+        setTimeout(checkKakaoLoaded, 100);
+      }
+    };
+
+    checkKakaoLoaded();
   }, []);
 
   // 자동 이동 효과
@@ -101,7 +108,10 @@ const TrailProgressTest: React.FC = () => {
     } else {
       if (testPath) {
         currentIndexRef.current = 0;
-        setCurrentPosition(testPath.coordinates[0]);
+        const startPosition = testPath.coordinates[0];
+        setCurrentPosition(startPosition);
+        // 지도 중심도 시작점으로 이동
+        mapRef.current?.setCenter(startPosition);
         setIsAutoMoving(true);
       }
     }
@@ -144,6 +154,9 @@ const TrailProgressTest: React.FC = () => {
                 <div className="flex items-center justify-center">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
                   <span className="ml-2 text-gray-600">카카오맵 로딩 중...</span>
+                </div>
+                <div className="mt-2 text-xs text-gray-500 text-center">
+                  CoreLocation 에러는 개발 환경에서 정상적인 현상입니다.
                 </div>
               </div>
             )}
