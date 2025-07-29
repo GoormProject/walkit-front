@@ -16,6 +16,34 @@ const TestPage: React.FC = () => {
     <div className="p-6 max-w-6xl mx-auto">
       <h1 className="text-3xl font-bold mb-6">🧪 개발 테스트 페이지</h1>
       
+      {/* 빠른 테스트 링크 */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <a
+          href="/test/trail-visualization"
+          className="bg-blue-500 text-white p-4 rounded-lg text-center hover:bg-blue-600 transition-colors"
+        >
+          🗺️ 경로 시각화
+        </a>
+        <a
+          href="/test/gps"
+          className="bg-green-500 text-white p-4 rounded-lg text-center hover:bg-green-600 transition-colors"
+        >
+          📍 GPS 테스트
+        </a>
+        <a
+          href="/test/trail-progress"
+          className="bg-purple-500 text-white p-4 rounded-lg text-center hover:bg-purple-600 transition-colors"
+        >
+          🚶‍♂️ 진행률 추적
+        </a>
+        <a
+          href="/test/bottom-sheet"
+          className="bg-orange-500 text-white p-4 rounded-lg text-center hover:bg-orange-600 transition-colors"
+        >
+          📱 BottomSheet
+        </a>
+      </div>
+      
       {/* API 모드 정보 */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
         <h2 className="text-lg font-semibold mb-2">🔧 API 모드 정보</h2>
