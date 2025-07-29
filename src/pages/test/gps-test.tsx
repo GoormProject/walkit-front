@@ -2,12 +2,14 @@ import React, { useEffect, useRef, useState } from 'react';
 import { KakaoMap } from '@/components/KakaoMap';
 import { GPSSimulator } from '@/components/GPSSimulator';
 import { GPSTracker } from '@/components/GPSTracker';
+import AnimatedTrailPath from '@/components/AnimatedTrailPath';
 import { MOCK_PATH_COORDS } from '@/utils/mockGPSData';
 import { 
   interpolatePath, 
   calculateDistance
 } from '@/utils/converter/pathConverter';
 import type { Coordinate } from '@/types/map';
+import type { TrailPathData, TrailProgress, EasingFunction } from '@/types/trail';
 import { useGPSStore } from '@/features/gps/gpsSlice';
 import { Toaster } from 'sonner';
 
@@ -31,6 +33,12 @@ const GPSTestPage: React.FC = () => {
   const currentIndexRef = useRef(0);
   const interpolatedPathRef = useRef<Coordinate[]>([]);
   const { setPosition } = useGPSStore(state => state.actions);
+
+  // 산책 경로 진행률 추적 관련 상태
+  const [showProgress, setShowProgress] = useState(false);
+  const [easingType, setEasingType] = useState<EasingFunction>('linear');
+  const [currentProgress, setCurrentProgress] = useState<TrailProgress | null>(null);
+  const [testPath, setTestPath] = useState<TrailPathData | null>(null);
 
   // 실제 거리와 시간을 기반으로 다음 포인트까지의 시간 계산
   const calculateTimeToNextPoint = (currentPoint: Coordinate, nextPoint: Coordinate) => {
@@ -78,6 +86,34 @@ const GPSTestPage: React.FC = () => {
     path.forEach(coord => bounds.extend(coord));
     map.current.setBounds(bounds);
   }, [map.current]);
+
+  // 테스트 경로 초기화 (산책 경로 진행률 추적용)
+  useEffect(() => {
+    const checkKakaoLoaded = () => {
+      if (window.kakao && window.kakao.maps) {
+        window.kakao.maps.load(() => {
+          const path: TrailPathData = {
+            id: 'test-trail',
+            name: '테스트 산책로',
+            courseType: 'walking',
+            coordinates: MOCK_PATH_COORDS.map(coord => new window.kakao.maps.LatLng(coord.lat, coord.lng)),
+            style: {
+              strokeColor: '#3b82f6',
+              strokeWeight: 4,
+              strokeOpacity: 0.8,
+              strokeStyle: 'solid'
+            },
+            properties: {}
+          };
+          setTestPath(path);
+        });
+      } else {
+        setTimeout(checkKakaoLoaded, 100);
+      }
+    };
+
+    checkKakaoLoaded();
+  }, []);
 
   // 자동 이동 효과
   useEffect(() => {
@@ -253,6 +289,79 @@ const GPSTestPage: React.FC = () => {
             <span className="text-sm text-gray-600">{smoothness}개</span>
           </div>
         </div>
+
+        {/* 산책 경로 진행률 추적 컨트롤 */}
+        <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <h3 className="text-lg font-semibold text-blue-800 mb-3">🏃‍♂️ 산책 경로 진행률 추적</h3>
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="showProgress"
+                checked={showProgress}
+                onChange={(e) => setShowProgress(e.target.checked)}
+                className="w-4 h-4 text-blue-600"
+              />
+              <label htmlFor="showProgress" className="text-sm text-gray-700">
+                진행률 표시
+              </label>
+            </div>
+            
+            {showProgress && (
+              <>
+                <div className="flex items-center gap-2 min-w-[200px]">
+                  <label className="text-sm text-gray-600">이징 함수:</label>
+                  <select
+                    value={easingType}
+                    onChange={(e) => setEasingType(e.target.value as EasingFunction)}
+                    className="px-2 py-1 border rounded"
+                  >
+                    <option value="linear">Linear</option>
+                    <option value="easeIn">Ease In</option>
+                    <option value="easeOut">Ease Out</option>
+                    <option value="easeInOut">Ease In Out</option>
+                  </select>
+                </div>
+                
+                <button
+                  onClick={() => {
+                    if (testPath && map.current) {
+                      const startPosition = testPath.coordinates[0];
+                      map.current.setCenter(startPosition);
+                    }
+                  }}
+                  className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                >
+                  시작점으로 이동
+                </button>
+              </>
+            )}
+          </div>
+          
+          {/* 진행률 정보 표시 */}
+          {showProgress && currentProgress && (
+            <div className="mt-3 p-3 bg-white rounded border">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="font-medium text-gray-700">진행률:</span>
+                  <span className="ml-2 text-blue-600">{(currentProgress.progress * 100).toFixed(1)}%</span>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-700">완료 거리:</span>
+                  <span className="ml-2 text-green-600">{currentProgress.completedDistance.toFixed(2)}km</span>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-700">전체 거리:</span>
+                  <span className="ml-2 text-gray-600">{currentProgress.totalDistance.toFixed(2)}km</span>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-700">최근 지점:</span>
+                  <span className="ml-2 text-purple-600">{currentProgress.nearestPointIndex + 1}번째</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 메인 컨텐츠 영역 */}
@@ -261,6 +370,19 @@ const GPSTestPage: React.FC = () => {
         <div className="flex-1 relative">
           <KakaoMap onMapLoad={(mapInstance) => { map.current = mapInstance; }} />
           {map.current && <GPSTracker map={map.current} />}
+          
+          {/* 산책 경로 진행률 추적 */}
+          {map.current && testPath && showProgress && (
+            <AnimatedTrailPath
+              path={testPath}
+              map={map.current}
+              isVisible={true}
+              currentPosition={pathPositions[pathPositions.length - 1] || undefined}
+              showProgress={showProgress}
+              easingType={easingType}
+              onProgressChange={setCurrentProgress}
+            />
+          )}
         </div>
 
         {/* 시뮬레이터 */}
