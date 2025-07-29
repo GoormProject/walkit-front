@@ -24,21 +24,24 @@ const TrailProgressTest: React.FC = () => {
     // kakao 객체가 로드된 후에 경로 데이터 생성
     const checkKakaoLoaded = () => {
       if (window.kakao && window.kakao.maps) {
-        const path: TrailPathData = {
-          id: 'test-trail',
-          name: '테스트 산책로',
-          courseType: 'walking',
-          coordinates: MOCK_PATH_COORDS.map(coord => new window.kakao.maps.LatLng(coord.lat, coord.lng)),
-          style: {
-            strokeColor: '#3b82f6',
-            strokeWeight: 4,
-            strokeOpacity: 0.8,
-            strokeStyle: 'solid'
-          },
-          properties: {}
-        };
-        setTestPath(path);
-        setIsLoading(false);
+        // kakao.maps.load()를 사용하여 SDK가 완전히 로드된 후 LatLng 사용
+        window.kakao.maps.load(() => {
+          const path: TrailPathData = {
+            id: 'test-trail',
+            name: '테스트 산책로',
+            courseType: 'walking',
+            coordinates: MOCK_PATH_COORDS.map(coord => new window.kakao.maps.LatLng(coord.lat, coord.lng)),
+            style: {
+              strokeColor: '#3b82f6',
+              strokeWeight: 4,
+              strokeOpacity: 0.8,
+              strokeStyle: 'solid'
+            },
+            properties: {}
+          };
+          setTestPath(path);
+          setIsLoading(false);
+        });
       } else {
         // kakao 객체가 아직 로드되지 않았다면 잠시 후 다시 시도
         setTimeout(checkKakaoLoaded, 100);
@@ -96,9 +99,11 @@ const TrailProgressTest: React.FC = () => {
 
   // 수동 위치 변경
   const handlePositionChange = (lat: number, lng: number) => {
-    const position = new kakao.maps.LatLng(lat, lng);
-    setCurrentPosition(position);
-    mapRef.current?.setCenter(position);
+    if (window.kakao && window.kakao.maps) {
+      const position = new window.kakao.maps.LatLng(lat, lng);
+      setCurrentPosition(position);
+      mapRef.current?.setCenter(position);
+    }
   };
 
   // 자동 이동 토글
