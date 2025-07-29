@@ -15,6 +15,7 @@ import BottomSheetTestPage from '@/pages/test/bottom-sheet';
 import ShadcnDialogTestPage from '@/pages/test/shadcn-dialog';
 import GPSTestPage from '@/pages/test/gps-test';
 import TrailProgressTest from '@/pages/test/trail-progress';
+import SimpleMapTest from '@/pages/test/simple-map';
 import '@/App.css';
 
 function App() {
@@ -49,6 +50,12 @@ function App() {
         <Route
           path="/test/trail-progress"
           element={<TrailProgressTest />}
+        />
+
+        {/* 카카오맵 단순 테스트 페이지 */}
+        <Route
+          path="/test/simple-map"
+          element={<SimpleMapTest />}
         />
 
         {/* 모든 페이지에 RootLayout 적용 */}

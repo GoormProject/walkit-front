@@ -42,6 +42,12 @@ const TestPage: React.FC = () => {
         >
           📱 BottomSheet
         </a>
+        <a
+          href="/test/simple-map"
+          className="bg-red-500 text-white p-4 rounded-lg text-center hover:bg-red-600 transition-colors"
+        >
+          🗺️ 카카오맵 테스트
+        </a>
       </div>
       
       {/* API 모드 정보 */}
