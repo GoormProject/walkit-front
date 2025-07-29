@@ -12,28 +12,38 @@ const TrailProgressTest: React.FC = () => {
   const [currentProgress, setCurrentProgress] = useState<TrailProgress | null>(null);
   const [isAutoMoving, setIsAutoMoving] = useState(false);
   const [movementSpeed, setMovementSpeed] = useState(5); // km/h
+  const [isLoading, setIsLoading] = useState(true);
   const animationRef = useRef<number | null>(null);
   const lastTimeRef = useRef<number>(0);
   const currentIndexRef = useRef(0);
 
   // 테스트용 경로 데이터 생성
-  const testPath: TrailPathData = {
-    id: 'test-trail',
-    name: '테스트 산책로',
-    courseType: 'walking',
-    coordinates: MOCK_PATH_COORDS.map(coord => new kakao.maps.LatLng(coord.lat, coord.lng)),
-    style: {
-      strokeColor: '#3b82f6',
-      strokeWeight: 4,
-      strokeOpacity: 0.8,
-      strokeStyle: 'solid'
-    },
-    properties: {}
-  };
+  const [testPath, setTestPath] = useState<TrailPathData | null>(null);
+
+  useEffect(() => {
+    // kakao 객체가 로드된 후에 경로 데이터 생성
+    if (window.kakao && window.kakao.maps) {
+      const path: TrailPathData = {
+        id: 'test-trail',
+        name: '테스트 산책로',
+        courseType: 'walking',
+        coordinates: MOCK_PATH_COORDS.map(coord => new window.kakao.maps.LatLng(coord.lat, coord.lng)),
+        style: {
+          strokeColor: '#3b82f6',
+          strokeWeight: 4,
+          strokeOpacity: 0.8,
+          strokeStyle: 'solid'
+        },
+        properties: {}
+      };
+      setTestPath(path);
+      setIsLoading(false);
+    }
+  }, []);
 
   // 자동 이동 효과
   useEffect(() => {
-    if (!isAutoMoving || !mapRef.current) return;
+    if (!isAutoMoving || !mapRef.current || !testPath) return;
 
     const animate = (timestamp: number) => {
       if (!lastTimeRef.current) {
@@ -75,7 +85,7 @@ const TrailProgressTest: React.FC = () => {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [isAutoMoving, movementSpeed]);
+  }, [isAutoMoving, movementSpeed, testPath]);
 
   // 수동 위치 변경
   const handlePositionChange = (lat: number, lng: number) => {
@@ -89,9 +99,11 @@ const TrailProgressTest: React.FC = () => {
     if (isAutoMoving) {
       setIsAutoMoving(false);
     } else {
-      currentIndexRef.current = 0;
-      setCurrentPosition(testPath.coordinates[0]);
-      setIsAutoMoving(true);
+      if (testPath) {
+        currentIndexRef.current = 0;
+        setCurrentPosition(testPath.coordinates[0]);
+        setIsAutoMoving(true);
+      }
     }
   };
 
@@ -127,6 +139,14 @@ const TrailProgressTest: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* 컨트롤 패널 */}
           <div className="lg:col-span-1 space-y-4">
+            {isLoading && (
+              <div className="bg-white p-4 rounded-lg shadow-lg">
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                  <span className="ml-2 text-gray-600">카카오맵 로딩 중...</span>
+                </div>
+              </div>
+            )}
             <div className="bg-white p-4 rounded-lg shadow-lg">
               <h3 className="text-lg font-semibold mb-4">컨트롤</h3>
               
@@ -193,8 +213,10 @@ const TrailProgressTest: React.FC = () => {
                 <div>
                   <button
                     onClick={() => {
-                      setCurrentPosition(testPath.coordinates[0]);
-                      currentIndexRef.current = 0;
+                      if (testPath) {
+                        setCurrentPosition(testPath.coordinates[0]);
+                        currentIndexRef.current = 0;
+                      }
                     }}
                     className="w-full px-3 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
                   >
@@ -237,7 +259,7 @@ const TrailProgressTest: React.FC = () => {
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-lg overflow-hidden">
               <KakaoMap onMapLoad={(map) => { mapRef.current = map; }} />
-              {mapRef.current && (
+              {mapRef.current && testPath && (
                 <AnimatedTrailPath
                   path={testPath}
                   map={mapRef.current}
