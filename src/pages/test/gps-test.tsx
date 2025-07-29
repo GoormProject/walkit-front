@@ -267,9 +267,9 @@ const GPSTestPage: React.FC = () => {
         expand
       />
       {/* 상단 설명 */}
-      <div className="p-4 bg-white shadow-sm">
-        <h1 className="text-2xl font-bold mb-2">GPS 테스트</h1>
-        <p className="text-gray-600 mb-4">
+      <div className="p-4 bg-gray-800 shadow-sm text-white">
+        <h1 className="text-2xl font-bold mb-2 text-white">GPS 테스트</h1>
+        <p className="text-gray-300 mb-4">
           시뮬레이터를 사용하여 GPS 위치, 정확도, 에러 상황을 테스트할 수 있습니다.
         </p>
         <div className="flex items-center gap-4 mb-2">
@@ -290,11 +290,11 @@ const GPSTestPage: React.FC = () => {
         </div>
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-2 min-w-[200px]">
-            <label className="text-sm text-gray-600">이동 속도:</label>
+            <label className="text-sm text-white">이동 속도:</label>
             <select
               value={movementSpeed}
               onChange={(e) => setMovementSpeed(e.target.value as keyof typeof MOVEMENT_SPEEDS)}
-              className="px-2 py-1 border rounded"
+              className="px-2 py-1 border rounded bg-gray-700 text-white"
             >
               <option value="WALK">걷기 (5km/h)</option>
               <option value="JOG">조깅 (8km/h)</option>
@@ -302,7 +302,7 @@ const GPSTestPage: React.FC = () => {
             </select>
           </div>
           <div className="flex items-center gap-2 min-w-[200px]">
-            <label className="text-sm text-gray-600">부드러움:</label>
+            <label className="text-sm text-white">부드러움:</label>
             <input
               type="range"
               min="1"
@@ -311,14 +311,14 @@ const GPSTestPage: React.FC = () => {
               onChange={handleSmoothnessChange}
               className="w-32"
             />
-            <span className="text-sm text-gray-600">{smoothness}개</span>
+            <span className="text-sm text-white">{smoothness}개</span>
           </div>
         </div>
 
         {/* 산책 경로 진행률 추적 컨트롤 */}
-        <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <h3 className="text-lg font-semibold text-blue-800 mb-3">🏃‍♂️ 산책 경로 진행률 추적</h3>
-          <p className="text-sm text-blue-700 mb-3">
+        <div className="mt-4 p-4 bg-blue-900 rounded-lg border border-blue-600">
+          <h3 className="text-lg font-semibold text-blue-200 mb-3">🏃‍♂️ 산책 경로 진행률 추적</h3>
+          <p className="text-sm text-blue-100 mb-3">
             <strong>🔵 파란색 폴리라인:</strong> 현재 GPS 위치 기준으로 테스트 경로 진행률 추적<br/>
             <strong>🔴 붉은색 폴리라인:</strong> 자유 이동 경로 (진행률 추적 비활성화 시)
           </p>
@@ -331,7 +331,7 @@ const GPSTestPage: React.FC = () => {
                 onChange={(e) => setShowProgress(e.target.checked)}
                 className="w-4 h-4 text-blue-600"
               />
-              <label htmlFor="showProgress" className="text-sm text-gray-700">
+              <label htmlFor="showProgress" className="text-sm text-blue-200">
                 진행률 표시
               </label>
             </div>
@@ -339,11 +339,11 @@ const GPSTestPage: React.FC = () => {
             {showProgress && (
               <>
                 <div className="flex items-center gap-2 min-w-[200px]">
-                  <label className="text-sm text-gray-600">이징 함수:</label>
+                  <label className="text-sm text-blue-200">이징 함수:</label>
                   <select
                     value={easingType}
                     onChange={(e) => setEasingType(e.target.value as EasingFunction)}
-                    className="px-2 py-1 border rounded"
+                    className="px-2 py-1 border rounded bg-gray-700 text-white"
                   >
                     <option value="linear">Linear</option>
                     <option value="easeIn">Ease In</option>
@@ -369,23 +369,23 @@ const GPSTestPage: React.FC = () => {
           
           {/* 진행률 정보 표시 */}
           {showProgress && currentProgress && (
-            <div className="mt-3 p-3 bg-white rounded border">
+            <div className="mt-3 p-3 bg-gray-700 rounded border border-gray-600">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="font-medium text-gray-700">진행률:</span>
-                  <span className="ml-2 text-blue-600">{(currentProgress.progress * 100).toFixed(1)}%</span>
+                  <span className="font-medium text-white">진행률:</span>
+                  <span className="ml-2 text-blue-300">{(currentProgress.progress * 100).toFixed(1)}%</span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-700">완료 거리:</span>
-                  <span className="ml-2 text-green-600">{currentProgress.completedDistance.toFixed(2)}km</span>
+                  <span className="font-medium text-white">완료 거리:</span>
+                  <span className="ml-2 text-green-300">{currentProgress.completedDistance.toFixed(2)}km</span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-700">전체 거리:</span>
-                  <span className="ml-2 text-gray-600">{currentProgress.totalDistance.toFixed(2)}km</span>
+                  <span className="font-medium text-white">전체 거리:</span>
+                  <span className="ml-2 text-gray-300">{currentProgress.totalDistance.toFixed(2)}km</span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-700">최근 지점:</span>
-                  <span className="ml-2 text-purple-600">{currentProgress.nearestPointIndex + 1}번째</span>
+                  <span className="font-medium text-white">최근 지점:</span>
+                  <span className="ml-2 text-purple-300">{currentProgress.nearestPointIndex + 1}번째</span>
                 </div>
               </div>
             </div>
