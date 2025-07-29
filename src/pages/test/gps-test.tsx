@@ -267,7 +267,7 @@ const GPSTestPage: React.FC = () => {
         expand
       />
       {/* 상단 설명 */}
-      <div className="p-4 bg-gray-800 shadow-sm text-white">
+      <div className="p-4 bg-gray-800 shadow-sm">
         <h1 className="text-2xl font-bold mb-2 text-white">GPS 테스트</h1>
         <p className="text-gray-300 mb-4">
           시뮬레이터를 사용하여 GPS 위치, 정확도, 에러 상황을 테스트할 수 있습니다.
@@ -294,11 +294,11 @@ const GPSTestPage: React.FC = () => {
             <select
               value={movementSpeed}
               onChange={(e) => setMovementSpeed(e.target.value as keyof typeof MOVEMENT_SPEEDS)}
-              className="px-2 py-1 border rounded bg-gray-700 text-white"
+              className="px-2 py-1 border rounded bg-gray-700 text-white border-gray-600"
             >
-              <option value="WALK">걷기 (5km/h)</option>
-              <option value="JOG">조깅 (8km/h)</option>
-              <option value="RUN">달리기 (12km/h)</option>
+              <option value="WALK" className="bg-gray-700 text-white">걷기 (5km/h)</option>
+              <option value="JOG" className="bg-gray-700 text-white">조깅 (8km/h)</option>
+              <option value="RUN" className="bg-gray-700 text-white">달리기 (12km/h)</option>
             </select>
           </div>
           <div className="flex items-center gap-2 min-w-[200px]">
@@ -343,12 +343,12 @@ const GPSTestPage: React.FC = () => {
                   <select
                     value={easingType}
                     onChange={(e) => setEasingType(e.target.value as EasingFunction)}
-                    className="px-2 py-1 border rounded bg-gray-700 text-white"
+                    className="px-2 py-1 border rounded bg-gray-700 text-white border-gray-600"
                   >
-                    <option value="linear">Linear</option>
-                    <option value="easeIn">Ease In</option>
-                    <option value="easeOut">Ease Out</option>
-                    <option value="easeInOut">Ease In Out</option>
+                    <option value="linear" className="bg-gray-700 text-white">Linear</option>
+                    <option value="easeIn" className="bg-gray-700 text-white">Ease In</option>
+                    <option value="easeOut" className="bg-gray-700 text-white">Ease Out</option>
+                    <option value="easeInOut" className="bg-gray-700 text-white">Ease In Out</option>
                   </select>
                 </div>
                 
