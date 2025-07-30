@@ -150,7 +150,7 @@ const Home = () => {
             className="flex flex-col items-center text-gray-600 hover:text-gray-900"
           >
             <span className="material-icons mb-1">My friends</span>
-            <span>친구</span>s
+            <span>친구</span>
           </Link>
           <Link
             to="/reviews"
