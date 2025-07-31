@@ -19,7 +19,7 @@ VITE_HOST= # 개발서버 호스트 (localhost)
 VITE_KAKAO_MAP_API_KEY= # 카카오 맵 JavaScript API 키
 
 # OAuth 설정
-VITE_OAUTH_REDIRECT_URL= # OAuth 콜백 URL (선택사항)
+VITE_OAUTH_REDIRECT_URL= # OAuth 콜백 URL (선택사항, 현재 코드에서는 직접 사용하지 않음. 백엔드에서 필요할 때만 설정)
 ```
 
 ### 환경변수 사용 방법
@@ -46,7 +46,7 @@ const appInfo = getAppInfo();
 - `VITE_PORT`: 개발 서버 포트 번호
 - `VITE_HOST`: 개발 서버 호스트
 - `VITE_KAKAO_MAP_API_KEY`: 카카오 맵 JavaScript API 키
-- `VITE_OAUTH_REDIRECT_URL`: OAuth 콜백 URL (선택사항)
+- `VITE_OAUTH_REDIRECT_URL`: OAuth 콜백 URL (선택사항, 현재 코드에서는 직접 사용하지 않음. 백엔드에서 필요할 때만 설정)
 
 ## 설치 및 실행
 
