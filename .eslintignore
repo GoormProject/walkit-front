@@ -1,0 +1,31 @@
+# 빌드 결과물
+dist/
+build/
+out/
+
+# 의존성
+node_modules/
+
+# 환경 설정 파일
+.env*
+!.env.example
+
+# 로그 파일
+*.log
+
+# 임시 파일
+*.tmp
+*.temp
+
+# 특정 개발자 작업 파일 (예시)
+# src/pages/other-developer-work/
+# src/components/experimental/
+
+# 스토리북 파일 (선택적)
+# stories/
+
+# 테스트 파일 (선택적)
+# **/*.test.ts
+# **/*.test.tsx
+# **/*.spec.ts
+# **/*.spec.tsx
