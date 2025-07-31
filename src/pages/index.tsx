@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import { toast, Toaster } from 'sonner';
 import KakaoMap from '../components/KakaoMap';
@@ -6,6 +6,8 @@ import { GPSTracker } from '@/components/GPSTracker';
 import { useGPSStore } from '@/features/gps/gpsSlice';
 import { calculateDistance as calculateCoordinateDistance } from '@/utils/converter/pathConverter';
 import { isOAuthCallback } from '@/utils/oauth';
+import { logoutUser } from '@/utils/logout';
+import { useAuthActions } from '@/features/auth/authSlice';
 
 const Home = () => {
   const [isWalking, setIsWalking] = useState(false);
@@ -13,6 +15,8 @@ const Home = () => {
   const map = useRef<kakao.maps.Map | null>(null);
   const polyline = useRef<kakao.maps.Polyline | null>(null);
   const { error } = useGPSStore();
+  const navigate = useNavigate();
+  const { logout } = useAuthActions();
 
   // OAuth 콜백 확인 (디버깅용)
   useEffect(() => {
@@ -71,6 +75,28 @@ const Home = () => {
   const handlePositionUpdate = (position: kakao.maps.LatLng) => {
     if (isWalking) {
       setPathPositions(prev => [...prev, position]);
+    }
+  };
+
+  // 로그아웃 핸들러
+  const handleLogout = async () => {
+    try {
+      console.log('🚪 로그아웃 버튼 클릭됨');
+
+      // API 로그아웃 호출
+      const success = await logoutUser();
+
+      if (success) {
+        // Zustand store에서 로그아웃 처리
+        logout();
+        toast.success('로그아웃되었습니다.');
+        navigate('/login');
+      } else {
+        toast.error('로그아웃에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('❌ 로그아웃 처리 실패:', error);
+      toast.error('로그아웃 처리 중 오류가 발생했습니다.');
     }
   };
 
@@ -173,6 +199,16 @@ const Home = () => {
             <span className="material-icons mb-1">star</span>
             <span>리뷰</span>
           </Link>
+        </div>
+
+        {/* 로그아웃 버튼 (임시) */}
+        <div className="mt-4 flex justify-center">
+          <button
+            onClick={handleLogout}
+            className="px-8 py-3 bg-red-500 text-white rounded-lg shadow-lg hover:bg-red-600 transition-all text-lg font-semibold"
+          >
+            로그아웃
+          </button>
         </div>
       </nav>
     </div>

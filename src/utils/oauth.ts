@@ -3,7 +3,7 @@
  * Google, Kakao OAuth2 로그인을 처리합니다.
  */
 
-import { getDeviceId } from './deviceId';
+import { useAuthStore } from '@/features/auth/authSlice';
 
 /**
  * OAuth 제공자 타입
@@ -14,13 +14,21 @@ export type OAuthProvider = 'google' | 'kakao';
  * OAuth 로그인 URL을 생성합니다.
  */
 export const getOAuthLoginUrl = (provider: OAuthProvider): string => {
-  const deviceId = getDeviceId();
+  console.log('🔧 OAuth URL 생성 시작');
+
+  const currentState = useAuthStore.getState();
+  console.log('📊 현재 store 상태:', currentState);
+
+  const deviceId = currentState.user.deviceId;
   const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
-  console.log('🔧 OAuth URL 생성 시작');
   console.log('📱 Device ID:', deviceId);
   console.log('🌐 Base URL:', baseUrl);
   console.log('🔌 Provider:', provider);
+
+  // deviceId가 없으면 임시로 생성 (로그인 성공 시에만 영구 저장)
+  const tempDeviceId = deviceId || crypto.randomUUID();
+  console.log('📱 사용할 Device ID (임시):', tempDeviceId);
 
   if (!baseUrl) {
     throw new Error(
@@ -31,10 +39,10 @@ export const getOAuthLoginUrl = (provider: OAuthProvider): string => {
   let loginUrl: string;
   switch (provider) {
     case 'google':
-      loginUrl = `${baseUrl}/oauth2/authorization/google?state=${deviceId}`;
+      loginUrl = `${baseUrl}/oauth2/authorization/google?state=${tempDeviceId}`;
       break;
     case 'kakao':
-      loginUrl = `${baseUrl}/oauth2/authorization/kakao?state=${deviceId}`;
+      loginUrl = `${baseUrl}/oauth2/authorization/kakao?state=${tempDeviceId}`;
       break;
     default:
       throw new Error(`지원하지 않는 OAuth 제공자입니다: ${provider}`);

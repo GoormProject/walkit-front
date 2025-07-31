@@ -119,7 +119,7 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
       )}
 
       {/* 로딩 스피너 */}
-      <LoadingSpinner show={isLoading} />
+      {/* <LoadingSpinner show={isLoading} /> */}
 
       {/* 에러 메시지 */}
       {error && (

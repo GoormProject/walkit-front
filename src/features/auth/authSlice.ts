@@ -7,6 +7,7 @@ interface AuthState {
   user: {
     memberId: string | null; // API에서 받은 memberId
     email: string | null; // API에서 받은 email
+    deviceId: string | null; // 디바이스 ID
   };
   isLoading: boolean;
   error: string | null;
@@ -37,6 +38,7 @@ const isTestJwtEnabled =
   import.meta.env.VITE_TEST_JWT === 'true';
 
 // 환경변수 디버깅
+
 console.log('🔧 환경변수 확인:', {
   NODE_ENV: import.meta.env.NODE_ENV,
   VITE_BYPASS_AUTH: import.meta.env.VITE_BYPASS_AUTH,
@@ -51,35 +53,47 @@ export const useAuthStore = create<AuthStore>()(
     set => ({
       // 초기 상태 - 환경변수 반영 (persist 없이)
       isAuthenticated: isBypassEnabled || isTestJwtEnabled,
-      user:
-        isBypassEnabled || isTestJwtEnabled
-          ? {
-              memberId: '1',
-              email: 'test@example.com',
-            }
-          : {
-              memberId: null,
-              email: null,
-            },
+      user: {
+        memberId: null,
+        email: null,
+        deviceId: null,
+      },
       isLoading: false,
       error: null,
 
       // 액션들
       oauthLoginSuccess: userData => {
         // OAuth 로그인 성공 시에만 persist에 저장
-        console.log('🔄 OAuth 로그인 성공 처리:', userData);
+        console.log('🔄 OAuth 로그인 성공 처리 시작');
+        console.log('📊 받은 userData:', userData);
 
-        set({
+        // deviceId 생성 (로그인 성공 시에만)
+        const deviceId = crypto.randomUUID();
+        console.log('📱 Device ID 생성 (로그인 성공):', deviceId);
+
+        const newState = {
           isAuthenticated: true,
           user: {
             memberId: userData.memberId.toString(),
             email: userData.email,
+            deviceId: deviceId, // 로그인 성공 시 생성
           },
           isLoading: false,
           error: null,
-        });
+        };
+
+        console.log('📊 설정할 새 상태:', newState);
+
+        set(newState);
 
         console.log('✅ OAuth 로그인 성공 - 상태 업데이트 완료');
+
+        // 업데이트 후 상태 확인
+        setTimeout(() => {
+          const updatedState = useAuthStore.getState();
+          console.log('🔍 업데이트 후 store 상태:', updatedState);
+          console.log('📱 업데이트 후 deviceId:', updatedState.user.deviceId);
+        }, 100);
       },
 
       login: async () => {
@@ -95,6 +109,7 @@ export const useAuthStore = create<AuthStore>()(
             user: {
               memberId: 'login-user-1',
               email: 'login@example.com',
+              deviceId: null,
             },
             isLoading: false,
             error: null,
@@ -126,12 +141,16 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       logout: () => {
-        // 로그아웃 시 persist에서 제거
+        // 로그아웃 시 auth-storage 자체를 삭제
+        localStorage.removeItem('auth-storage');
+
+        // 상태도 초기화
         set({
           isAuthenticated: false,
           user: {
             memberId: null,
             email: null,
+            deviceId: null,
           },
           isLoading: false,
           error: null,
@@ -140,9 +159,15 @@ export const useAuthStore = create<AuthStore>()(
 
       validateToken: async () => {
         try {
-          // API 인스턴스 생성
+          console.log('🔍 validateToken 시작 - 현재 상태 확인');
+          const currentState = useAuthStore.getState();
+          console.log('📊 현재 store 상태:', currentState);
+          console.log('📱 현재 deviceId:', currentState.user.deviceId);
+
+          // API 인스턴스 생성 (쿠키 전송 설정 추가)
           const api = new Api({
             baseURL: import.meta.env.VITE_API_BASE_URL,
+            withCredentials: true, // HttpOnly 쿠키 전송을 위해 필요
           });
 
           // 현재 사용자 정보 조회
@@ -151,16 +176,31 @@ export const useAuthStore = create<AuthStore>()(
 
           if (response.data?.data) {
             const userData = response.data.data;
+            console.log('✅ validateToken - 사용자 정보 확인됨');
+            console.log('👤 API 응답 사용자 정보:', userData);
+
+            // deviceId가 없으면 새로 생성
+            let deviceId = currentState.user.deviceId;
+            if (!deviceId) {
+              deviceId = crypto.randomUUID();
+              console.log('📱 Device ID 새로 생성 (validateToken):', deviceId);
+            } else {
+              console.log('📱 기존 deviceId 유지:', deviceId);
+            }
+
             // 사용자 정보로 상태 업데이트
             set({
               isAuthenticated: true,
               user: {
                 memberId: userData.memberId?.toString() || '',
                 email: userData.email || '',
+                deviceId: deviceId, // 기존 또는 새로 생성된 deviceId
               },
               isLoading: false,
               error: null,
             });
+
+            console.log('✅ validateToken 완료 - deviceId 유지됨');
             return true;
           }
           return false;
@@ -173,6 +213,7 @@ export const useAuthStore = create<AuthStore>()(
               user: {
                 memberId: null,
                 email: null,
+                deviceId: null,
               },
               isLoading: false,
               error: null,
@@ -192,26 +233,47 @@ export const useAuthStore = create<AuthStore>()(
     }),
     {
       name: 'auth-storage',
-      // 로그인 성공한 상태만 persist
+      // 로그인 성공한 상태만 persist (새로운 구조만 저장)
       partialize: state => {
+        console.log('💾 partialize 호출됨');
+        console.log('📊 현재 상태:', state);
+        console.log('📱 현재 deviceId:', state.user.deviceId);
+
         // 인증된 상태일 때만 저장
         if (state.isAuthenticated && state.user.memberId) {
-          return {
+          const persistedData = {
             isAuthenticated: state.isAuthenticated,
-            user: state.user,
+            user: {
+              memberId: state.user.memberId,
+              email: state.user.email,
+              deviceId: state.user.deviceId,
+            },
           };
+          console.log('💾 저장할 데이터:', persistedData);
+          return persistedData;
         }
         // 인증되지 않은 상태면 저장하지 않음
+        console.log('💾 인증되지 않음 - 빈 객체 반환');
         return {};
       },
       // 초기화 시 환경변수 우선 적용
       onRehydrateStorage: () => state => {
-        if (state && (isBypassEnabled || isTestJwtEnabled)) {
-          state.isAuthenticated = true;
-          state.user = {
-            memberId: '1',
-            email: 'test@example.com',
-          };
+        console.log('🔄 onRehydrateStorage 호출됨');
+        console.log('📊 복원된 상태:', state);
+
+        if (state) {
+          console.log('📱 복원된 deviceId:', state.user?.deviceId);
+
+          // deviceId는 인증된 상태에서만 관리
+          // 인증되지 않은 상태에서는 null로 유지
+
+          // 환경변수 우선 적용 (인증 상태만 설정)
+          if (isBypassEnabled || isTestJwtEnabled) {
+            console.log('🔧 환경변수로 인증 상태 설정');
+            state.isAuthenticated = true;
+          }
+        } else {
+          console.log('❌ 복원된 상태가 없음');
         }
       },
     }
