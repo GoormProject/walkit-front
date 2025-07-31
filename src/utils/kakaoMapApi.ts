@@ -57,7 +57,7 @@ export const initGeolocation = (
   onLocationUpdate: (position: kakao.maps.LatLng) => void,
   onLoadingChange: (loading: boolean) => void,
   onError: (error: GeolocationPositionError) => void
-): void => {
+): (() => void) | undefined => {
   if (!navigator.geolocation) {
     alert('Geolocation API를 지원하지 않습니다.');
     onLoadingChange(false);
@@ -66,7 +66,7 @@ export const initGeolocation = (
 
   onLoadingChange(true);
 
-  navigator.geolocation.watchPosition(
+  const watchId = navigator.geolocation.watchPosition(
     (position) => {
       onLoadingChange(false);
       const { latitude, longitude } = position.coords;
@@ -88,4 +88,9 @@ export const initGeolocation = (
       timeout: 10000 
     }
   );
+
+  // cleanup 함수 반환
+  return () => {
+    navigator.geolocation.clearWatch(watchId);
+  };
 }; 

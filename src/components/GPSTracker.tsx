@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useGPSStore } from '@/features/gps/gpsSlice';
 import { CustomMarker } from './CustomMarker';
 import { initGeolocation } from '@/utils/kakaoMapApi';
+import { toast } from 'sonner';
+import { handleGPSError } from '@/utils/gpsErrorHandler';
 
 interface GPSTrackerProps {
   map: kakao.maps.Map;
@@ -35,10 +37,6 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map, onPositionUpdate })
   }, [currentPosition, onPositionUpdate]);
 
   useEffect(() => {
-    const center = map.getCenter();
-    setPosition(center);
-    lastPosition.current = center;
-
     // 위치 추적 초기화
     const cleanup = initGeolocation(
       map,
@@ -54,7 +52,13 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map, onPositionUpdate })
         setPosition(position);
       },
       setLoading,
-      setError
+      (error) => {
+        setError(error);
+        const errorMessage = handleGPSError(error);
+        toast.error(errorMessage, {
+          description: '기본 위치(서울 시청)로 표시됩니다.',
+        });
+      }
     );
 
     return () => {

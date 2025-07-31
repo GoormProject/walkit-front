@@ -32,6 +32,7 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
   const mapRef = useRef<kakao.maps.Map | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { setError: setGPSError } = useGPSStore(state => state.actions);
+  const { isLoading: gpsLoading } = useGPSStore(state => state);
 
   useEffect(() => {
     const initMap = async () => {
@@ -63,27 +64,7 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
         });
         mapRef.current = mapInstance;
 
-        // 위치 권한 요청 및 실시간 위치 감시
-        initGeolocation(
-          mapInstance,
-          position => {
-            // 지도 중심 이동
-            mapInstance.setCenter(position);
-          },
-          setIsLoading,
-          error => {
-            console.warn('위치 권한 또는 위치 수신 에러:', error);
-
-            // GPS 에러 상태 업데이트
-            setGPSError(error);
-
-            // 에러 메시지 표시
-            const errorMessage = handleGPSError(error);
-            toast.error(errorMessage, {
-              description: '기본 위치(서울 시청)로 표시됩니다.',
-            });
-          }
-        );
+        // 위치 추적은 GPSTracker 컴포넌트에서 처리하므로 여기서는 제거
 
         // 지도 인스턴스 콜백
         onMapLoad?.(mapInstance);
@@ -118,8 +99,8 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
         />
       )}
 
-      {/* 로딩 스피너 */}
-      <LoadingSpinner show={isLoading} />
+      {/* 로딩 스피너 - 위치정보 로딩 문제로 임시 비활성화 */}
+      {/* <LoadingSpinner show={isLoading || gpsLoading} /> */}
 
       {/* 에러 메시지 */}
       {error && (
