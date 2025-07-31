@@ -9,6 +9,7 @@ import Profile from '@/pages/profile';
 import ProfileEdit from '@/pages/profile/edit';
 import Signup from '@/pages/signup';
 import Login from '@/pages/login';
+import OAuthCallback from '@/components/auth/OAuthCallback';
 import TestPage from '@/pages/test';
 import TrailVisualizationTest from '@/pages/test/trail-visualization';
 import BottomSheetTestPage from '@/pages/test/bottom-sheet';
@@ -22,6 +23,9 @@ function App() {
   return (
     <div className="App">
       <Routes>
+        {/* OAuth 콜백 처리 - RootLayout 밖에 배치 */}
+        <Route path="/oauth/callback" element={<OAuthCallback />} />
+
         {/* 현재 RootLayout 은 전역에 적용되는 레이아웃 입니다. 근데 /test 랑 /test/trail~ 는 어떤 방식으로 만들었는지 몰라서 밖으로 뺐습니다.
         유저 인증이 있어야 작동해야 되는 페이지는 AuthWrapper 안으로 이동시켜서 하시면 됩니다. */}
 
@@ -41,22 +45,13 @@ function App() {
         <Route path="/test/shadcn-dialog" element={<ShadcnDialogTestPage />} />
 
         {/* GPS 테스트 페이지 */}
-        <Route
-          path="/test/gps"
-          element={<GPSTestPage />}
-        />
+        <Route path="/test/gps" element={<GPSTestPage />} />
 
         {/* 산책 경로 진행률 추적 테스트 페이지 */}
-        <Route
-          path="/test/trail-progress"
-          element={<TrailProgressTest />}
-        />
+        <Route path="/test/trail-progress" element={<TrailProgressTest />} />
 
         {/* 카카오맵 단순 테스트 페이지 */}
-        <Route
-          path="/test/simple-map"
-          element={<SimpleMapTest />}
-        />
+        <Route path="/test/simple-map" element={<SimpleMapTest />} />
 
         {/* 모든 페이지에 RootLayout 적용 */}
         <Route element={<RootLayout />}>
