@@ -1,10 +1,13 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import { toast, Toaster } from 'sonner';
 import KakaoMap from '../components/KakaoMap';
 import { GPSTracker } from '@/components/GPSTracker';
 import { useGPSStore } from '@/features/gps/gpsSlice';
 import { calculateDistance as calculateCoordinateDistance } from '@/utils/converter/pathConverter';
+import { isOAuthCallback } from '@/utils/oauth';
+import { logoutUser } from '@/utils/logout';
+import { useAuthActions } from '@/features/auth/authSlice';
 
 const Home = () => {
   const [isWalking, setIsWalking] = useState(false);
@@ -12,13 +15,28 @@ const Home = () => {
   const map = useRef<kakao.maps.Map | null>(null);
   const polyline = useRef<kakao.maps.Polyline | null>(null);
   const { error } = useGPSStore();
+  const navigate = useNavigate();
+  const { logout } = useAuthActions();
+
+  // OAuth 콜백 확인 (디버깅용)
+  useEffect(() => {
+    console.log('🏠 홈 페이지 로드됨');
+    console.log('📍 현재 URL:', window.location.href);
+    console.log('🔍 URL 파라미터:', window.location.search);
+    console.log('🔄 OAuth 콜백 여부:', isOAuthCallback());
+
+    if (isOAuthCallback()) {
+      console.log('⚠️ 홈 페이지에서 OAuth 콜백 감지됨!');
+      console.log('🚨 OAuth 콜백이 홈 페이지로 리다이렉트되었습니다.');
+    }
+  }, []);
 
   // 산책 시작
   const handleStartWalk = () => {
     setIsWalking(true);
     setPathPositions([]);
     toast.success('산책을 시작합니다!', {
-      description: 'GPS 신호가 안정적인 실외에서 이용해주세요.'
+      description: 'GPS 신호가 안정적인 실외에서 이용해주세요.',
     });
   };
 
@@ -27,7 +45,7 @@ const Home = () => {
     setIsWalking(false);
     // TODO: 산책 기록 저장 로직 추가
     toast.success('산책이 종료되었습니다!', {
-      description: `총 거리: ${calculateTotalDistance(pathPositions).toFixed(2)}km`
+      description: `총 거리: ${calculateTotalDistance(pathPositions).toFixed(2)}km`,
     });
   };
 
@@ -43,7 +61,10 @@ const Home = () => {
   };
 
   // 두 지점 간의 거리 계산 (km)
-  const calculateDistance = (pos1: kakao.maps.LatLng, pos2: kakao.maps.LatLng): number => {
+  const calculateDistance = (
+    pos1: kakao.maps.LatLng,
+    pos2: kakao.maps.LatLng
+  ): number => {
     return calculateCoordinateDistance(
       { lat: pos1.getLat(), lng: pos1.getLng() },
       { lat: pos2.getLat(), lng: pos2.getLng() }
@@ -54,6 +75,28 @@ const Home = () => {
   const handlePositionUpdate = (position: kakao.maps.LatLng) => {
     if (isWalking) {
       setPathPositions(prev => [...prev, position]);
+    }
+  };
+
+  // 로그아웃 핸들러
+  const handleLogout = async () => {
+    try {
+      console.log('🚪 로그아웃 버튼 클릭됨');
+
+      // API 로그아웃 호출
+      const success = await logoutUser();
+
+      if (success) {
+        // Zustand store에서 로그아웃 처리
+        logout();
+        toast.success('로그아웃되었습니다.');
+        navigate('/login');
+      } else {
+        toast.error('로그아웃에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('❌ 로그아웃 처리 실패:', error);
+      toast.error('로그아웃 처리 중 오류가 발생했습니다.');
     }
   };
 
@@ -73,7 +116,7 @@ const Home = () => {
       strokeWeight: 4,
       strokeColor: '#3b82f6',
       strokeOpacity: 0.8,
-      strokeStyle: 'solid'
+      strokeStyle: 'solid',
     });
 
     return () => {
@@ -86,12 +129,21 @@ const Home = () => {
   return (
     <div className="flex flex-col h-screen">
       <Toaster position="top-center" richColors />
-      
+
       {/* 지도 영역 */}
       <div className="relative flex-1">
-        <KakaoMap onMapLoad={(mapInstance) => { map.current = mapInstance; }} />
-        {map.current && <GPSTracker map={map.current} onPositionUpdate={handlePositionUpdate} />}
-        
+        <KakaoMap
+          onMapLoad={mapInstance => {
+            map.current = mapInstance;
+          }}
+        />
+        {map.current && (
+          <GPSTracker
+            map={map.current}
+            onPositionUpdate={handlePositionUpdate}
+          />
+        )}
+
         {/* 상단 버튼 */}
         <div className="absolute top-4 left-4 right-4 flex justify-between items-center">
           <div className="flex gap-2">
@@ -126,27 +178,37 @@ const Home = () => {
       {/* 네비게이션 */}
       <nav className="bg-white p-4 shadow-md">
         <div className="container mx-auto flex justify-around items-center">
-          <Link 
-            to="/profile" 
+          <Link
+            to="/profile"
             className="flex flex-col items-center text-gray-600 hover:text-gray-900"
           >
             <span className="material-icons mb-1">person</span>
             <span>프로필</span>
           </Link>
-          <Link 
-            to="/friends" 
+          <Link
+            to="/friends"
             className="flex flex-col items-center text-gray-600 hover:text-gray-900"
           >
             <span className="material-icons mb-1">group</span>
             <span>친구</span>
           </Link>
-          <Link 
-            to="/reviews" 
+          <Link
+            to="/reviews"
             className="flex flex-col items-center text-gray-600 hover:text-gray-900"
           >
             <span className="material-icons mb-1">star</span>
             <span>리뷰</span>
           </Link>
+        </div>
+
+        {/* 로그아웃 버튼 (임시) */}
+        <div className="mt-4 flex justify-center">
+          <button
+            onClick={handleLogout}
+            className="px-8 py-3 bg-red-500 text-white rounded-lg shadow-lg hover:bg-red-600 transition-all text-lg font-semibold"
+          >
+            로그아웃
+          </button>
         </div>
       </nav>
     </div>

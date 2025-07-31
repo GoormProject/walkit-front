@@ -1,6 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { toast } from 'sonner';
-import { loadKakaoMapSDK, createMap, initGeolocation, DEFAULT_COORDS } from '@/utils/kakaoMapApi';
+import {
+  loadKakaoMapSDK,
+  createMap,
+  initGeolocation,
+  DEFAULT_COORDS,
+} from '@/utils/kakaoMapApi';
 import LoadingSpinner from './LoadingSpinner';
 import TrailVisualization from './TrailVisualization';
 import { GPSTracker } from './GPSTracker';
@@ -20,13 +25,14 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
   selectedTrailId,
   onTrailClick,
   onTrailHover,
-  onMapLoad
+  onMapLoad,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const mapRef = useRef<kakao.maps.Map | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { setError: setGPSError } = useGPSStore(state => state.actions);
+  const { isLoading: gpsLoading } = useGPSStore(state => state);
 
   useEffect(() => {
     const initMap = async () => {
@@ -42,7 +48,9 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
 
         // 환경 변수 검증
         if (!import.meta.env.VITE_KAKAO_MAP_API_KEY) {
-          throw new Error('카카오 맵 API 키가 설정되지 않았습니다. README.md를 참조하여 환경 변수를 설정해주세요.');
+          throw new Error(
+            '카카오 맵 API 키가 설정되지 않았습니다. README.md를 참조하여 환경 변수를 설정해주세요.'
+          );
         }
 
         // 카카오 맵 SDK 로드
@@ -52,31 +60,11 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
         const mapInstance = new kakao.maps.Map(containerRef.current, {
           center: new kakao.maps.LatLng(DEFAULT_COORDS.lat, DEFAULT_COORDS.lng),
           level: 4,
-          currentLocationMarker: false  // 기본 현재 위치 마커 비활성화
+          currentLocationMarker: false, // 기본 현재 위치 마커 비활성화
         });
         mapRef.current = mapInstance;
 
-        // 위치 권한 요청 및 실시간 위치 감시
-        initGeolocation(
-          mapInstance,
-          (position) => {
-            // 지도 중심 이동
-            mapInstance.setCenter(position);
-          },
-          setIsLoading,
-          (error) => {
-            console.warn('위치 권한 또는 위치 수신 에러:', error);
-            
-            // GPS 에러 상태 업데이트
-            setGPSError(error);
-            
-            // 에러 메시지 표시
-            const errorMessage = handleGPSError(error);
-            toast.error(errorMessage, {
-              description: '기본 위치(서울 시청)로 표시됩니다.'
-            });
-          }
-        );
+        // 위치 추적은 GPSTracker 컴포넌트에서 처리하므로 여기서는 제거
 
         // 지도 인스턴스 콜백
         onMapLoad?.(mapInstance);
@@ -96,13 +84,10 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
   return (
     <div className="relative w-full h-full">
       {/* 지도 컨테이너 */}
-      <div 
-        ref={containerRef}
-        className="w-full h-full rounded-lg shadow-lg"
-      >
+      <div ref={containerRef} className="w-full h-full rounded-lg shadow-lg">
         {mapRef.current && <GPSTracker map={mapRef.current} />}
       </div>
-      
+
       {/* 산책 경로 시각화 */}
       {showTrailPaths && mapRef.current && (
         <TrailVisualization
@@ -113,10 +98,10 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
           onTrailHover={onTrailHover}
         />
       )}
-      
-      {/* 로딩 스피너 */}
-      <LoadingSpinner show={isLoading} />
-      
+
+      {/* 로딩 스피너 - 위치정보 로딩 문제로 임시 비활성화 */}
+      {/* <LoadingSpinner show={isLoading || gpsLoading} /> */}
+
       {/* 에러 메시지 */}
       {error && (
         <div className="absolute top-4 left-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
@@ -128,4 +113,4 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
   );
 };
 
-export default KakaoMap; 
+export default KakaoMap;

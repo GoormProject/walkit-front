@@ -17,9 +17,11 @@ const TrailVisualization: React.FC<TrailVisualizationProps> = ({
   showTrailPaths = true,
   selectedTrailId,
   onTrailClick,
-  onTrailHover
+  onTrailHover,
 }) => {
-  const [trailData, setTrailData] = useState<GeoJSONFeatureCollection | null>(null);
+  const [trailData, setTrailData] = useState<GeoJSONFeatureCollection | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [visibleTrails, setVisibleTrails] = useState<Set<string>>(new Set());
@@ -31,14 +33,17 @@ const TrailVisualization: React.FC<TrailVisualizationProps> = ({
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const data = await getTrailPaths();
       setTrailData(data);
-      
+
       // 모든 경로를 기본적으로 보이도록 설정
-      const allTrailIds = new Set(data.features.map(feature => feature.properties.id).filter(Boolean) as string[]);
+      const allTrailIds = new Set(
+        data.features
+          .map(feature => feature.properties.id)
+          .filter(Boolean) as string[]
+      );
       setVisibleTrails(allTrailIds);
-      
     } catch (err) {
       console.error('경로 데이터 로드 실패:', err);
       setError('산책 경로를 불러오는 중 오류가 발생했습니다.');
@@ -48,66 +53,76 @@ const TrailVisualization: React.FC<TrailVisualizationProps> = ({
   }, [showTrailPaths]);
 
   // 코스 타입별 스타일 정의 (메모이제이션)
-  const courseStyles = useMemo(() => ({
-    easy: {
-      strokeColor: '#4CAF50',
-      strokeWeight: 3,
-      strokeOpacity: 0.8,
-      strokeStyle: 'solid' as const,
-      markerColor: '#4CAF50'
-    },
-    medium: {
-      strokeColor: '#FF9800',
-      strokeWeight: 4,
-      strokeOpacity: 0.8,
-      strokeStyle: 'solid' as const,
-      markerColor: '#FF9800'
-    },
-    hard: {
-      strokeColor: '#F44336',
-      strokeWeight: 5,
-      strokeOpacity: 0.8,
-      strokeStyle: 'solid' as const,
-      markerColor: '#F44336'
-    },
-    scenic: {
-      strokeColor: '#2196F3',
-      strokeWeight: 4,
-      strokeOpacity: 0.8,
-      strokeStyle: 'dashed' as const,
-      markerColor: '#2196F3'
-    },
-    unknown: {
-      strokeColor: '#9E9E9E',
-      strokeWeight: 3,
-      strokeOpacity: 0.6,
-      strokeStyle: 'solid' as const,
-      markerColor: '#9E9E9E'
-    }
-  }), []);
+  const courseStyles = useMemo(
+    () => ({
+      easy: {
+        strokeColor: '#4CAF50',
+        strokeWeight: 3,
+        strokeOpacity: 0.8,
+        strokeStyle: 'solid' as const,
+        markerColor: '#4CAF50',
+      },
+      medium: {
+        strokeColor: '#FF9800',
+        strokeWeight: 4,
+        strokeOpacity: 0.8,
+        strokeStyle: 'solid' as const,
+        markerColor: '#FF9800',
+      },
+      hard: {
+        strokeColor: '#F44336',
+        strokeWeight: 5,
+        strokeOpacity: 0.8,
+        strokeStyle: 'solid' as const,
+        markerColor: '#F44336',
+      },
+      scenic: {
+        strokeColor: '#2196F3',
+        strokeWeight: 4,
+        strokeOpacity: 0.8,
+        strokeStyle: 'dashed' as const,
+        markerColor: '#2196F3',
+      },
+      unknown: {
+        strokeColor: '#9E9E9E',
+        strokeWeight: 3,
+        strokeOpacity: 0.6,
+        strokeStyle: 'solid' as const,
+        markerColor: '#9E9E9E',
+      },
+    }),
+    []
+  );
 
   // GeoJSON을 카카오맵 형식으로 변환 (메모이제이션)
-  const convertGeoJSONToTrailPaths = useCallback((geoJSON: GeoJSONFeatureCollection): TrailPathData[] => {
-    return geoJSON.features
-      .filter(feature => feature.geometry.type === 'LineString')
-      .map(feature => {
-        const coordinates = (feature.geometry.coordinates as [number, number][]).map(coord => 
-          new kakao.maps.LatLng(coord[1], coord[0]) // GeoJSON은 [경도, 위도], 카카오맵은 [위도, 경도]
-        );
+  const convertGeoJSONToTrailPaths = useCallback(
+    (geoJSON: GeoJSONFeatureCollection): TrailPathData[] => {
+      return geoJSON.features
+        .filter(feature => feature.geometry.type === 'LineString')
+        .map(feature => {
+          const coordinates = (
+            feature.geometry.coordinates as [number, number][]
+          ).map(
+            coord => new kakao.maps.LatLng(coord[1], coord[0]) // GeoJSON은 [경도, 위도], 카카오맵은 [위도, 경도]
+          );
 
-        const courseType = feature.properties.courseType || 'unknown';
-        const style = courseStyles[courseType as keyof typeof courseStyles] || courseStyles.unknown;
+          const courseType = feature.properties.courseType || 'unknown';
+          const style =
+            courseStyles[courseType as keyof typeof courseStyles] ||
+            courseStyles.unknown;
 
-        return {
-          id: feature.properties.id || `trail-${Math.random()}`,
-          name: feature.properties.name || '이름 없는 경로',
-          courseType,
-          coordinates,
-          style,
-          properties: feature.properties
-        };
-      });
-  }, [courseStyles]);
+          return {
+            id: feature.properties.id || `trail-${Math.random()}`,
+            name: feature.properties.name || '이름 없는 경로',
+            courseType,
+            coordinates,
+            style,
+            properties: feature.properties,
+          };
+        });
+    },
+    [courseStyles]
+  );
 
   // 경로 데이터가 변경될 때 변환 (메모이제이션)
   const convertedPaths = useMemo(() => {
@@ -139,14 +154,17 @@ const TrailVisualization: React.FC<TrailVisualizationProps> = ({
   }, []);
 
   // 모든 경로 표시/숨김
-  const toggleAllTrails = useCallback((show: boolean) => {
-    if (show) {
-      const allTrailIds = new Set(convertedPaths.map(path => path.id));
-      setVisibleTrails(allTrailIds);
-    } else {
-      setVisibleTrails(new Set());
-    }
-  }, [convertedPaths]);
+  const toggleAllTrails = useCallback(
+    (show: boolean) => {
+      if (show) {
+        const allTrailIds = new Set(convertedPaths.map(path => path.id));
+        setVisibleTrails(allTrailIds);
+      } else {
+        setVisibleTrails(new Set());
+      }
+    },
+    [convertedPaths]
+  );
 
   if (!map) {
     return null;
@@ -157,12 +175,12 @@ const TrailVisualization: React.FC<TrailVisualizationProps> = ({
       {/* 로딩 상태 */}
       {isLoading && (
         <div className="absolute top-4 right-4 z-10">
-          <LoadingSpinner 
+          {/* <LoadingSpinner 
             show={true} 
             message="산책 경로를 불러오는 중"
             size="small"
             variant="inline"
-          />
+          /> */}
         </div>
       )}
 
@@ -213,7 +231,7 @@ const TrailVisualization: React.FC<TrailVisualizationProps> = ({
                     onChange={() => toggleTrailVisibility(path.id)}
                     className="w-3 h-3"
                   />
-                  <span 
+                  <span
                     className="flex-1 truncate cursor-pointer hover:text-blue-600"
                     onClick={() => onTrailClick?.(path.id)}
                   >
@@ -229,4 +247,4 @@ const TrailVisualization: React.FC<TrailVisualizationProps> = ({
   );
 };
 
-export default TrailVisualization; 
+export default TrailVisualization;

@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import { Meta, StoryObj } from '@storybook/react-vite';
 import Button from './Button';
 
 const meta: Meta<typeof Button> = {
@@ -115,12 +115,22 @@ export const AllVariants: Story = {
         <Button variant="danger">Danger</Button>
       </div>
       <div className="flex gap-4">
-        <Button variant="primary" disabled>Primary Disabled</Button>
-        <Button variant="secondary" disabled>Secondary Disabled</Button>
-        <Button variant="outline" disabled>Outline Disabled</Button>
-        <Button variant="ghost" disabled>Ghost Disabled</Button>
-        <Button variant="danger" disabled>Danger Disabled</Button>
+        <Button variant="primary" disabled>
+          Primary Disabled
+        </Button>
+        <Button variant="secondary" disabled>
+          Secondary Disabled
+        </Button>
+        <Button variant="outline" disabled>
+          Outline Disabled
+        </Button>
+        <Button variant="ghost" disabled>
+          Ghost Disabled
+        </Button>
+        <Button variant="danger" disabled>
+          Danger Disabled
+        </Button>
       </div>
     </div>
   ),
-}; 
+};

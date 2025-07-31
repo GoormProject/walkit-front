@@ -2,12 +2,14 @@ import React, { useEffect, useRef, useState } from 'react';
 import { KakaoMap } from '@/components/KakaoMap';
 import { GPSSimulator } from '@/components/GPSSimulator';
 import { GPSTracker } from '@/components/GPSTracker';
+import AnimatedTrailPath from '@/components/AnimatedTrailPath';
 import { MOCK_PATH_COORDS } from '@/utils/mockGPSData';
 import { 
   interpolatePath, 
   calculateDistance
 } from '@/utils/converter/pathConverter';
 import type { Coordinate } from '@/types/map';
+import type { TrailPathData, TrailProgress, EasingFunction } from '@/types/trail';
 import { useGPSStore } from '@/features/gps/gpsSlice';
 import { Toaster } from 'sonner';
 
@@ -31,6 +33,13 @@ const GPSTestPage: React.FC = () => {
   const currentIndexRef = useRef(0);
   const interpolatedPathRef = useRef<Coordinate[]>([]);
   const { setPosition } = useGPSStore(state => state.actions);
+  const currentGPSPosition = useGPSStore(state => state.position);
+
+  // 산책 경로 진행률 추적 관련 상태
+  const [showProgress, setShowProgress] = useState(false);
+  const [easingType, setEasingType] = useState<EasingFunction>('linear');
+  const [currentProgress, setCurrentProgress] = useState<TrailProgress | null>(null);
+  const [testPath, setTestPath] = useState<TrailPathData | null>(null);
 
   // 실제 거리와 시간을 기반으로 다음 포인트까지의 시간 계산
   const calculateTimeToNextPoint = (currentPoint: Coordinate, nextPoint: Coordinate) => {
@@ -39,7 +48,7 @@ const GPSTestPage: React.FC = () => {
     return (distance / speed) * 3600 * 1000; // milliseconds
   };
 
-  // 경로 표시
+  // 경로 표시 (붉은색 - 자유 이동 경로)
   useEffect(() => {
     if (!map.current) return;
 
@@ -48,22 +57,41 @@ const GPSTestPage: React.FC = () => {
       polyline.current.setMap(null);
     }
 
-    // 새 폴리라인 생성
-    polyline.current = new kakao.maps.Polyline({
-      map: map.current,
-      path: pathPositions,
-      strokeWeight: 3,
-      strokeColor: '#db4040',
-      strokeOpacity: 0.7,
-      strokeStyle: 'solid'
-    });
+    // 진행률 추적 모드가 아닐 때만 붉은색 폴리라인 표시
+    if (!showProgress && pathPositions.length > 0) {
+      polyline.current = new kakao.maps.Polyline({
+        map: map.current,
+        path: pathPositions,
+        strokeWeight: 3,
+        strokeColor: '#db4040',
+        strokeOpacity: 0.7,
+        strokeStyle: 'solid'
+      });
+    }
 
     return () => {
       if (polyline.current) {
         polyline.current.setMap(null);
       }
     };
-  }, [pathPositions]);
+  }, [pathPositions, showProgress]);
+
+  // 진행률 추적 모드 변경 시 폴리라인 관리
+  useEffect(() => {
+    if (!map.current) return;
+
+    if (showProgress) {
+      // 진행률 추적 모드 활성화 시 붉은색 폴리라인 제거
+      if (polyline.current) {
+        polyline.current.setMap(null);
+      }
+    } else {
+      // 진행률 추적 모드 비활성화 시 붉은색 폴리라인 다시 표시
+      if (pathPositions.length > 0 && polyline.current) {
+        polyline.current.setMap(map.current);
+      }
+    }
+  }, [showProgress, map.current]);
 
   // 초기 지도 설정
   useEffect(() => {
@@ -78,6 +106,34 @@ const GPSTestPage: React.FC = () => {
     path.forEach(coord => bounds.extend(coord));
     map.current.setBounds(bounds);
   }, [map.current]);
+
+  // 테스트 경로 초기화 (산책 경로 진행률 추적용)
+  useEffect(() => {
+    const checkKakaoLoaded = () => {
+      if (window.kakao && window.kakao.maps) {
+        window.kakao.maps.load(() => {
+          const path: TrailPathData = {
+            id: 'test-trail',
+            name: '테스트 산책로',
+            courseType: 'walking',
+            coordinates: MOCK_PATH_COORDS.map(coord => new window.kakao.maps.LatLng(coord.lat, coord.lng)),
+            style: {
+              strokeColor: '#3b82f6',
+              strokeWeight: 4,
+              strokeOpacity: 0.8,
+              strokeStyle: 'solid'
+            },
+            properties: {}
+          };
+          setTestPath(path);
+        });
+      } else {
+        setTimeout(checkKakaoLoaded, 100);
+      }
+    };
+
+    checkKakaoLoaded();
+  }, []);
 
   // 자동 이동 효과
   useEffect(() => {
@@ -184,6 +240,11 @@ const GPSTestPage: React.FC = () => {
     currentIndexRef.current = 0;
     // 경로 다시 보간
     interpolatedPathRef.current = interpolatePath(MOCK_PATH_COORDS, smoothness * 5);
+    
+    // 진행률 추적 모드가 활성화되어 있으면 기존 폴리라인 제거
+    if (showProgress && polyline.current) {
+      polyline.current.setMap(null);
+    }
   };
 
   // 위치 변경 핸들러 (수동 이동용)
@@ -206,9 +267,9 @@ const GPSTestPage: React.FC = () => {
         expand
       />
       {/* 상단 설명 */}
-      <div className="p-4 bg-white shadow-sm">
-        <h1 className="text-2xl font-bold mb-2">GPS 테스트</h1>
-        <p className="text-gray-600 mb-4">
+      <div className="p-4 bg-gray-800 shadow-sm">
+        <h1 className="text-2xl font-bold mb-2 text-white">GPS 테스트</h1>
+        <p className="text-gray-300 mb-4">
           시뮬레이터를 사용하여 GPS 위치, 정확도, 에러 상황을 테스트할 수 있습니다.
         </p>
         <div className="flex items-center gap-4 mb-2">
@@ -229,19 +290,19 @@ const GPSTestPage: React.FC = () => {
         </div>
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-2 min-w-[200px]">
-            <label className="text-sm text-gray-600">이동 속도:</label>
+            <label className="text-sm text-white">이동 속도:</label>
             <select
               value={movementSpeed}
               onChange={(e) => setMovementSpeed(e.target.value as keyof typeof MOVEMENT_SPEEDS)}
-              className="px-2 py-1 border rounded"
+              className="px-2 py-1 border rounded bg-gray-700 text-white border-gray-600"
             >
-              <option value="WALK">걷기 (5km/h)</option>
-              <option value="JOG">조깅 (8km/h)</option>
-              <option value="RUN">달리기 (12km/h)</option>
+              <option value="WALK" className="bg-gray-700 text-white">걷기 (5km/h)</option>
+              <option value="JOG" className="bg-gray-700 text-white">조깅 (8km/h)</option>
+              <option value="RUN" className="bg-gray-700 text-white">달리기 (12km/h)</option>
             </select>
           </div>
           <div className="flex items-center gap-2 min-w-[200px]">
-            <label className="text-sm text-gray-600">부드러움:</label>
+            <label className="text-sm text-white">부드러움:</label>
             <input
               type="range"
               min="1"
@@ -250,8 +311,85 @@ const GPSTestPage: React.FC = () => {
               onChange={handleSmoothnessChange}
               className="w-32"
             />
-            <span className="text-sm text-gray-600">{smoothness}개</span>
+            <span className="text-sm text-white">{smoothness}개</span>
           </div>
+        </div>
+
+        {/* 산책 경로 진행률 추적 컨트롤 */}
+        <div className="mt-4 p-4 bg-blue-900 rounded-lg border border-blue-600">
+          <h3 className="text-lg font-semibold text-blue-200 mb-3">🏃‍♂️ 산책 경로 진행률 추적</h3>
+          <p className="text-sm text-blue-100 mb-3">
+            <strong>🔵 파란색 폴리라인:</strong> 현재 GPS 위치 기준으로 테스트 경로 진행률 추적<br/>
+            <strong>🔴 붉은색 폴리라인:</strong> 자유 이동 경로 (진행률 추적 비활성화 시)
+          </p>
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="showProgress"
+                checked={showProgress}
+                onChange={(e) => setShowProgress(e.target.checked)}
+                className="w-4 h-4 text-blue-600"
+              />
+              <label htmlFor="showProgress" className="text-sm text-blue-200">
+                진행률 표시
+              </label>
+            </div>
+            
+            {showProgress && (
+              <>
+                <div className="flex items-center gap-2 min-w-[200px]">
+                  <label className="text-sm text-blue-200">이징 함수:</label>
+                  <select
+                    value={easingType}
+                    onChange={(e) => setEasingType(e.target.value as EasingFunction)}
+                    className="px-2 py-1 border rounded bg-gray-700 text-white border-gray-600"
+                  >
+                    <option value="linear" className="bg-gray-700 text-white">Linear</option>
+                    <option value="easeIn" className="bg-gray-700 text-white">Ease In</option>
+                    <option value="easeOut" className="bg-gray-700 text-white">Ease Out</option>
+                    <option value="easeInOut" className="bg-gray-700 text-white">Ease In Out</option>
+                  </select>
+                </div>
+                
+                <button
+                  onClick={() => {
+                    if (testPath && map.current) {
+                      const startPosition = testPath.coordinates[0];
+                      map.current.setCenter(startPosition);
+                    }
+                  }}
+                  className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                >
+                  시작점으로 이동
+                </button>
+              </>
+            )}
+          </div>
+          
+          {/* 진행률 정보 표시 */}
+          {showProgress && currentProgress && (
+            <div className="mt-3 p-3 bg-gray-700 rounded border border-gray-600">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="font-medium text-white">진행률:</span>
+                  <span className="ml-2 text-blue-300">{(currentProgress.progress * 100).toFixed(1)}%</span>
+                </div>
+                <div>
+                  <span className="font-medium text-white">완료 거리:</span>
+                  <span className="ml-2 text-green-300">{currentProgress.completedDistance.toFixed(2)}km</span>
+                </div>
+                <div>
+                  <span className="font-medium text-white">전체 거리:</span>
+                  <span className="ml-2 text-gray-300">{currentProgress.totalDistance.toFixed(2)}km</span>
+                </div>
+                <div>
+                  <span className="font-medium text-white">최근 지점:</span>
+                  <span className="ml-2 text-purple-300">{currentProgress.nearestPointIndex + 1}번째</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -261,6 +399,19 @@ const GPSTestPage: React.FC = () => {
         <div className="flex-1 relative">
           <KakaoMap onMapLoad={(mapInstance) => { map.current = mapInstance; }} />
           {map.current && <GPSTracker map={map.current} />}
+          
+          {/* 산책 경로 진행률 추적 (파란색) */}
+          {map.current && testPath && showProgress && (
+            <AnimatedTrailPath
+              path={testPath}
+              map={map.current}
+              isVisible={true}
+              currentPosition={currentGPSPosition || undefined}
+              showProgress={showProgress}
+              easingType={easingType}
+              onProgressChange={setCurrentProgress}
+            />
+          )}
         </div>
 
         {/* 시뮬레이터 */}

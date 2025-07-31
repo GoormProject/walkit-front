@@ -8,13 +8,12 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "generate:api": "swagger-typescript-api generate -p docs/swagger/swagger.json -o src/api -n swagger-api.ts",
+    "generate:api": "swagger-typescript-api generate -p docs/swagger/swagger.json -o src/api -n swagger-api.ts --axios",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.14",
-    "@tailwindcss/postcss": "^4.1.11",
     "@types/react-transition-group": "^4.4.12",
     "axios": "^1.11.0",
     "clsx": "^2.1.1",
@@ -35,6 +34,7 @@
     "@storybook/addon-onboarding": "^9.0.18",
     "@storybook/addon-vitest": "^9.0.18",
     "@storybook/react-vite": "^9.0.18",
+    "@tailwindcss/postcss": "^4.1.11",
     "@tokens-studio/sd-transforms": "^2.0.1",
     "@types/node": "^24.0.15",
     "@types/react": "^19.1.8",
@@ -59,7 +59,7 @@
     "tailwindcss": "^4.1.11",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.35.1",
-    "vite": "^7.0.4",
+    "vite": "^7.0.6",
     "vitest": "^3.2.4"
   }
 }

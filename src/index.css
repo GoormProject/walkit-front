@@ -1,8 +1,6 @@
+/* index.css */
 @import './styles/tokens.css';
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
@@ -17,6 +15,20 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Google Button CSS Variables */
+  --google-button-bg: #ffffff;
+  --google-button-border: #dadce0;
+  --google-button-text: #3c4043;
+  --google-button-shadow:
+    0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 1px 2px 0 rgba(60, 64, 67, 0.15);
+  --google-button-hover-overlay: #f8f9fa;
+  --google-button-disabled-bg: #f1f3f4;
+  --google-button-disabled-border: #dadce0;
+  --google-red: #ea4335;
+  --google-blue: #4285f4;
+  --google-yellow: #fbbc04;
+  --google-green: #34a853;
 }
 
 a {
@@ -39,23 +51,7 @@ h1 {
   line-height: 1.1;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
+/* 전역 button 스타일 제거 - Tailwind CSS가 처리함 */
 
 @media (prefers-color-scheme: light) {
   :root {
@@ -65,7 +61,5 @@ button:focus-visible {
   a:hover {
     color: #747bff;
   }
-  button {
-    background-color: #f9f9f9;
-  }
+  /* button 스타일 제거 - Tailwind CSS가 처리함 */
 }

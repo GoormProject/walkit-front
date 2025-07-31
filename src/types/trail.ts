@@ -66,4 +66,23 @@ export interface TrailPathData {
   coordinates: kakao.maps.LatLng[];
   style: CourseStyle;
   properties: Record<string, string | number | boolean | null | undefined>;
+}
+
+// 진행률 추적 관련 타입
+export interface TrailProgress {
+  currentPosition: kakao.maps.LatLng;
+  progress: number; // 0.0 ~ 1.0
+  completedDistance: number;
+  totalDistance: number;
+  nearestPoint: kakao.maps.LatLng;
+  nearestPointIndex: number;
+}
+
+// 이징 함수 타입
+export type EasingFunction = 'linear' | 'easeIn' | 'easeOut' | 'easeInOut';
+
+// 분할된 경로 데이터
+export interface SplitPathData {
+  completed: kakao.maps.LatLng[];
+  remaining: kakao.maps.LatLng[];
 } 

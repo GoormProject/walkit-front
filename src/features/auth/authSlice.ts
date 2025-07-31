@@ -1,223 +1,316 @@
 import { create } from 'zustand';
-import { devtools, persist } from 'zustand/middleware';
+import { persist } from 'zustand/middleware';
+import { Api } from '@/api/swagger-api';
 
-// 인증 상태 타입 정의
 interface AuthState {
-  // 인증 상태
   isAuthenticated: boolean;
   user: {
-    id: string | null;
-    email: string | null;
-    name: string | null;
-    token: string | null;
+    memberId: string | null; // API에서 받은 memberId
+    email: string | null; // API에서 받은 email
+    deviceId: string | null; // 디바이스 ID
   };
-
-  // 로딩 상태
   isLoading: boolean;
   error: string | null;
-
-  // 액션들
-  actions: {
-    // 로그인
-    login: (credentials: { email: string; password: string }) => Promise<void>;
-
-    // 회원가입
-    signup: (userData: {
-      email: string;
-      password: string;
-      name: string;
-    }) => Promise<void>;
-
-    // 로그아웃
-    logout: () => void;
-
-    // 토큰 검증
-    validateToken: () => Promise<boolean>;
-
-    // 에러 초기화
-    clearError: () => void;
-
-    // 로딩 상태 설정
-    setLoading: (loading: boolean) => void;
-  };
 }
 
-// 인증 우회 여부 확인
-const isBypassEnabled = import.meta.env.VITE_BYPASS_AUTH === 'true';
+interface AuthActions {
+  oauthLoginSuccess: (userData: {
+    memberId: number;
+    email: string;
+    isProfileSet: boolean;
+  }) => void;
+  login: () => Promise<void>;
+  signup: () => Promise<void>;
+  logout: () => void;
+  validateToken: () => Promise<boolean>;
+  clearError: () => void;
+  setLoading: (loading: boolean) => void;
+}
 
-// 테스트 JWT 토큰 사용 여부 확인
-const isTestJwtEnabled = import.meta.env.VITE_TEST_JWT === 'true';
+type AuthStore = AuthState & AuthActions;
 
-// Zustand 스토어 생성
-export const useAuthStore = create<AuthState>()(
-  devtools(
-    persist(
-      (set, get) => ({
-        // 초기 상태 (우회 모드 또는 테스트 JWT 모드일 때는 인증된 것으로 처리)
-        isAuthenticated: isBypassEnabled || isTestJwtEnabled,
-        user:
-          isBypassEnabled || isTestJwtEnabled
-            ? {
-                id: 'test-user-1',
-                email: 'test@example.com',
-                name: 'Test User',
-                token: 'test-jwt-token-static',
-              }
-            : {
-                id: null,
-                email: null,
-                name: null,
-                token: null,
+// 환경변수 체크 (개발 환경에서만 사용)
+const isBypassEnabled =
+  import.meta.env.NODE_ENV === 'development' &&
+  import.meta.env.VITE_BYPASS_AUTH === 'true';
+const isTestJwtEnabled =
+  import.meta.env.NODE_ENV === 'development' &&
+  import.meta.env.VITE_TEST_JWT === 'true';
+
+// 환경변수 디버깅
+
+console.log('🔧 환경변수 확인:', {
+  NODE_ENV: import.meta.env.NODE_ENV,
+  VITE_BYPASS_AUTH: import.meta.env.VITE_BYPASS_AUTH,
+  VITE_TEST_JWT: import.meta.env.VITE_TEST_JWT,
+  isBypassEnabled,
+  isTestJwtEnabled,
+});
+
+// Zustand 스토어 생성 - 로그인 성공 시에만 persist
+export const useAuthStore = create<AuthStore>()(
+  persist(
+    set => ({
+      // 초기 상태 - 환경변수 반영 (persist 없이)
+      isAuthenticated: isBypassEnabled || isTestJwtEnabled,
+      user: {
+        memberId: null,
+        email: null,
+        deviceId: null,
+      },
+      isLoading: false,
+      error: null,
+
+      // 액션들
+      oauthLoginSuccess: userData => {
+        // OAuth 로그인 성공 시에만 persist에 저장
+        console.log('🔄 OAuth 로그인 성공 처리 시작');
+        console.log('📊 받은 userData:', userData);
+
+        // deviceId 생성 (로그인 성공 시에만)
+        const deviceId = crypto.randomUUID();
+        console.log('📱 Device ID 생성 (로그인 성공):', deviceId);
+
+        const newState = {
+          isAuthenticated: true,
+          user: {
+            memberId: userData.memberId.toString(),
+            email: userData.email,
+            deviceId: deviceId, // 로그인 성공 시 생성
+          },
+          isLoading: false,
+          error: null,
+        };
+
+        console.log('📊 설정할 새 상태:', newState);
+
+        set(newState);
+
+        console.log('✅ OAuth 로그인 성공 - 상태 업데이트 완료');
+
+        // 업데이트 후 상태 확인
+        setTimeout(() => {
+          const updatedState = useAuthStore.getState();
+          console.log('🔍 업데이트 후 store 상태:', updatedState);
+          console.log('📱 업데이트 후 deviceId:', updatedState.user.deviceId);
+        }, 100);
+      },
+
+      login: async () => {
+        set({ isLoading: true, error: null });
+        try {
+          // 실제 로그인 성공 시에만 persist에 저장
+          // throw new Error('Backend API not implemented yet');
+
+          // 임시 성공 처리 (테스트용)
+          console.log('🔐 로그인 성공 처리 시작');
+          set({
+            isAuthenticated: true,
+            user: {
+              memberId: 'login-user-1',
+              email: 'login@example.com',
+              deviceId: null,
+            },
+            isLoading: false,
+            error: null,
+          });
+          console.log('✅ 로그인 성공 - 상태 업데이트 완료');
+          console.log(
+            '💾 localStorage에 저장됨:',
+            localStorage.getItem('auth-storage')
+          );
+        } catch (error) {
+          set({
+            error: error instanceof Error ? error.message : 'Login failed',
+            isLoading: false,
+          });
+        }
+      },
+
+      signup: async () => {
+        set({ isLoading: true, error: null });
+        try {
+          // 실제 회원가입 성공 시에만 persist에 저장
+          throw new Error('Backend API not implemented yet');
+        } catch (error) {
+          set({
+            error: error instanceof Error ? error.message : 'Signup failed',
+            isLoading: false,
+          });
+        }
+      },
+
+      logout: () => {
+        // 로그아웃 시 auth-storage 자체를 삭제
+        localStorage.removeItem('auth-storage');
+
+        // 상태도 초기화
+        set({
+          isAuthenticated: false,
+          user: {
+            memberId: null,
+            email: null,
+            deviceId: null,
+          },
+          isLoading: false,
+          error: null,
+        });
+      },
+
+      validateToken: async () => {
+        try {
+          console.log('🔍 validateToken 시작 - 현재 상태 확인');
+          const currentState = useAuthStore.getState();
+          console.log('📊 현재 store 상태:', currentState);
+          console.log('📱 현재 deviceId:', currentState.user.deviceId);
+
+          // API 인스턴스 생성 (쿠키 전송 설정 추가)
+          const api = new Api({
+            baseURL: import.meta.env.VITE_API_BASE_URL,
+            withCredentials: true, // HttpOnly 쿠키 전송을 위해 필요
+          });
+
+          // 현재 사용자 정보 조회
+          const response = await api.api.getCurrentUser();
+          console.log('🔍 현재 사용자 조회 성공:', response.data);
+
+          if (response.data?.data) {
+            const userData = response.data.data;
+            console.log('✅ validateToken - 사용자 정보 확인됨');
+            console.log('👤 API 응답 사용자 정보:', userData);
+
+            // deviceId가 없으면 새로 생성
+            let deviceId = currentState.user.deviceId;
+            if (!deviceId) {
+              deviceId = crypto.randomUUID();
+              console.log('📱 Device ID 새로 생성 (validateToken):', deviceId);
+            } else {
+              console.log('📱 기존 deviceId 유지:', deviceId);
+            }
+
+            // 사용자 정보로 상태 업데이트
+            set({
+              isAuthenticated: true,
+              user: {
+                memberId: userData.memberId?.toString() || '',
+                email: userData.email || '',
+                deviceId: deviceId, // 기존 또는 새로 생성된 deviceId
               },
-        isLoading: false,
-        error: null,
+              isLoading: false,
+              error: null,
+            });
 
-        // 액션들
-        actions: {
-          // 로그인
-          login: async credentials => {
-            set({ isLoading: true, error: null });
-
-            try {
-              // 우회 모드인 경우 자동 로그인
-              if (isBypassEnabled) {
-                // 임시 사용자 데이터
-                const mockUser = {
-                  id: 'bypass-user-1',
-                  email: credentials.email,
-                  name: 'Bypass User',
-                  token: 'bypass-token-' + Date.now(),
-                };
-
-                set({
-                  isAuthenticated: true,
-                  user: mockUser,
-                  isLoading: false,
-                });
-                return;
-              }
-
-              // 실제 API 호출 (백엔드 구현 후)
-              // const response = await authAPI.login(credentials)
-              // set({ isAuthenticated: true, user: response.user, isLoading: false })
-
-              // 임시로 실패 처리
-              throw new Error('Backend API not implemented yet');
-            } catch (error) {
-              set({
-                error: error instanceof Error ? error.message : 'Login failed',
-                isLoading: false,
-              });
-            }
-          },
-
-          // 회원가입
-          signup: async userData => {
-            set({ isLoading: true, error: null });
-
-            try {
-              // 우회 모드인 경우 자동 회원가입
-              if (isBypassEnabled) {
-                const mockUser = {
-                  id: 'bypass-user-' + Date.now(),
-                  email: userData.email,
-                  name: userData.name,
-                  token: 'bypass-token-' + Date.now(),
-                };
-
-                set({
-                  isAuthenticated: true,
-                  user: mockUser,
-                  isLoading: false,
-                });
-                return;
-              }
-
-              // 실제 API 호출 (백엔드 구현 후)
-              // const response = await authAPI.signup(userData)
-              // set({ isAuthenticated: true, user: response.user, isLoading: false })
-
-              // 임시로 실패 처리
-              throw new Error('Backend API not implemented yet');
-            } catch (error) {
-              set({
-                error: error instanceof Error ? error.message : 'Signup failed',
-                isLoading: false,
-              });
-            }
-          },
-
-          // 로그아웃
-          logout: () => {
+            console.log('✅ validateToken 완료 - deviceId 유지됨');
+            return true;
+          }
+          return false;
+        } catch (error: unknown) {
+          console.error('❌ 현재 사용자 조회 실패:', error);
+          // 401 에러면 인증되지 않은 상태
+          if ((error as any)?.response?.status === 401) {
             set({
               isAuthenticated: false,
               user: {
-                id: null,
+                memberId: null,
                 email: null,
-                name: null,
-                token: null,
+                deviceId: null,
               },
+              isLoading: false,
               error: null,
             });
-          },
+          }
+          return false;
+        }
+      },
 
-          // 토큰 검증
-          validateToken: async () => {
-            const { user } = get();
+      clearError: () => {
+        set({ error: null });
+      },
 
-            if (!user.token) {
-              return false;
-            }
-
-            // 우회 모드인 경우 항상 유효
-            if (isBypassEnabled) {
-              return true;
-            }
-
-            try {
-              // 실제 토큰 검증 API 호출 (백엔드 구현 후)
-              // const isValid = await authAPI.validateToken(user.token)
-              // return isValid
-
-              // 임시로 실패 처리
-              return false;
-            } catch (error) {
-              return false;
-            }
-          },
-
-          // 에러 초기화
-          clearError: () => {
-            set({ error: null });
-          },
-
-          // 로딩 상태 설정
-          setLoading: loading => {
-            set({ isLoading: loading });
-          },
-        },
-      }),
-      {
-        name: 'auth-storage', // localStorage 키 이름
-        partialize: state => ({
-          isAuthenticated: state.isAuthenticated,
-          user: state.user,
-        }),
-      }
-    ),
+      setLoading: (loading: boolean) => {
+        set({ isLoading: loading });
+      },
+    }),
     {
-      name: 'auth-store',
+      name: 'auth-storage',
+      // 로그인 성공한 상태만 persist (새로운 구조만 저장)
+      partialize: state => {
+        console.log('💾 partialize 호출됨');
+        console.log('📊 현재 상태:', state);
+        console.log('📱 현재 deviceId:', state.user.deviceId);
+
+        // 인증된 상태일 때만 저장
+        if (state.isAuthenticated && state.user.memberId) {
+          const persistedData = {
+            isAuthenticated: state.isAuthenticated,
+            user: {
+              memberId: state.user.memberId,
+              email: state.user.email,
+              deviceId: state.user.deviceId,
+            },
+          };
+          console.log('💾 저장할 데이터:', persistedData);
+          return persistedData;
+        }
+        // 인증되지 않은 상태면 저장하지 않음
+        console.log('💾 인증되지 않음 - 빈 객체 반환');
+        return {};
+      },
+      // 초기화 시 환경변수 우선 적용
+      onRehydrateStorage: () => state => {
+        console.log('🔄 onRehydrateStorage 호출됨');
+        console.log('📊 복원된 상태:', state);
+
+        if (state) {
+          console.log('📱 복원된 deviceId:', state.user?.deviceId);
+
+          // deviceId는 인증된 상태에서만 관리
+          // 인증되지 않은 상태에서는 null로 유지
+
+          // 환경변수 우선 적용 (인증 상태만 설정)
+          if (isBypassEnabled || isTestJwtEnabled) {
+            console.log('🔧 환경변수로 인증 상태 설정');
+            state.isAuthenticated = true;
+          }
+        } else {
+          console.log('❌ 복원된 상태가 없음');
+        }
+      },
     }
   )
 );
 
-// 편의를 위한 훅들
-export const useAuth = () =>
-  useAuthStore(state => ({
-    isAuthenticated: state.isAuthenticated,
-    user: state.user,
-    isLoading: state.isLoading,
-    error: state.error,
-  }));
+// 커스텀 훅들
+export const useAuth = () => {
+  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+  const user = useAuthStore(state => state.user);
+  const isLoading = useAuthStore(state => state.isLoading);
+  const error = useAuthStore(state => state.error);
 
-export const useAuthActions = () => useAuthStore(state => state.actions);
+  return {
+    isAuthenticated,
+    user,
+    isLoading,
+    error,
+  };
+};
+
+export const useAuthActions = () => {
+  const oauthLoginSuccess = useAuthStore(state => state.oauthLoginSuccess);
+  const login = useAuthStore(state => state.login);
+  const signup = useAuthStore(state => state.signup);
+  const logout = useAuthStore(state => state.logout);
+  const validateToken = useAuthStore(state => state.validateToken);
+  const clearError = useAuthStore(state => state.clearError);
+  const setLoading = useAuthStore(state => state.setLoading);
+
+  return {
+    oauthLoginSuccess,
+    login,
+    signup,
+    logout,
+    validateToken,
+    clearError,
+    setLoading,
+  };
+};

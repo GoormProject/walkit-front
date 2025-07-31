@@ -7,11 +7,11 @@ interface LoadingSpinnerProps {
   variant?: 'overlay' | 'inline';
 }
 
-const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ 
-  show, 
-  message = "위치 정보를 가져오는 중...",
+const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
+  show,
+  message = '위치 정보를 가져오는 중...',
   size = 'large',
-  variant = 'overlay'
+  variant = 'overlay',
 }) => {
   const [dots, setDots] = useState('');
 
@@ -20,7 +20,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
     if (!show) return;
 
     const interval = setInterval(() => {
-      setDots(prev => prev.length >= 3 ? '' : prev + '.');
+      setDots(prev => (prev.length >= 3 ? '' : prev + '.'));
     }, 500);
 
     return () => clearInterval(interval);
@@ -51,11 +51,14 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
 
   if (variant === 'inline') {
     return (
-      <div className={`${containerClass} transition-opacity duration-200 ${show ? 'opacity-100' : 'opacity-0'}`}>
+      <div
+        className={`${containerClass} transition-opacity duration-200 ${show ? 'opacity-100' : 'opacity-0'}`}
+      >
         <div className="flex flex-col items-center">
           <div className={spinnerClass}></div>
           <div className="mt-2 text-sm text-gray-600 font-medium">
-            {message}{dots}
+            {message}
+            {dots}
           </div>
         </div>
       </div>
@@ -63,18 +66,19 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   }
 
   return (
-    <div 
+    <div
       id="loading"
       className={`${containerClass} transition-opacity duration-200 ${show ? 'opacity-100' : 'opacity-0'}`}
     >
       <div className="bg-white rounded-lg p-6 flex flex-col items-center shadow-lg">
         <div className={`${spinnerClass} mb-4`}></div>
         <p className="text-[var(--color-text-primary)] text-center font-medium">
-          {message}{dots}
+          {message}
+          {dots}
         </p>
       </div>
     </div>
   );
 };
 
-export default LoadingSpinner; 
+export default LoadingSpinner;
