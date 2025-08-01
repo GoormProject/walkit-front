@@ -35,7 +35,45 @@ const WalkFullTest: React.FC = () => {
       setAccessToken(token);
       setIsAuthenticated(true);
     }
+    
+    // 쿠키에서 토큰 확인
+    const cookies = document.cookie.split(';');
+    const accessTokenCookie = cookies.find(cookie => 
+      cookie.trim().startsWith('ACCESS_TOKEN=')
+    );
+    
+    if (accessTokenCookie) {
+      const tokenValue = accessTokenCookie.split('=')[1];
+      console.log('🍪 쿠키에서 발견된 ACCESS_TOKEN:', tokenValue);
+      setAccessToken(tokenValue);
+      setIsAuthenticated(true);
+    }
   }, []);
+
+  // 쿠키에서 토큰 가져오기
+  const handleGetCookieToken = () => {
+    const cookies = document.cookie.split(';');
+    const accessTokenCookie = cookies.find(cookie => 
+      cookie.trim().startsWith('ACCESS_TOKEN=')
+    );
+    
+    if (accessTokenCookie) {
+      const tokenValue = accessTokenCookie.split('=')[1];
+      setAccessToken(tokenValue);
+      localStorage.setItem('accessToken', tokenValue);
+      setIsAuthenticated(true);
+      toast.success('쿠키에서 토큰을 가져왔습니다!');
+    } else {
+      toast.error('쿠키에서 ACCESS_TOKEN을 찾을 수 없습니다.');
+    }
+  };
+
+  // 모든 쿠키 확인
+  const handleShowAllCookies = () => {
+    const cookies = document.cookie.split(';');
+    console.log('🍪 모든 쿠키:', cookies);
+    toast.info('콘솔에서 모든 쿠키를 확인하세요.');
+  };
 
   // 토큰 설정
   const handleSetToken = () => {
@@ -395,6 +433,20 @@ const WalkFullTest: React.FC = () => {
                 {isLoading ? '로그아웃중...' : '로그아웃'}
               </button>
             )}
+            <button
+              onClick={handleGetCookieToken}
+              disabled={isLoading}
+              className="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
+            >
+              {isLoading ? '쿠키 토큰 가져오기...' : '쿠키 토큰 가져오기'}
+            </button>
+            <button
+              onClick={handleShowAllCookies}
+              disabled={isLoading}
+              className="px-4 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
+            >
+              {isLoading ? '모든 쿠키 보기...' : '모든 쿠키 보기'}
+            </button>
           </div>
         </div>
       </div>

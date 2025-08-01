@@ -18,7 +18,22 @@ const isMockMode = () => {
  * API 호출 헤더 생성
  */
 const getHeaders = () => {
-  const token = localStorage.getItem('accessToken');
+  // localStorage에서 토큰 확인
+  let token = localStorage.getItem('accessToken');
+  
+  // localStorage에 토큰이 없으면 쿠키에서 확인
+  if (!token) {
+    const cookies = document.cookie.split(';');
+    const accessTokenCookie = cookies.find(cookie => 
+      cookie.trim().startsWith('ACCESS_TOKEN=')
+    );
+    
+    if (accessTokenCookie) {
+      token = accessTokenCookie.split('=')[1];
+      console.log('🍪 쿠키에서 토큰 사용:', token);
+    }
+  }
+  
   return {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
