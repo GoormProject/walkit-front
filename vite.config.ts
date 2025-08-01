@@ -39,11 +39,11 @@ export default defineConfig(({ mode }) => {
         }
         return env.VITE_HOST;
       })(),
-      // HTTPS 설정 (개발 환경에서만)
-      https: mode === 'development' ? {
-        key: fs.readFileSync('./localhost+2-key.pem'),
-        cert: fs.readFileSync('./localhost+2.pem'),
-      } : undefined,
+      // HTTPS 설정 (일시적으로 비활성화)
+      // https: mode === 'development' ? {
+      //   key: fs.readFileSync('./localhost+2-key.pem'),
+      //   cert: fs.readFileSync('./localhost+2.pem'),
+      // } : undefined,
     },
     
     // 빌드 설정
