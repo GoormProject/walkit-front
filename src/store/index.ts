@@ -373,17 +373,4 @@ export const useUIActions = () =>
 
 // 산책 관련 훅들
 export const useWalk = () => useAppStore(state => state.walk);
-export const useWalkActions = () =>
-  useAppStore(state => ({
-    startWalk: state.actions.startWalk,
-    pauseWalk: state.actions.pauseWalk,
-    resumeWalk: state.actions.resumeWalk,
-    endWalk: state.actions.endWalk,
-    resetWalk: state.actions.resetWalk,
-    updateWalkPath: state.actions.updateWalkPath,
-    setWalkList: state.actions.setWalkList,
-    addWalkRecord: state.actions.addWalkRecord,
-    removeWalkRecord: state.actions.removeWalkRecord,
-    setWalkError: state.actions.setWalkError,
-    setWalkLoading: state.actions.setWalkLoading,
-  }));
+export const useWalkActions = () => useAppStore(state => state.actions);

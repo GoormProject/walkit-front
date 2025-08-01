@@ -9,6 +9,7 @@ import {
 import LoadingSpinner from './LoadingSpinner';
 import TrailVisualization from './TrailVisualization';
 import { GPSTracker } from './GPSTracker';
+import { MapFallback } from './MapFallback';
 import { useGPSStore } from '@/features/gps/gpsSlice';
 import { handleGPSError } from '@/utils/gpsErrorHandler';
 
@@ -53,18 +54,25 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
           );
         }
 
+        // DOM이 완전히 렌더링될 때까지 대기
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // 컨테이너가 여전히 존재하는지 확인
+        if (!containerRef.current) return;
+
         // 카카오 맵 SDK 로드
         await loadKakaoMapSDK();
 
+        // 컨테이너가 여전히 존재하는지 다시 확인
+        if (!containerRef.current) return;
+
         // 지도 생성 (기본 좌표: 서울 시청)
-        const mapInstance = new kakao.maps.Map(containerRef.current, {
-          center: new kakao.maps.LatLng(DEFAULT_COORDS.lat, DEFAULT_COORDS.lng),
+        const mapInstance = new window.kakao.maps.Map(containerRef.current, {
+          center: new window.kakao.maps.LatLng(DEFAULT_COORDS.lat, DEFAULT_COORDS.lng),
           level: 4,
           currentLocationMarker: false, // 기본 현재 위치 마커 비활성화
         });
         mapRef.current = mapInstance;
-
-        // 위치 추적은 GPSTracker 컴포넌트에서 처리하므로 여기서는 제거
 
         // 지도 인스턴스 콜백
         onMapLoad?.(mapInstance);
@@ -78,15 +86,40 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
       }
     };
 
-    initMap();
+    // 컴포넌트가 마운트된 후 약간의 지연을 두고 초기화
+    const timer = setTimeout(initMap, 0);
+
+    return () => {
+      clearTimeout(timer);
+    };
   }, [onMapLoad, setGPSError]);
 
   return (
     <div className="relative w-full h-full">
+      {/* 에러 상태 */}
+      {error && !isLoading && (
+        <MapFallback 
+          error={error} 
+          onRetry={() => {
+            setError(null);
+            setIsLoading(false);
+            mapRef.current = null;
+            // 컴포넌트를 다시 마운트하기 위해 key를 변경
+            window.location.reload();
+          }} 
+        />
+      )}
+
       {/* 지도 컨테이너 */}
-      <div ref={containerRef} className="w-full h-full rounded-lg shadow-lg">
-        {mapRef.current && <GPSTracker map={mapRef.current} />}
-      </div>
+      {!error && (
+        <div 
+          ref={containerRef} 
+          className="w-full h-full rounded-lg shadow-lg bg-gray-100"
+          style={{ minHeight: '300px' }}
+        >
+          {mapRef.current && <GPSTracker map={mapRef.current} />}
+        </div>
+      )}
 
       {/* 산책 경로 시각화 */}
       {showTrailPaths && mapRef.current && (
@@ -99,16 +132,8 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
         />
       )}
 
-      {/* 로딩 스피너 - 위치정보 로딩 문제로 임시 비활성화 */}
-      {/* <LoadingSpinner show={isLoading || gpsLoading} /> */}
-
-      {/* 에러 메시지 */}
-      {error && (
-        <div className="absolute top-4 left-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          <strong className="font-bold">오류: </strong>
-          <span className="block sm:inline">{error}</span>
-        </div>
-      )}
+      {/* 로딩 스피너 */}
+      <LoadingSpinner show={isLoading} variant="inline" />
     </div>
   );
 };

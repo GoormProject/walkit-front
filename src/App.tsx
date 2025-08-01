@@ -19,6 +19,8 @@ import TrailProgressTest from '@/pages/test/trail-progress';
 import SimpleMapTest from '@/pages/test/simple-map';
 import WalkApiTest from '@/pages/test/walk-api-test';
 import WalkZustandTest from '@/pages/test/walk-zustand-test';
+import WalkIntegrationTest from '@/pages/test/walk-integration-test';
+import WalkSimpleTest from '@/pages/test/walk-simple-test';
 import '@/App.css';
 
 function App() {
@@ -60,6 +62,12 @@ function App() {
 
         {/* 산책 Zustand 스토어 테스트 페이지 */}
         <Route path="/test/walk-zustand" element={<WalkZustandTest />} />
+
+        {/* 산책 통합 테스트 페이지 (GPS + 지도) */}
+        <Route path="/test/walk-integration" element={<WalkIntegrationTest />} />
+
+        {/* 산책 간단 테스트 페이지 (지도 없음) */}
+        <Route path="/test/walk-simple" element={<WalkSimpleTest />} />
 
         {/* 모든 페이지에 RootLayout 적용 */}
         <Route element={<RootLayout />}>
