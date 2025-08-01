@@ -72,7 +72,31 @@ const WalkFullTest: React.FC = () => {
   const handleShowAllCookies = () => {
     const cookies = document.cookie.split(';');
     console.log('🍪 모든 쿠키:', cookies);
-    toast.info('콘솔에서 모든 쿠키를 확인하세요.');
+    console.log('🍪 쿠키 개수:', cookies.length);
+    console.log('🍪 document.cookie:', document.cookie);
+    
+    if (cookies.length === 0 || (cookies.length === 1 && cookies[0].trim() === '')) {
+      toast.error('쿠키가 없습니다. 로그인이 필요합니다.');
+      console.log('❌ 쿠키가 없습니다. OAuth 로그인을 먼저 수행해주세요.');
+    } else {
+      toast.success('콘솔에서 모든 쿠키를 확인하세요.');
+      cookies.forEach((cookie, index) => {
+        console.log(`🍪 쿠키 ${index + 1}:`, cookie.trim());
+      });
+    }
+  };
+
+  // OAuth 로그인 링크 생성
+  const handleShowOAuthLinks = () => {
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+    const kakaoUrl = `${baseUrl}/oauth2/authorization/kakao`;
+    const googleUrl = `${baseUrl}/oauth2/authorization/google`;
+    
+    console.log('🔗 OAuth 로그인 링크:');
+    console.log('📱 카카오 로그인:', kakaoUrl);
+    console.log('🔍 구글 로그인:', googleUrl);
+    
+    toast.info('콘솔에서 OAuth 로그인 링크를 확인하세요.');
   };
 
   // 토큰 설정
@@ -446,6 +470,13 @@ const WalkFullTest: React.FC = () => {
               className="px-4 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
             >
               {isLoading ? '모든 쿠키 보기...' : '모든 쿠키 보기'}
+            </button>
+            <button
+              onClick={handleShowOAuthLinks}
+              disabled={isLoading}
+              className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
+            >
+              {isLoading ? 'OAuth 링크 보기...' : 'OAuth 링크 보기'}
             </button>
           </div>
         </div>
