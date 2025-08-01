@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { toast, Toaster } from 'sonner';
 import KakaoMap from '@/components/KakaoMap';
 import { GPSTracker } from '@/components/GPSTracker';
@@ -24,29 +24,29 @@ const WalkFullTest: React.FC = () => {
   // GPS Store
   const { position, error: gpsError } = useGPSStore();
 
-  // 경로의 총 거리 계산 (km)
+  // 총 거리 계산 함수
   const calculateTotalDistance = (positions: kakao.maps.LatLng[]): number => {
+    if (positions.length < 2) return 0;
+    
     let totalDistance = 0;
     for (let i = 1; i < positions.length; i++) {
-      const prev = positions[i - 1];
-      const curr = positions[i];
       totalDistance += calculateCoordinateDistance(
-        { lat: prev.getLat(), lng: prev.getLng() },
-        { lat: curr.getLat(), lng: curr.getLng() }
+        { lat: positions[i - 1].getLat(), lng: positions[i - 1].getLng() },
+        { lat: positions[i].getLat(), lng: positions[i].getLng() }
       );
     }
     return totalDistance;
   };
 
-  // 위치 업데이트 시 경로 그리기 및 저장
-  const handlePositionUpdate = (position: kakao.maps.LatLng) => {
+  // 위치 업데이트 시 경로 그리기 및 저장 (메모이제이션)
+  const handlePositionUpdate = useCallback((position: kakao.maps.LatLng) => {
     if (currentWalk.status === 'walking') {
       setPathPositions(prev => [...prev, position]);
       
       // Walk Store에 좌표 추가
       walkActions.addPathCoordinate([position.getLng(), position.getLat()]);
     }
-  };
+  }, [currentWalk.status, walkActions]);
 
   // 산책 시작
   const handleStartWalk = async () => {
@@ -179,7 +179,7 @@ const WalkFullTest: React.FC = () => {
   // 컴포넌트 마운트 시 산책 기록 목록 조회
   useEffect(() => {
     walkActions.getWalkRecords();
-  }, []);
+  }, [walkActions]);
 
   return (
     <div className="flex flex-col h-screen">
