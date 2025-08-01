@@ -88,16 +88,40 @@ export const initGeolocation = (
   onLoadingChange: (loading: boolean) => void,
   onError: (error: GeolocationPositionError) => void
 ): (() => void) | undefined => {
+  console.log('🌍 initGeolocation 시작');
+  
   if (!navigator.geolocation) {
+    console.error('❌ Geolocation API를 지원하지 않습니다.');
     alert('Geolocation API를 지원하지 않습니다.');
     onLoadingChange(false);
     return;
   }
 
+  console.log('✅ Geolocation API 지원 확인됨');
   onLoadingChange(true);
+
+  // 위치 권한 상태 확인
+  if ('permissions' in navigator) {
+    navigator.permissions.query({ name: 'geolocation' }).then((permissionStatus) => {
+      console.log('🔐 위치 권한 상태:', permissionStatus.state);
+      
+      permissionStatus.onchange = () => {
+        console.log('🔐 위치 권한 상태 변경:', permissionStatus.state);
+      };
+    }).catch((error) => {
+      console.warn('⚠️ 권한 상태 확인 실패:', error);
+    });
+  }
 
   const watchId = navigator.geolocation.watchPosition(
     (position) => {
+      console.log('✅ 위치 정보 수신:', {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        accuracy: position.coords.accuracy,
+        timestamp: new Date(position.timestamp).toLocaleString()
+      });
+      
       onLoadingChange(false);
       const { latitude, longitude } = position.coords;
       const userLatLng = new kakao.maps.LatLng(latitude, longitude);
@@ -109,6 +133,11 @@ export const initGeolocation = (
       onLocationUpdate(userLatLng);
     },
     (error) => {
+      console.error('❌ 위치 정보 수신 실패:', {
+        code: error.code,
+        message: error.message
+      });
+      
       onLoadingChange(false);
       onError(error);
     },
@@ -119,8 +148,11 @@ export const initGeolocation = (
     }
   );
 
+  console.log('👀 위치 감시 시작됨 (watchId:', watchId, ')');
+
   // cleanup 함수 반환
   return () => {
+    console.log('🧹 위치 감시 정리 (watchId:', watchId, ')');
     navigator.geolocation.clearWatch(watchId);
   };
 }; 

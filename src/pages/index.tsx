@@ -14,7 +14,7 @@ const Home = () => {
   const [pathPositions, setPathPositions] = useState<kakao.maps.LatLng[]>([]);
   const map = useRef<kakao.maps.Map | null>(null);
   const polyline = useRef<kakao.maps.Polyline | null>(null);
-  const { error } = useGPSStore();
+  const { error, isLoading, position } = useGPSStore();
   const navigate = useNavigate();
   const { logout } = useAuthActions();
 
@@ -24,12 +24,25 @@ const Home = () => {
     console.log('📍 현재 URL:', window.location.href);
     console.log('🔍 URL 파라미터:', window.location.search);
     console.log('🔄 OAuth 콜백 여부:', isOAuthCallback());
+    console.log('🌐 HTTPS 환경:', window.location.protocol === 'https:');
+    console.log('📱 Geolocation 지원:', !!navigator.geolocation);
 
     if (isOAuthCallback()) {
       console.log('⚠️ 홈 페이지에서 OAuth 콜백 감지됨!');
       console.log('🚨 OAuth 콜백이 홈 페이지로 리다이렉트되었습니다.');
     }
   }, []);
+
+  // GPS 상태 모니터링
+  useEffect(() => {
+    console.log('📡 GPS 상태 변경:', {
+      isLoading,
+      hasError: !!error,
+      hasPosition: !!position,
+      errorCode: error?.code,
+      errorMessage: error?.message
+    });
+  }, [isLoading, error, position]);
 
   // 산책 시작
   const handleStartWalk = () => {
@@ -154,7 +167,20 @@ const Home = () => {
               <span className="material-icons text-gray-700">search</span>
             </button>
           </div>
-          <div>
+          <div className="flex items-center gap-2">
+            {/* GPS 상태 표시 */}
+            <div className="flex items-center gap-1 px-2 py-1 bg-white rounded-full shadow-lg text-xs">
+              {isLoading ? (
+                <span className="text-blue-500">📍 GPS 로딩중...</span>
+              ) : error ? (
+                <span className="text-red-500">❌ GPS 오류</span>
+              ) : position ? (
+                <span className="text-green-500">✅ GPS 연결됨</span>
+              ) : (
+                <span className="text-gray-500">⏳ GPS 대기중</span>
+              )}
+            </div>
+            
             {!isWalking ? (
               <button
                 onClick={handleStartWalk}
