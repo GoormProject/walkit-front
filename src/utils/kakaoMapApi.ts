@@ -108,6 +108,7 @@ export const initGeolocation = (
       
       if (permissionStatus.state === 'denied') {
         console.warn('⚠️ 위치 권한이 거부되었습니다.');
+        onLoadingChange(false);
         onError({
           code: 1, // PERMISSION_DENIED
           message: '위치 권한이 거부되었습니다.',
@@ -186,6 +187,8 @@ export const initGeolocation = (
       
       // 콜백으로 위치 전달
       onLocationUpdate(userLatLng);
+      // 실시간 감시에서는 로딩 상태를 false로 유지
+      onLoadingChange(false);
     },
     (error) => {
       console.error('❌ 실시간 위치 정보 수신 실패:', {
@@ -193,6 +196,7 @@ export const initGeolocation = (
         message: error.message
       });
       
+      onLoadingChange(false);
       onError(error);
     },
     { 
@@ -208,5 +212,6 @@ export const initGeolocation = (
   return () => {
     console.log('🧹 위치 감시 정리 (watchId:', watchId, ')');
     navigator.geolocation.clearWatch(watchId);
+    onLoadingChange(false);
   };
 }; 

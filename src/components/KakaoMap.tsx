@@ -77,7 +77,9 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
         // 지도 인스턴스 콜백
         onMapLoad?.(mapInstance);
 
+        // 로딩 상태를 확실히 false로 설정
         setIsLoading(false);
+        console.log('🗺️ 카카오맵 초기화 완료');
       } catch (err) {
         console.error('카카오 맵 초기화 실패:', err);
         setError('지도를 불러오는 중 오류가 발생했습니다.');
@@ -93,6 +95,14 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
       clearTimeout(timer);
     };
   }, [onMapLoad, setGPSError]);
+
+  // 지도가 로드된 후 로딩 상태 확인
+  useEffect(() => {
+    if (mapRef.current && isLoading) {
+      console.log('🗺️ 지도 로드 완료 - 로딩 상태 강제 해제');
+      setIsLoading(false);
+    }
+  }, [mapRef.current, isLoading]);
 
   return (
     <div className="relative w-full h-full">
