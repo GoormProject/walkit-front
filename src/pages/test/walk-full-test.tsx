@@ -12,6 +12,10 @@ const WalkFullTest: React.FC = () => {
   const [pathPositions, setPathPositions] = useState<kakao.maps.LatLng[]>([]);
   const polyline = useRef<kakao.maps.Polyline | null>(null);
   
+  // 인증 관련 상태
+  const [accessToken, setAccessToken] = useState<string>('');
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  
   // Walk Store
   const {
     currentWalk,
@@ -23,6 +27,43 @@ const WalkFullTest: React.FC = () => {
   
   // GPS Store
   const { position, error: gpsError } = useGPSStore();
+
+  // 컴포넌트 마운트 시 토큰 확인
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      setAccessToken(token);
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  // 토큰 설정
+  const handleSetToken = () => {
+    if (accessToken.trim()) {
+      localStorage.setItem('accessToken', accessToken);
+      setIsAuthenticated(true);
+      toast.success('토큰이 설정되었습니다!');
+    } else {
+      toast.error('토큰을 입력해주세요.');
+    }
+  };
+
+  // 로그아웃
+  const handleLogout = () => {
+    localStorage.removeItem('accessToken');
+    setAccessToken('');
+    setIsAuthenticated(false);
+    toast.success('로그아웃되었습니다.');
+  };
+
+  // 테스트용 토큰 설정
+  const handleSetTestToken = () => {
+    const testToken = 'test-token-12345';
+    localStorage.setItem('accessToken', testToken);
+    setAccessToken(testToken);
+    setIsAuthenticated(true);
+    toast.success('테스트 토큰이 설정되었습니다!');
+  };
 
   // 총 거리 계산 함수
   const calculateTotalDistance = (positions: kakao.maps.LatLng[]): number => {
@@ -214,6 +255,15 @@ const WalkFullTest: React.FC = () => {
           </div>
           
           <div className="flex items-center gap-2">
+            {/* 인증 상태 표시 */}
+            <div className="flex items-center gap-1 px-2 py-1 bg-white rounded-full shadow-lg text-xs">
+              {isAuthenticated ? (
+                <span className="text-green-500">✅ 인증됨</span>
+              ) : (
+                <span className="text-red-500">❌ 인증 필요</span>
+              )}
+            </div>
+
             {/* GPS 상태 표시 */}
             <div className="flex items-center gap-1 px-2 py-1 bg-white rounded-full shadow-lg text-xs">
               {gpsError ? (
@@ -245,7 +295,7 @@ const WalkFullTest: React.FC = () => {
             {currentWalk.status === 'idle' && (
               <button
                 onClick={handleStartWalk}
-                disabled={isLoading || !!gpsError}
+                disabled={isLoading || !!gpsError || !isAuthenticated}
                 className="px-4 py-2 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
               >
                 {isLoading ? '시작중...' : '산책 시작'}
@@ -306,6 +356,44 @@ const WalkFullTest: React.FC = () => {
                   초기화
                 </button>
               </div>
+            )}
+          </div>
+        </div>
+
+        {/* 인증 컨트롤 패널 */}
+        <div className="absolute top-20 left-4 right-4 bg-white p-4 rounded-lg shadow-lg z-10">
+          <div className="flex items-center gap-4">
+            <div className="flex-1">
+              <input
+                type="text"
+                placeholder="Access Token을 입력하세요"
+                value={accessToken}
+                onChange={(e) => setAccessToken(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md text-sm"
+              />
+            </div>
+            <button
+              onClick={handleSetToken}
+              disabled={isLoading || !accessToken.trim()}
+              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
+            >
+              {isLoading ? '설정중...' : '토큰 설정'}
+            </button>
+            <button
+              onClick={handleSetTestToken}
+              disabled={isLoading}
+              className="px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
+            >
+              테스트 토큰
+            </button>
+            {isAuthenticated && (
+              <button
+                onClick={handleLogout}
+                disabled={isLoading}
+                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
+              >
+                {isLoading ? '로그아웃중...' : '로그아웃'}
+              </button>
             )}
           </div>
         </div>
