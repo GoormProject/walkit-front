@@ -18,6 +18,7 @@ import GPSTestPage from '@/pages/test/gps-test';
 import TrailProgressTest from '@/pages/test/trail-progress';
 import SimpleMapTest from '@/pages/test/simple-map';
 import WalkApiTest from '@/pages/test/walk-api-test';
+import WalkZustandTest from '@/pages/test/walk-zustand-test';
 import '@/App.css';
 
 function App() {
@@ -56,6 +57,9 @@ function App() {
 
         {/* 산책 API 테스트 페이지 */}
         <Route path="/test/walk-api" element={<WalkApiTest />} />
+
+        {/* 산책 Zustand 스토어 테스트 페이지 */}
+        <Route path="/test/walk-zustand" element={<WalkZustandTest />} />
 
         {/* 모든 페이지에 RootLayout 적용 */}
         <Route element={<RootLayout />}>
