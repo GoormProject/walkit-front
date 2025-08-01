@@ -206,7 +206,7 @@ const WalkFullTest: React.FC = () => {
         )}
 
         {/* 상단 컨트롤 */}
-        <div className="absolute top-4 left-4 right-4 flex justify-between items-center">
+        <div className="absolute top-4 left-4 right-4 flex justify-between items-center z-10">
           <div className="flex gap-2">
             <button className="p-2 rounded-full bg-white shadow-lg hover:bg-gray-50 transition-all">
               <span className="material-icons text-gray-700">menu</span>
@@ -246,7 +246,7 @@ const WalkFullTest: React.FC = () => {
               <button
                 onClick={handleStartWalk}
                 disabled={isLoading || !!gpsError}
-                className="px-4 py-2 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
               >
                 {isLoading ? '시작중...' : '산책 시작'}
               </button>
@@ -257,14 +257,14 @@ const WalkFullTest: React.FC = () => {
                 <button
                   onClick={handlePauseWalk}
                   disabled={isLoading}
-                  className="px-4 py-2 bg-yellow-500 text-white rounded-full shadow-lg hover:bg-yellow-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-yellow-500 text-white rounded-full shadow-lg hover:bg-yellow-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
                 >
                   {isLoading ? '일시정지중...' : '일시정지'}
                 </button>
                 <button
                   onClick={handleEndWalk}
                   disabled={isLoading}
-                  className="px-4 py-2 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
                 >
                   {isLoading ? '종료중...' : '산책 종료'}
                 </button>
@@ -276,14 +276,14 @@ const WalkFullTest: React.FC = () => {
                 <button
                   onClick={handleResumeWalk}
                   disabled={isLoading}
-                  className="px-4 py-2 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
                 >
                   {isLoading ? '재개중...' : '재개'}
                 </button>
                 <button
                   onClick={handleEndWalk}
                   disabled={isLoading}
-                  className="px-4 py-2 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
                 >
                   {isLoading ? '종료중...' : '산책 종료'}
                 </button>
@@ -295,13 +295,13 @@ const WalkFullTest: React.FC = () => {
                 <button
                   onClick={handleRegisterWalk}
                   disabled={isLoading}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
                 >
                   {isLoading ? '등록중...' : '기록 등록'}
                 </button>
                 <button
                   onClick={() => walkActions.resetWalk()}
-                  className="px-4 py-2 bg-gray-500 text-white rounded-full shadow-lg hover:bg-gray-600 transition-all"
+                  className="px-4 py-2 bg-gray-500 text-white rounded-full shadow-lg hover:bg-gray-600 transition-all font-medium"
                 >
                   초기화
                 </button>
@@ -312,13 +312,13 @@ const WalkFullTest: React.FC = () => {
       </div>
 
       {/* 하단 패널 */}
-      <div className="bg-white p-4 shadow-md">
+      <div className="bg-white p-4 shadow-md max-h-80 overflow-hidden">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold">산책 기록 목록</h2>
           <button
             onClick={handleGetWalkRecords}
             disabled={isLoading}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
           >
             {isLoading ? '조회중...' : '새로고침'}
           </button>
@@ -332,7 +332,7 @@ const WalkFullTest: React.FC = () => {
         )}
 
         {/* 산책 기록 목록 */}
-        <div className="max-h-40 overflow-y-auto">
+        <div className="overflow-y-auto max-h-32">
           {walkRecords.length === 0 ? (
             <p className="text-gray-500 text-center py-4">산책 기록이 없습니다.</p>
           ) : (
@@ -342,8 +342,8 @@ const WalkFullTest: React.FC = () => {
                   key={record.walkId}
                   className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
                 >
-                  <div>
-                    <h3 className="font-medium">{record.title}</h3>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium truncate">{record.title}</h3>
                     <p className="text-sm text-gray-600">
                       거리: {(record.totalDistance / 1000).toFixed(2)}km | 
                       시간: {Math.floor(record.totalTime / 60)}분 | 
@@ -356,7 +356,7 @@ const WalkFullTest: React.FC = () => {
                   <button
                     onClick={() => handleDeleteWalk(record.walkId)}
                     disabled={isLoading}
-                    className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed text-sm"
+                    className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-medium ml-2 flex-shrink-0"
                   >
                     삭제
                   </button>
