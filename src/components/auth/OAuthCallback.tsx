@@ -8,7 +8,6 @@ import { useNavigate } from 'react-router-dom';
 import { isOAuthCallback, getOAuthError, getStateFromUrl } from '@/utils/oauth';
 import { useAuthActions } from '@/features/auth/authSlice';
 import { useToast } from '@/features/toast/toastSlice';
-import { Api } from '@/api/swagger-api';
 
 const OAuthCallback = () => {
   const [isProcessing, setIsProcessing] = useState(true);
@@ -59,108 +58,10 @@ const OAuthCallback = () => {
           return;
         }
 
-        // 사용자 정보 조회 (실제 API 호출)
-        if (import.meta.env.MODE !== 'production')
-          console.log('👤 사용자 정보 조회 시작');
-        if (import.meta.env.MODE !== 'production')
-          console.log('📡 백엔드 API 호출 중...');
-
-        // API 인스턴스 생성 (쿠키 전송 설정 추가)
-        const api = new Api({
-          baseURL: import.meta.env.VITE_API_BASE_URL,
-          withCredentials: true, // HttpOnly 쿠키 전송을 위해 필요
-        });
-
-        // 현재 사용자 정보 조회
-        const response = await api.api.getCurrentUser();
-        if (import.meta.env.MODE !== 'production')
-          console.log('🔍 API 응답 전체:', response);
-        if (import.meta.env.MODE !== 'production')
-          console.log('📊 response.data:', response.data);
-        if (import.meta.env.MODE !== 'production')
-          console.log('📊 response.data.data:', response.data?.data);
-        if (import.meta.env.MODE !== 'production')
-          console.log('📊 response.status:', response.status);
-        if (import.meta.env.MODE !== 'production')
-          console.log('📊 response.headers:', response.headers);
-
-        if (response.data?.data) {
-          const userData = response.data.data;
-          if (import.meta.env.MODE !== 'production')
-            console.log('✅ 로그인 성공!');
-          if (import.meta.env.MODE !== 'production')
-            console.log('👤 사용자 정보:', userData);
-          if (import.meta.env.MODE !== 'production')
-            console.log('🔍 userData.memberId:', userData.memberId);
-          if (import.meta.env.MODE !== 'production')
-            console.log('🔍 userData.email:', userData.email);
-          if (import.meta.env.MODE !== 'production')
-            console.log('🔍 userData.isProfileSet:', userData.isProfileSet);
-          if (import.meta.env.MODE !== 'production')
-            console.log(
-              '🔍 userData.isProfileSet 타입:',
-              typeof userData.isProfileSet
-            );
-
-          // 필수 사용자 정보 검증
-          if (!userData.memberId || !userData.email) {
-            if (import.meta.env.MODE !== 'production')
-              console.error('❌ 필수 사용자 정보 누락:', userData);
-            throw new Error('사용자 정보가 불완전합니다.');
-          }
-
-          // Zustand store에 사용자 정보 저장
-          if (import.meta.env.MODE !== 'production')
-            console.log('🔄 oauthLoginSuccess 호출 시작');
-          if (import.meta.env.MODE !== 'production')
-            console.log('📊 전달할 데이터:', {
-              memberId: userData.memberId,
-              email: userData.email,
-              isProfileSet: userData.isProfileSet ?? false,
-            });
-
-          oauthLoginSuccess({
-            memberId: userData.memberId,
-            email: userData.email,
-            isProfileSet: userData.isProfileSet ?? false, // null/undefined일 때만 false
-          });
-
-          if (import.meta.env.MODE !== 'production')
-            console.log('✅ oauthLoginSuccess 호출 완료');
-
-          showToast('success', '로그인되었습니다!');
-
-          // 프로필 설정 여부에 따라 리다이렉트
-          if (import.meta.env.MODE !== 'production')
-            console.log('🔄 리다이렉트 결정 중...');
-          if (import.meta.env.MODE !== 'production')
-            console.log('📊 isProfileSet 값:', userData.isProfileSet);
-          if (import.meta.env.MODE !== 'production')
-            console.log(
-              '📊 isProfileSet === true:',
-              userData.isProfileSet === true
-            );
-          if (import.meta.env.MODE !== 'production')
-            console.log(
-              '📊 isProfileSet === false:',
-              userData.isProfileSet === false
-            );
-
-          if (userData.isProfileSet) {
-            if (import.meta.env.MODE !== 'production')
-              console.log('🏠 홈으로 리다이렉트');
-            navigate('/');
-          } else {
-            if (import.meta.env.MODE !== 'production')
-              console.log('✏️ 프로필 편집으로 리다이렉트');
-            navigate('/profile/edit');
-          }
-        } else {
-          if (import.meta.env.MODE !== 'production')
-            console.log('❌ 사용자 정보 없음');
-          showToast('error', '사용자 정보를 가져올 수 없습니다.');
-          navigate('/login');
-        }
+        // OAuth 성공 - 바로 홈으로 리다이렉트 (실제 API 호출은 AuthWrapper에서 수행)
+        console.log('🔄 OAuth 성공 - 홈으로 리다이렉트');
+        showToast('success', '로그인되었습니다!');
+        navigate('/');
       } catch (error) {
         if (import.meta.env.MODE !== 'production')
           console.error('❌ OAuth 콜백 처리 실패');

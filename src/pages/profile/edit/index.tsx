@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Api } from '@/api/swagger-api';
 import { useAuth } from '@/features/auth/authSlice';
@@ -89,9 +89,11 @@ const ProfileEdit = () => {
         return;
       }
 
-      // 파일 타입 검증
-      if (!file.type.startsWith('image/')) {
-        setError('이미지 파일만 업로드 가능합니다.');
+      // 파일 타입 검증 (GIF 제외)
+      if (!file.type.startsWith('image/') || file.type === 'image/gif') {
+        setError(
+          'JPG, PNG 이미지 파일만 업로드 가능합니다. (GIF는 지원하지 않습니다)'
+        );
         e.target.value = '';
         return;
       }
@@ -188,11 +190,11 @@ const ProfileEdit = () => {
           <div className="mb-6 text-center">
             <div className="inline-block relative">
               <img
-                src={previewImage || '/default-profile.png'}
+                src={previewImage || '/test_picture/fail_to_loading.jpg'}
                 alt="프로필 이미지"
                 className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
                 onError={e => {
-                  e.currentTarget.src = '/default-profile.png';
+                  e.currentTarget.src = '/test_picture/fail_to_loading.jpg';
                 }}
               />
               <label className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full cursor-pointer hover:bg-blue-700 transition-colors">
@@ -214,9 +216,10 @@ const ProfileEdit = () => {
                   📋 이미지 업로드 제한사항
                 </p>
                 <ul className="text-xs text-blue-700 space-y-1">
-                  <li>• 파일 형식: JPG, PNG, GIF 등 이미지 파일</li>
+                  <li>• 파일 형식: JPG, PNG 이미지 파일</li>
                   <li>• 최대 크기: 1MB</li>
                   <li>• 개수: 1개 파일만 업로드 가능</li>
+                  <li>• GIF는 지원하지 않습니다</li>
                 </ul>
                 {fileSize && (
                   <p className="text-xs text-green-700 mt-2 font-medium">

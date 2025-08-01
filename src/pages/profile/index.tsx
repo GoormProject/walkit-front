@@ -93,11 +93,11 @@ const Profile = () => {
         <div className="px-6 py-8 text-center">
           <div className="inline-block relative">
             <img
-              src={profile?.profile || '/default-profile.png'}
+              src={profile?.profile || '/test_picture/fail_to_loading.jpg'}
               alt="프로필 이미지"
               className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
               onError={e => {
-                e.currentTarget.src = '/default-profile.png';
+                e.currentTarget.src = '/test_picture/fail_to_loading.jpg';
               }}
             />
           </div>
