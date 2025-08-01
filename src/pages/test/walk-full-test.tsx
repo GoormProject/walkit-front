@@ -5,6 +5,7 @@ import { GPSTracker } from '@/components/GPSTracker';
 import { useWalkStore } from '@/features/walk/walkSlice';
 import { useGPSStore } from '@/features/gps/gpsSlice';
 import { calculateDistance as calculateCoordinateDistance } from '@/utils/converter/pathConverter';
+import { logoutUser, forceLogout } from '@/utils/logout';
 import type { WalkCreateRequest } from '@/types/walk';
 
 const WalkFullTest: React.FC = () => {
@@ -111,11 +112,29 @@ const WalkFullTest: React.FC = () => {
   };
 
   // 로그아웃
-  const handleLogout = () => {
-    localStorage.removeItem('accessToken');
+  // 로그아웃 (API 호출 포함)
+  const handleLogout = async () => {
+    try {
+      const success = await logoutUser();
+      if (success) {
+        setAccessToken('');
+        setIsAuthenticated(false);
+        toast.success('로그아웃되었습니다.');
+      } else {
+        toast.error('로그아웃에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('로그아웃 오류:', error);
+      toast.error('로그아웃 중 오류가 발생했습니다.');
+    }
+  };
+
+  // 강제 로그아웃 (API 호출 없이 로컬만 정리)
+  const handleForceLogout = () => {
+    forceLogout();
     setAccessToken('');
     setIsAuthenticated(false);
-    toast.success('로그아웃되었습니다.');
+    toast.success('강제 로그아웃되었습니다.');
   };
 
   // 테스트용 토큰 설정
@@ -449,13 +468,22 @@ const WalkFullTest: React.FC = () => {
               테스트 토큰
             </button>
             {isAuthenticated && (
-              <button
-                onClick={handleLogout}
-                disabled={isLoading}
-                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
-              >
-                {isLoading ? '로그아웃중...' : '로그아웃'}
-              </button>
+              <>
+                <button
+                  onClick={handleLogout}
+                  disabled={isLoading}
+                  className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
+                >
+                  {isLoading ? '로그아웃중...' : '로그아웃'}
+                </button>
+                <button
+                  onClick={handleForceLogout}
+                  disabled={isLoading}
+                  className="px-4 py-2 bg-red-700 text-white rounded-md hover:bg-red-800 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
+                >
+                  강제 로그아웃
+                </button>
+              </>
             )}
             <button
               onClick={handleGetCookieToken}
