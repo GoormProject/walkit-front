@@ -31,6 +31,7 @@ const Home = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [places, setPlaces] = useState<Place[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [isPlacesServiceReady, setIsPlacesServiceReady] = useState(false);
   const map = useRef<kakao.maps.Map | null>(null);
   const polyline = useRef<kakao.maps.Polyline | null>(null);
   const markersRef = useRef<any[]>([]);
@@ -276,12 +277,22 @@ const Home = () => {
 
   // 카테고리 변경 시 검색 실행
   useEffect(() => {
-    console.log('🔄 카테고리 변경 감지:', selectedCategory, 'placesService:', !!placesServiceRef.current);
-    if (selectedCategory && placesServiceRef.current) {
+    console.log('🔄 카테고리 변경 감지:', selectedCategory, 'placesService:', !!placesServiceRef.current, 'isReady:', isPlacesServiceReady);
+    if (selectedCategory && placesServiceRef.current && isPlacesServiceReady) {
       console.log('🚀 검색 실행');
       searchPlaces();
+    } else if (selectedCategory && !isPlacesServiceReady) {
+      console.log('⏳ Places 서비스 대기 중...');
     }
-  }, [selectedCategory, searchPlaces]);
+  }, [selectedCategory, searchPlaces, isPlacesServiceReady]);
+
+  // Places 서비스 준비 시 이전 선택된 카테고리 검색 실행
+  useEffect(() => {
+    if (isPlacesServiceReady && selectedCategory && placesServiceRef.current) {
+      console.log('🚀 Places 서비스 준비됨, 이전 선택된 카테고리 검색 실행:', selectedCategory);
+      searchPlaces();
+    }
+  }, [isPlacesServiceReady, selectedCategory, searchPlaces]);
 
   // 카테고리 선택
   const handleCategoryClick = useCallback((categoryId: string) => {
@@ -344,6 +355,8 @@ const Home = () => {
             if (window.kakao && window.kakao.maps.services) {
               const placesService = new window.kakao.maps.services.Places(mapInstance);
               placesServiceRef.current = placesService;
+              setIsPlacesServiceReady(true);
+              console.log('✅ Places 서비스 초기화 완료');
 
               // 커스텀 오버레이 생성
               const contentNode = document.createElement('div');
@@ -354,6 +367,8 @@ const Home = () => {
                 content: contentNode
               });
               placeOverlayRef.current = placeOverlay;
+            } else {
+              console.log('❌ Places 서비스 초기화 실패');
             }
           }}
         />
