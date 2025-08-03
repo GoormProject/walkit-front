@@ -35,13 +35,18 @@ const Home = () => {
   const [isMapReady, setIsMapReady] = useState(false);
   const map = useRef<kakao.maps.Map | null>(null);
   const polyline = useRef<kakao.maps.Polyline | null>(null);
-  const markersRef = useRef<any[]>([]);
-  const placeOverlayRef = useRef<any>(null);
-  const placesServiceRef = useRef<any>(null);
+  const markersRef = useRef<kakao.maps.Marker[]>([]);
+  const placeOverlayRef = useRef<kakao.maps.CustomOverlay | null>(null);
+  const placesServiceRef = useRef<kakao.maps.services.Places | null>(null);
   const isSearchingRef = useRef(false);
-  const currentLocationMarkerRef = useRef<any>(null);
   const { error, isLoading, position } = useGPSStore();
   const navigate = useNavigate();
+
+  // 검색 반경 상수
+  const SEARCH_RADIUS = {
+    INITIAL: 5000,  // 5km
+    EXTENDED: 10000 // 10km
+  } as const;
 
   // 카테고리 정의
   const categories: Category[] = [
@@ -85,7 +90,7 @@ const Home = () => {
       isPlacesServiceReady,
       selectedCategory
     });
-  }, [map.current, isMapReady, placesServiceRef.current, isPlacesServiceReady, selectedCategory]);
+  }, [isMapReady, isPlacesServiceReady, selectedCategory]);
 
   // 산책 시작
   const handleStartWalk = () => {
@@ -167,10 +172,7 @@ const Home = () => {
     }
 
     // 기존 검색 마커 제거
-    markersRef.current.forEach(marker => {
-      marker.setMap(null);
-    });
-    markersRef.current = [];
+    removeMarkers();
 
     console.log('📍 새로운 마커 생성:', places.length, '개');
 
@@ -267,7 +269,73 @@ const Home = () => {
     placeOverlayRef.current.setMap(map.current);
   }, []);
 
-
+  // 공통 키워드 검색 함수
+  const performKeywordSearch = useCallback((
+    keywords: string[],
+    category: Category,
+    searchLocation: kakao.maps.LatLng | null,
+    onSuccess: (data: Place[], keyword: string) => void
+  ) => {
+    const trySearch = (idx = 0) => {
+      if (idx >= keywords.length) {
+        // 확장 검색
+        if (!placesServiceRef.current) {
+          console.error('❌ Places 서비스가 초기화되지 않았습니다.');
+          setIsSearching(false);
+          isSearchingRef.current = false;
+          return;
+        }
+        placesServiceRef.current.keywordSearch(
+          keywords[0],
+          (data: Place[], status: any) => {
+            console.log('🔍 넓은 범위 검색 결과:', { status, count: data?.length });
+            setPlaces(data || []);
+            setIsSearching(false);
+            isSearchingRef.current = false;
+            if (status === window.kakao.maps.services.Status.OK && data?.length > 0) {
+              onSuccess(data, keywords[0]);
+            }
+          },
+          { 
+            useMapBounds: false,
+            location: searchLocation ? new window.kakao.maps.LatLng(searchLocation.getLat(), searchLocation.getLng()) : undefined,
+            radius: SEARCH_RADIUS.EXTENDED
+          }
+        );
+        return;
+      }
+      
+      if (!placesServiceRef.current) {
+        console.error('❌ Places 서비스가 초기화되지 않았습니다.');
+        setIsSearching(false);
+        isSearchingRef.current = false;
+        return;
+      }
+      
+      placesServiceRef.current.keywordSearch(
+        keywords[idx],
+        (data: Place[], status: any) => {
+          console.log('🔍 검색 결과:', { keyword: keywords[idx], status, count: data?.length });
+          if (status === window.kakao.maps.services.Status.OK && data.length > 0) {
+            console.log('✅ 검색 성공');
+            setPlaces(data);
+            onSuccess(data, keywords[idx]);
+            setIsSearching(false);
+            isSearchingRef.current = false;
+          } else {
+            trySearch(idx + 1);
+          }
+        },
+        { 
+          useMapBounds: true,
+          location: searchLocation ? new window.kakao.maps.LatLng(searchLocation.getLat(), searchLocation.getLng()) : undefined,
+          radius: SEARCH_RADIUS.INITIAL
+        }
+      );
+    };
+    
+    trySearch();
+  }, []);
 
   // 카테고리 변경 시 검색 실행 (GPS 위치 업데이트와 분리)
   useEffect(() => {
@@ -301,102 +369,28 @@ const Home = () => {
         // 화장실 키워드 검색
         if (category.id === 'toilet') {
           const toiletKeywords = ['화장실', '공공화장실', 'toilet'];
-          const tryToiletSearch = (idx = 0) => {
-            if (idx >= toiletKeywords.length) {
-              console.log('❌ 모든 화장실 키워드 검색 실패, 더 넓은 범위로 재시도');
-              // 마지막 시도: 더 넓은 범위로 검색
-              placesServiceRef.current.keywordSearch(
-                '화장실',
-                (data: Place[], status: any) => {
-                  console.log('🔍 넓은 범위 화장실 검색 결과:', { status, count: data?.length });
-                  setPlaces(data || []);
-                  setIsSearching(false);
-                  isSearchingRef.current = false;
-                  if (status === window.kakao.maps.services.Status.OK && data?.length > 0) {
-                    displayPlaces(data, { ...category, name: '화장실' });
-                  }
-                },
-                { 
-                  useMapBounds: false,  // 전국 범위로 검색
-                  location: searchLocation ? new window.kakao.maps.LatLng(searchLocation.getLat(), searchLocation.getLng()) : undefined,
-                  radius: 10000  // 10km 반경으로 확장
-                }
-              );
-              return;
+          performKeywordSearch(
+            toiletKeywords,
+            category,
+            searchLocation,
+            (data: Place[], keyword: string) => {
+              displayPlaces(data, { ...category, name: keyword });
             }
-            placesServiceRef.current.keywordSearch(
-              toiletKeywords[idx],
-              (data: Place[], status: any) => {
-                console.log('🔍 화장실 검색 결과:', { keyword: toiletKeywords[idx], status, count: data?.length });
-                if (status === window.kakao.maps.services.Status.OK && data.length > 0) {
-                  console.log('✅ 화장실 검색 성공, displayPlaces 호출');
-                  setPlaces(data);
-                  displayPlaces(data, { ...category, name: toiletKeywords[idx] });
-                  setIsSearching(false);
-                  isSearchingRef.current = false;
-                } else {
-                  tryToiletSearch(idx + 1);
-                }
-              },
-              { 
-                useMapBounds: true,  // 현재 지도 화면 범위 내에서만 검색
-                location: searchLocation ? new window.kakao.maps.LatLng(searchLocation.getLat(), searchLocation.getLng()) : undefined,
-                radius: 5000  // 5km 반경 내에서 검색
-              }
-            );
-          };
-          tryToiletSearch();
+          );
           return;
         }
 
         // 지하철역 키워드 검색
         if (category.id === 'subway') {
           const subwayKeywords = ['지하철역', '지하철', '역'];
-          const trySubwaySearch = (idx = 0) => {
-            if (idx >= subwayKeywords.length) {
-              console.log('❌ 모든 지하철 키워드 검색 실패, 더 넓은 범위로 재시도');
-              // 마지막 시도: 더 넓은 범위로 검색
-              placesServiceRef.current.keywordSearch(
-                '지하철역',
-                (data: Place[], status: any) => {
-                  console.log('🔍 넓은 범위 지하철역 검색 결과:', { status, count: data?.length });
-                  setPlaces(data || []);
-                  setIsSearching(false);
-                  isSearchingRef.current = false;
-                  if (status === window.kakao.maps.services.Status.OK && data?.length > 0) {
-                    displayPlaces(data, { ...category, name: '지하철역' });
-                  }
-                },
-                { 
-                  useMapBounds: false,  // 전국 범위로 검색
-                  location: searchLocation ? new window.kakao.maps.LatLng(searchLocation.getLat(), searchLocation.getLng()) : undefined,
-                  radius: 10000  // 10km 반경으로 확장
-                }
-              );
-              return;
+          performKeywordSearch(
+            subwayKeywords,
+            category,
+            searchLocation,
+            (data: Place[], keyword: string) => {
+              displayPlaces(data, { ...category, name: keyword });
             }
-            placesServiceRef.current.keywordSearch(
-              subwayKeywords[idx],
-              (data: Place[], status: any) => {
-                console.log('🔍 지하철역 검색 결과:', { keyword: subwayKeywords[idx], status, count: data?.length });
-                if (status === window.kakao.maps.services.Status.OK && data.length > 0) {
-                  console.log('✅ 지하철역 검색 성공, displayPlaces 호출');
-                  setPlaces(data);
-                  displayPlaces(data, { ...category, name: subwayKeywords[idx] });
-                  setIsSearching(false);
-                  isSearchingRef.current = false;
-                } else {
-                  trySubwaySearch(idx + 1);
-                }
-              },
-              { 
-                useMapBounds: true,  // 현재 지도 화면 범위 내에서만 검색
-                location: searchLocation ? new window.kakao.maps.LatLng(searchLocation.getLat(), searchLocation.getLng()) : undefined,
-                radius: 5000  // 5km 반경 내에서 검색
-              }
-            );
-          };
-          trySubwaySearch();
+          );
           return;
         }
 
@@ -415,6 +409,12 @@ const Home = () => {
             } else {
               console.log('❌ 편의점 검색 실패, 더 넓은 범위로 재시도:', status);
               // 대안: 더 넓은 범위로 검색
+              if (!placesServiceRef.current) {
+                console.error('❌ Places 서비스가 초기화되지 않았습니다.');
+                setIsSearching(false);
+                isSearchingRef.current = false;
+                return;
+              }
               placesServiceRef.current.categorySearch(
                 category.code,
                 (data: Place[], status: any) => {
@@ -444,7 +444,7 @@ const Home = () => {
     } else if (selectedCategory && !isPlacesServiceReady) {
       console.log('⏳ Places 서비스 대기 중...');
     }
-  }, [selectedCategory, isPlacesServiceReady]); // GPS 위치와 관련 없는 의존성만 포함
+  }, [selectedCategory, isPlacesServiceReady, position, categories, displayPlaces, performKeywordSearch, isMapReady]); // 모든 의존성 포함
 
   // Places 서비스 준비 시 이전 선택된 카테고리 검색 실행
   useEffect(() => {

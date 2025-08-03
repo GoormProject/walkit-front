@@ -175,6 +175,23 @@ export const useWalkApi = () => {
 
   // 경로 업데이트
   const updatePath = useCallback((path: number[][]) => {
+    if (!Array.isArray(path)) {
+      console.warn('⚠️ 유효하지 않은 경로 데이터 형식:', path);
+      return;
+    }
+    
+    // 좌표 형식 검증 (선택적)
+    const isValidPath = path.every(coord => 
+      Array.isArray(coord) && 
+      coord.length === 2 && 
+      typeof coord[0] === 'number' && 
+      typeof coord[1] === 'number'
+    );
+    
+    if (!isValidPath && path.length > 0) {
+      console.warn('⚠️ 일부 좌표가 올바르지 않습니다:', path);
+    }
+    
     actions.updateWalkPath(path);
   }, [actions]);
 

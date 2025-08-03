@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { createMap as createKakaoMap } from '../../utils/kakaoMapApi';
 
 interface Place {
   id: string;
@@ -92,7 +93,7 @@ const CategorySearchTest: React.FC = () => {
 
       markersRef.current.push(marker);
     });
-  }, []); // 의존성 배열 제거
+  }, []);
 
   // 장소 검색
   const searchPlaces = useCallback(() => {
@@ -192,20 +193,11 @@ const CategorySearchTest: React.FC = () => {
       },
       { useMapBounds: true }
     );
-  }, [selectedCategory]);
+  }, [selectedCategory, categories, removeMarkers, displayPlaces, setPlaces, setIsSearching]);
 
   // 지도 생성
-  const createMap = useCallback((position: { lat: number; lng: number }) => {
-    const container = document.getElementById('map');
-    if (!container) {
-      throw new Error('지도 컨테이너를 찾을 수 없습니다.');
-    }
-
-    const map = new window.kakao.maps.Map(container, {
-      center: new window.kakao.maps.LatLng(position.lat, position.lng),
-      level: 3
-    });
-
+    const createMap = useCallback((position: { lat: number; lng: number }) => {
+    const map = createKakaoMap(position);
     mapRef.current = map;
 
     // Places 서비스 초기화
@@ -215,7 +207,7 @@ const CategorySearchTest: React.FC = () => {
     // 커스텀 오버레이 생성
     const contentNode = document.createElement('div');
     contentNode.className = 'placeinfo_wrap';
-    
+
     const placeOverlay = new window.kakao.maps.CustomOverlay({
       zIndex: 1,
       content: contentNode
@@ -231,7 +223,7 @@ const CategorySearchTest: React.FC = () => {
 
     setIsLoading(false);
     isInitializedRef.current = true;
-  }, [selectedCategory]); // searchPlaces 제거
+  }, [selectedCategory, searchPlaces]);
 
   // 장소 정보 표시
   const displayPlaceInfo = useCallback((place: Place) => {
