@@ -38,6 +38,7 @@ const Home = () => {
   const placeOverlayRef = useRef<any>(null);
   const placesServiceRef = useRef<any>(null);
   const isSearchingRef = useRef(false);
+  const currentLocationMarkerRef = useRef<any>(null);
   const { error, isLoading, position } = useGPSStore();
   const navigate = useNavigate();
 
@@ -121,8 +122,9 @@ const Home = () => {
     }
   };
 
-  // 마커 제거
+  // 검색 마커 제거 (현재 위치 마커는 유지)
   const removeMarkers = useCallback(() => {
+    console.log('🗑️ 검색 마커 제거:', markersRef.current.length, '개');
     markersRef.current.forEach(marker => {
       marker.setMap(null);
     });
@@ -174,125 +176,113 @@ const Home = () => {
     placeOverlayRef.current.setMap(map.current);
   }, []);
 
-  // 장소 검색
-  const searchPlaces = useCallback(() => {
-    if (!selectedCategory || !placesServiceRef.current || isSearchingRef.current) {
-      return;
-    }
-    isSearchingRef.current = true;
-    setIsSearching(true);
-    
-    // 기존 마커 제거
-    removeMarkers();
-    
-    // 커스텀 오버레이 숨기기
-    if (placeOverlayRef.current) {
-      placeOverlayRef.current.setMap(null);
-    }
 
-    const category = categories.find(cat => cat.id === selectedCategory);
-    if (!category) {
-      isSearchingRef.current = false;
-      setIsSearching(false);
-      return;
-    }
-
-    // 화장실 키워드 검색 (카테고리 코드 없음)
-    if (category.id === 'toilet') {
-      const toiletKeywords = ['화장실', '공공화장실', 'toilet'];
-      const tryToiletSearch = (idx = 0) => {
-        if (idx >= toiletKeywords.length) {
-          setPlaces([]);
-          setIsSearching(false);
-          isSearchingRef.current = false;
-          return;
-        }
-        placesServiceRef.current.keywordSearch(
-          toiletKeywords[idx],
-          (data: Place[], status: any) => {
-            if (status === window.kakao.maps.services.Status.OK && data.length > 0) {
-              setPlaces(data);
-              displayPlaces(data, { ...category, name: toiletKeywords[idx] });
-              setIsSearching(false);
-              isSearchingRef.current = false;
-            } else {
-              tryToiletSearch(idx + 1);
-            }
-          },
-          { useMapBounds: true }
-        );
-      };
-      tryToiletSearch();
-      return;
-    }
-
-    // 지하철역 키워드 검색
-    if (category.id === 'subway') {
-      const subwayKeywords = ['지하철역', '지하철', '역'];
-      const trySubwaySearch = (idx = 0) => {
-        if (idx >= subwayKeywords.length) {
-          setPlaces([]);
-          setIsSearching(false);
-          isSearchingRef.current = false;
-          return;
-        }
-        placesServiceRef.current.keywordSearch(
-          subwayKeywords[idx],
-          (data: Place[], status: any) => {
-            if (status === window.kakao.maps.services.Status.OK && data.length > 0) {
-              setPlaces(data);
-              displayPlaces(data, { ...category, name: subwayKeywords[idx] });
-              setIsSearching(false);
-              isSearchingRef.current = false;
-            } else {
-              trySubwaySearch(idx + 1);
-            }
-          },
-          { useMapBounds: true }
-        );
-      };
-      trySubwaySearch();
-      return;
-    }
-
-    // 나머지 카테고리는 기존대로 categorySearch
-    console.log('🔍 편의점 검색 시작:', category.code);
-    placesServiceRef.current.categorySearch(
-      category.code,
-      (data: Place[], status: any) => {
-        console.log('🔍 편의점 검색 결과:', { status, count: data?.length });
-        isSearchingRef.current = false;
-        setIsSearching(false);
-        if (status === window.kakao.maps.services.Status.OK) {
-          setPlaces(data);
-          displayPlaces(data, category);
-        } else {
-          console.log('❌ 편의점 검색 실패:', status);
-          setPlaces([]);
-        }
-      },
-      { useMapBounds: false } // useMapBounds를 false로 변경하여 전체 지역에서 검색
-    );
-  }, [selectedCategory, categories, removeMarkers, displayPlaces]);
 
   // 카테고리 변경 시 검색 실행
   useEffect(() => {
     console.log('🔄 카테고리 변경 감지:', selectedCategory, 'placesService:', !!placesServiceRef.current, 'isReady:', isPlacesServiceReady);
     if (selectedCategory && placesServiceRef.current && isPlacesServiceReady) {
       console.log('🚀 검색 실행');
-      searchPlaces();
+      // searchPlaces 함수를 직접 호출하여 무한 렌더링 방지
+      const category = categories.find(cat => cat.id === selectedCategory);
+      if (category) {
+        isSearchingRef.current = true;
+        setIsSearching(true);
+        removeMarkers();
+        
+        if (placeOverlayRef.current) {
+          placeOverlayRef.current.setMap(null);
+        }
+
+        // 화장실 키워드 검색
+        if (category.id === 'toilet') {
+          const toiletKeywords = ['화장실', '공공화장실', 'toilet'];
+          const tryToiletSearch = (idx = 0) => {
+            if (idx >= toiletKeywords.length) {
+              setPlaces([]);
+              setIsSearching(false);
+              isSearchingRef.current = false;
+              return;
+            }
+            placesServiceRef.current.keywordSearch(
+              toiletKeywords[idx],
+              (data: Place[], status: any) => {
+                if (status === window.kakao.maps.services.Status.OK && data.length > 0) {
+                  setPlaces(data);
+                  displayPlaces(data, { ...category, name: toiletKeywords[idx] });
+                  setIsSearching(false);
+                  isSearchingRef.current = false;
+                } else {
+                  tryToiletSearch(idx + 1);
+                }
+              },
+              { useMapBounds: false }
+            );
+          };
+          tryToiletSearch();
+          return;
+        }
+
+        // 지하철역 키워드 검색
+        if (category.id === 'subway') {
+          const subwayKeywords = ['지하철역', '지하철', '역'];
+          const trySubwaySearch = (idx = 0) => {
+            if (idx >= subwayKeywords.length) {
+              setPlaces([]);
+              setIsSearching(false);
+              isSearchingRef.current = false;
+              return;
+            }
+            placesServiceRef.current.keywordSearch(
+              subwayKeywords[idx],
+              (data: Place[], status: any) => {
+                if (status === window.kakao.maps.services.Status.OK && data.length > 0) {
+                  setPlaces(data);
+                  displayPlaces(data, { ...category, name: subwayKeywords[idx] });
+                  setIsSearching(false);
+                  isSearchingRef.current = false;
+                } else {
+                  trySubwaySearch(idx + 1);
+                }
+              },
+              { useMapBounds: false }
+            );
+          };
+          trySubwaySearch();
+          return;
+        }
+
+        // 편의점 카테고리 검색
+        console.log('🔍 편의점 검색 시작:', category.code);
+        placesServiceRef.current.categorySearch(
+          category.code,
+          (data: Place[], status: any) => {
+            console.log('🔍 편의점 검색 결과:', { status, count: data?.length });
+            isSearchingRef.current = false;
+            setIsSearching(false);
+            if (status === window.kakao.maps.services.Status.OK) {
+              setPlaces(data);
+              displayPlaces(data, category);
+            } else {
+              console.log('❌ 편의점 검색 실패:', status);
+              setPlaces([]);
+            }
+          },
+          { useMapBounds: false }
+        );
+      }
     } else if (selectedCategory && !isPlacesServiceReady) {
       console.log('⏳ Places 서비스 대기 중...');
     }
-  }, [selectedCategory, searchPlaces, isPlacesServiceReady]);
+  }, [selectedCategory, isPlacesServiceReady, categories, removeMarkers, displayPlaces]);
 
   // Places 서비스 준비 시 이전 선택된 카테고리 검색 실행
   useEffect(() => {
     if (isPlacesServiceReady && selectedCategory && placesServiceRef.current) {
       console.log('🚀 Places 서비스 준비됨, 이전 선택된 카테고리 검색 실행:', selectedCategory);
-      searchPlaces();
+      // 여기서는 searchPlaces 함수를 직접 호출하지 않고 selectedCategory 변경을 트리거
     }
-  }, [isPlacesServiceReady, selectedCategory, searchPlaces]);
+  }, [isPlacesServiceReady]);
 
   // 카테고리 선택
   const handleCategoryClick = useCallback((categoryId: string) => {
@@ -386,6 +376,8 @@ const Home = () => {
             }
           }}
         />
+        
+        {/* 현재 위치 추적 (별도 컴포넌트로 분리) */}
         {map.current && (
           <GPSTracker
             map={map.current}
