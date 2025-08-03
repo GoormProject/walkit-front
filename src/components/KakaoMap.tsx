@@ -30,6 +30,7 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isMapReady, setIsMapReady] = useState(false);
   const mapRef = useRef<kakao.maps.Map | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { setError: setGPSError } = useGPSStore(state => state.actions);
@@ -84,9 +85,12 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
         // 지도 인스턴스 콜백
         onMapLoad?.(mapInstance);
 
+        // 지도 준비 상태 설정
+        setIsMapReady(true);
+        
         // 로딩 상태를 확실히 false로 설정
         setIsLoading(false);
-        console.log('🗺️ 카카오맵 초기화 완료');
+        console.log('🗺️ 카카오맵 초기화 완료 - 마커 생성 가능');
       } catch (err) {
         console.error('카카오 맵 초기화 실패:', err);
         const errorMessage = err instanceof Error ? err.message : '지도를 불러오는 중 오류가 발생했습니다.';
@@ -109,6 +113,7 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
     if (mapRef.current && isLoading) {
       console.log('🗺️ 지도 로드 완료 - 로딩 상태 강제 해제');
       setIsLoading(false);
+      setIsMapReady(true);
     }
   }, [mapRef.current, isLoading]);
 

@@ -32,6 +32,7 @@ const Home = () => {
   const [places, setPlaces] = useState<Place[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isPlacesServiceReady, setIsPlacesServiceReady] = useState(false);
+  const [isMapReady, setIsMapReady] = useState(false);
   const map = useRef<kakao.maps.Map | null>(null);
   const polyline = useRef<kakao.maps.Polyline | null>(null);
   const markersRef = useRef<any[]>([]);
@@ -74,6 +75,17 @@ const Home = () => {
       errorMessage: error?.message
     });
   }, [isLoading, error, position]);
+
+  // 지도 및 서비스 상태 모니터링
+  useEffect(() => {
+    console.log('🗺️ 지도 상태 변경:', {
+      hasMap: !!map.current,
+      isMapReady,
+      hasPlacesService: !!placesServiceRef.current,
+      isPlacesServiceReady,
+      selectedCategory
+    });
+  }, [map.current, isMapReady, placesServiceRef.current, isPlacesServiceReady, selectedCategory]);
 
   // 산책 시작
   const handleStartWalk = () => {
@@ -125,7 +137,8 @@ const Home = () => {
   // 검색 마커 제거 (현재 위치 마커는 유지)
   const removeMarkers = useCallback(() => {
     console.log('🗑️ 검색 마커 제거:', markersRef.current.length, '개');
-    markersRef.current.forEach(marker => {
+    markersRef.current.forEach((marker, index) => {
+      console.log(`🗑️ 마커 ${index + 1} 제거`);
       marker.setMap(null);
     });
     markersRef.current = [];
@@ -133,9 +146,23 @@ const Home = () => {
 
   // 장소 마커 표시 (기존 마커 제거 후 새로 생성)
   const displayPlaces = useCallback((places: Place[], category: Category) => {
-    console.log('🎯 displayPlaces 호출됨:', { placesCount: places?.length, category, hasMap: !!map.current });
-    if (!map.current) {
-      console.log('❌ map.current가 없음');
+    console.log('🎯 displayPlaces 호출됨:', { 
+      placesCount: places?.length, 
+      category, 
+      hasMap: !!map.current,
+      isMapReady 
+    });
+    if (!map.current || !isMapReady) {
+      console.log('❌ 지도가 아직 준비되지 않음 - map.current:', !!map.current, 'isMapReady:', isMapReady);
+      return;
+    }
+
+    // 지도 상태 추가 확인
+    try {
+      const mapLevel = map.current.getLevel();
+      console.log('🗺️ 지도 상태 확인:', { mapLevel, isMapReady });
+    } catch (error) {
+      console.error('❌ 지도 상태 확인 실패:', error);
       return;
     }
 
@@ -149,21 +176,70 @@ const Home = () => {
 
     places.forEach((place, index) => {
       console.log('📍 마커 생성 중:', index + 1, '/', places.length, place.place_name);
-      const marker = new window.kakao.maps.Marker({
-        position: new window.kakao.maps.LatLng(parseFloat(place.y), parseFloat(place.x)),
-        map: map.current!
-      });
+      
+      try {
+        const lat = parseFloat(place.y);
+        const lng = parseFloat(place.x);
+        
+        if (isNaN(lat) || isNaN(lng)) {
+          console.warn('⚠️ 잘못된 좌표:', place.place_name, 'lat:', place.y, 'lng:', place.x);
+          return;
+        }
+        
+        const marker = new window.kakao.maps.Marker({
+          position: new window.kakao.maps.LatLng(lat, lng),
+          map: map.current!
+        });
+        
+        // 마커의 z-index를 설정 (타입 캐스팅 사용)
+        (marker as any).setZIndex(2);
 
-      // 마커 클릭 이벤트
-      window.kakao.maps.event.addListener(marker, 'click', () => {
-        displayPlaceInfo(place);
-      });
+        // 마커 클릭 이벤트
+        window.kakao.maps.event.addListener(marker, 'click', () => {
+          displayPlaceInfo(place);
+        });
 
-      markersRef.current.push(marker);
+        markersRef.current.push(marker);
+        console.log('✅ 마커 생성 성공:', place.place_name, '좌표:', { lat, lng });
+      } catch (error) {
+        console.error('❌ 마커 생성 실패:', place.place_name, error);
+      }
     });
     
     console.log('✅ 마커 생성 완료:', markersRef.current.length, '개');
-  }, []);
+    
+    // 검색 결과로 지도 중심 이동 및 범위 조정
+    if (places.length > 0 && map.current) {
+      try {
+        const bounds = new window.kakao.maps.LatLngBounds();
+        places.forEach(place => {
+          const lat = parseFloat(place.y);
+          const lng = parseFloat(place.x);
+          if (!isNaN(lat) && !isNaN(lng)) {
+            bounds.extend(new window.kakao.maps.LatLng(lat, lng));
+          }
+        });
+        
+        // 검색 결과가 모두 포함되도록 지도 범위 조정
+        map.current.setBounds(bounds);
+        
+        console.log('🗺️ 지도 범위 조정 완료:', {
+          placesCount: places.length,
+          bounds: bounds
+        });
+      } catch (error) {
+        console.error('❌ 지도 범위 조정 실패:', error);
+      }
+    }
+    
+    // 마커가 지도에 제대로 표시되는지 확인
+    setTimeout(() => {
+      console.log('🔍 마커 표시 상태 확인:', {
+        markersCount: markersRef.current.length,
+        mapLevel: map.current?.getLevel()
+      });
+    }, 100);
+  }, [isMapReady, places]);
 
   // 장소 정보 표시
   const displayPlaceInfo = useCallback((place: Place) => {
@@ -195,9 +271,18 @@ const Home = () => {
 
   // 카테고리 변경 시 검색 실행 (GPS 위치 업데이트와 분리)
   useEffect(() => {
-    console.log('🔄 카테고리 변경 감지:', selectedCategory, 'placesService:', !!placesServiceRef.current, 'isReady:', isPlacesServiceReady);
-    if (selectedCategory && placesServiceRef.current && isPlacesServiceReady) {
-      console.log('🚀 검색 실행');
+    console.log('🔄 카테고리 변경 감지:', {
+      selectedCategory, 
+      hasPlacesService: !!placesServiceRef.current, 
+      isPlacesServiceReady,
+      hasMap: !!map.current,
+      isMapReady
+    });
+    
+    if (selectedCategory && placesServiceRef.current && isPlacesServiceReady && map.current && isMapReady) {
+      console.log('🚀 검색 실행 - 모든 조건 충족');
+      console.log('📍 현재 위치 상태:', { hasPosition: !!position, position });
+      
       // searchPlaces 함수를 직접 호출하여 무한 렌더링 방지
       const category = categories.find(cat => cat.id === selectedCategory);
       if (category) {
@@ -208,15 +293,35 @@ const Home = () => {
         if (placeOverlayRef.current) {
           placeOverlayRef.current.setMap(null);
         }
+        
+        // GPS 위치가 없으면 지도 중심을 기준으로 검색
+        const searchLocation = position || (map.current as any).getCenter();
+        console.log('🔍 검색 기준 위치:', searchLocation);
 
         // 화장실 키워드 검색
         if (category.id === 'toilet') {
           const toiletKeywords = ['화장실', '공공화장실', 'toilet'];
           const tryToiletSearch = (idx = 0) => {
             if (idx >= toiletKeywords.length) {
-              setPlaces([]);
-              setIsSearching(false);
-              isSearchingRef.current = false;
+              console.log('❌ 모든 화장실 키워드 검색 실패, 더 넓은 범위로 재시도');
+              // 마지막 시도: 더 넓은 범위로 검색
+              placesServiceRef.current.keywordSearch(
+                '화장실',
+                (data: Place[], status: any) => {
+                  console.log('🔍 넓은 범위 화장실 검색 결과:', { status, count: data?.length });
+                  setPlaces(data || []);
+                  setIsSearching(false);
+                  isSearchingRef.current = false;
+                  if (status === window.kakao.maps.services.Status.OK && data?.length > 0) {
+                    displayPlaces(data, { ...category, name: '화장실' });
+                  }
+                },
+                { 
+                  useMapBounds: false,  // 전국 범위로 검색
+                  location: searchLocation ? new window.kakao.maps.LatLng(searchLocation.getLat(), searchLocation.getLng()) : undefined,
+                  radius: 10000  // 10km 반경으로 확장
+                }
+              );
               return;
             }
             placesServiceRef.current.keywordSearch(
@@ -233,7 +338,11 @@ const Home = () => {
                   tryToiletSearch(idx + 1);
                 }
               },
-              { useMapBounds: false }
+              { 
+                useMapBounds: true,  // 현재 지도 화면 범위 내에서만 검색
+                location: searchLocation ? new window.kakao.maps.LatLng(searchLocation.getLat(), searchLocation.getLng()) : undefined,
+                radius: 5000  // 5km 반경 내에서 검색
+              }
             );
           };
           tryToiletSearch();
@@ -245,9 +354,25 @@ const Home = () => {
           const subwayKeywords = ['지하철역', '지하철', '역'];
           const trySubwaySearch = (idx = 0) => {
             if (idx >= subwayKeywords.length) {
-              setPlaces([]);
-              setIsSearching(false);
-              isSearchingRef.current = false;
+              console.log('❌ 모든 지하철 키워드 검색 실패, 더 넓은 범위로 재시도');
+              // 마지막 시도: 더 넓은 범위로 검색
+              placesServiceRef.current.keywordSearch(
+                '지하철역',
+                (data: Place[], status: any) => {
+                  console.log('🔍 넓은 범위 지하철역 검색 결과:', { status, count: data?.length });
+                  setPlaces(data || []);
+                  setIsSearching(false);
+                  isSearchingRef.current = false;
+                  if (status === window.kakao.maps.services.Status.OK && data?.length > 0) {
+                    displayPlaces(data, { ...category, name: '지하철역' });
+                  }
+                },
+                { 
+                  useMapBounds: false,  // 전국 범위로 검색
+                  location: searchLocation ? new window.kakao.maps.LatLng(searchLocation.getLat(), searchLocation.getLng()) : undefined,
+                  radius: 10000  // 10km 반경으로 확장
+                }
+              );
               return;
             }
             placesServiceRef.current.keywordSearch(
@@ -264,7 +389,11 @@ const Home = () => {
                   trySubwaySearch(idx + 1);
                 }
               },
-              { useMapBounds: false }
+              { 
+                useMapBounds: true,  // 현재 지도 화면 범위 내에서만 검색
+                location: searchLocation ? new window.kakao.maps.LatLng(searchLocation.getLat(), searchLocation.getLng()) : undefined,
+                radius: 5000  // 5km 반경 내에서 검색
+              }
             );
           };
           trySubwaySearch();
@@ -284,11 +413,32 @@ const Home = () => {
               setPlaces(data);
               displayPlaces(data, category);
             } else {
-              console.log('❌ 편의점 검색 실패:', status);
-              setPlaces([]);
+              console.log('❌ 편의점 검색 실패, 더 넓은 범위로 재시도:', status);
+              // 대안: 더 넓은 범위로 검색
+              placesServiceRef.current.categorySearch(
+                category.code,
+                (data: Place[], status: any) => {
+                  console.log('🔍 넓은 범위 편의점 검색 결과:', { status, count: data?.length });
+                  setPlaces(data || []);
+                  setIsSearching(false);
+                  isSearchingRef.current = false;
+                  if (status === window.kakao.maps.services.Status.OK && data?.length > 0) {
+                    displayPlaces(data, category);
+                  }
+                },
+                { 
+                  useMapBounds: false,  // 전국 범위로 검색
+                  location: searchLocation ? new window.kakao.maps.LatLng(searchLocation.getLat(), searchLocation.getLng()) : undefined,
+                  radius: 10000  // 10km 반경으로 확장
+                }
+              );
             }
           },
-          { useMapBounds: false }
+          { 
+            useMapBounds: true,  // 현재 지도 화면 범위 내에서만 검색
+            location: searchLocation ? new window.kakao.maps.LatLng(searchLocation.getLat(), searchLocation.getLng()) : undefined,
+            radius: 5000  // 5km 반경 내에서 검색
+          }
         );
       }
     } else if (selectedCategory && !isPlacesServiceReady) {
@@ -298,11 +448,11 @@ const Home = () => {
 
   // Places 서비스 준비 시 이전 선택된 카테고리 검색 실행
   useEffect(() => {
-    if (isPlacesServiceReady && selectedCategory && placesServiceRef.current) {
+    if (isPlacesServiceReady && selectedCategory && placesServiceRef.current && map.current && isMapReady) {
       console.log('🚀 Places 서비스 준비됨, 이전 선택된 카테고리 검색 실행:', selectedCategory);
       // 여기서는 searchPlaces 함수를 직접 호출하지 않고 selectedCategory 변경을 트리거
     }
-  }, [isPlacesServiceReady]);
+  }, [isPlacesServiceReady, isMapReady]);
 
   // 카테고리 선택
   const handleCategoryClick = useCallback((categoryId: string) => {
@@ -361,6 +511,7 @@ const Home = () => {
           onMapLoad={mapInstance => {
             console.log('🗺️ 지도 로드 콜백 실행');
             map.current = mapInstance;
+            setIsMapReady(true);
             
             // Places 서비스 초기화
             console.log('🔍 Places 서비스 초기화 시도:', {

@@ -13,7 +13,6 @@ interface GPSTrackerProps {
 export const GPSTracker: React.FC<GPSTrackerProps> = ({ map, onPositionUpdate }) => {
   const [heading, setHeading] = useState(0);
   const lastPosition = useRef<kakao.maps.LatLng | null>(null);
-  const markerKey = useRef(0);
   
   const { setError, setAccuracy, setLoading, setPosition } = useGPSStore(state => state.actions);
   const error = useGPSStore(state => state.error);
@@ -29,14 +28,13 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map, onPositionUpdate })
     return (deg + 360) % 360;
   };
 
-  // 위치가 변경될 때마다 마커 키를 업데이트
+  // 위치가 변경될 때마다 콜백 호출
   useEffect(() => {
     if (currentPosition) {
       console.log('📍 GPS 위치 업데이트:', {
         lat: currentPosition.getLat(),
         lng: currentPosition.getLng()
       });
-      markerKey.current += 1;
       onPositionUpdate?.(currentPosition);
     }
   }, [currentPosition, onPositionUpdate]);
@@ -100,7 +98,6 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map, onPositionUpdate })
 
   return (
     <CustomMarker
-      key={markerKey.current}
       map={map}
       position={currentPosition}
       heading={heading}
