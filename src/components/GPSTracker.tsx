@@ -19,6 +19,13 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map, onPositionUpdate })
   const currentPosition = useGPSStore(state => state.position);
   const isLoading = useGPSStore(state => state.isLoading);
   
+  // 개발 환경에서만 로깅하는 유틸리티 함수
+  const debugLog = (message: string, data?: any) => {
+    if (import.meta.env.DEV) {
+      console.log(message, data);
+    }
+  };
+  
   // 이동 방향 계산 (도 단위, 0-360)
   const calculateHeading = (prev: kakao.maps.LatLng, current: kakao.maps.LatLng): number => {
     const dy = current.getLat() - prev.getLat();
@@ -31,26 +38,26 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map, onPositionUpdate })
   // 위치가 변경될 때마다 콜백 호출
   useEffect(() => {
     if (currentPosition) {
-      console.log('📍 GPS 위치 업데이트:', {
-        lat: currentPosition.getLat(),
-        lng: currentPosition.getLng()
+      debugLog('📍 GPS 위치 업데이트:', {
+        lat: currentPosition.getLat().toFixed(6), // 정밀도 제한
+        lng: currentPosition.getLng().toFixed(6)
       });
       onPositionUpdate?.(currentPosition);
     }
   }, [currentPosition, onPositionUpdate]);
 
   useEffect(() => {
-    console.log('🎯 GPSTracker 초기화 시작');
-    console.log('🌐 HTTPS 환경:', window.location.protocol === 'https:');
-    console.log('📱 Geolocation 지원:', !!navigator.geolocation);
+    debugLog('🎯 GPSTracker 초기화 시작');
+    debugLog('🌐 HTTPS 환경:', window.location.protocol === 'https:');
+    debugLog('📱 Geolocation 지원:', !!navigator.geolocation);
     
     // 위치 추적 초기화
     const cleanup = initGeolocation(
       map,
       (position) => {
-        console.log('✅ 위치 정보 수신 성공:', {
-          lat: position.getLat(),
-          lng: position.getLng()
+        debugLog('✅ 위치 정보 수신 성공:', {
+          lat: position.getLat().toFixed(6), // 정밀도 제한
+          lng: position.getLng().toFixed(6)
         });
         
         // 이동 방향 계산
@@ -64,7 +71,7 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map, onPositionUpdate })
         setPosition(position);
       },
       (loading) => {
-        console.log('🔄 GPS 로딩 상태:', loading);
+        debugLog('🔄 GPS 로딩 상태:', loading);
         setLoading(loading);
       },
       (error) => {
@@ -81,7 +88,7 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map, onPositionUpdate })
     );
 
     return () => {
-      console.log('🧹 GPSTracker 정리');
+      debugLog('🧹 GPSTracker 정리');
       cleanup?.();
       setError(null);
       setAccuracy(null);
@@ -92,7 +99,7 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map, onPositionUpdate })
 
   // 현재 위치가 있을 때만 마커 렌더링
   if (!currentPosition) {
-    console.log('📍 현재 위치 없음 - 마커 렌더링 안함');
+    debugLog('📍 현재 위치 없음 - 마커 렌더링 안함');
     return null;
   }
 

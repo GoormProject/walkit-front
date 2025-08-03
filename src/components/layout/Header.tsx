@@ -32,13 +32,22 @@ const Header = ({ height = 'lg', className = '', overlay = false }: HeaderProps)
         <div className="flex justify-between items-center h-full">
           {/* 왼쪽 버튼들 */}
           <div className="flex gap-2">
-            <button className="p-2 rounded-full bg-white/80 shadow-lg hover:bg-white transition-all">
+            <button 
+              aria-label="메뉴 열기"
+              className="p-2 rounded-full bg-white/80 shadow-lg hover:bg-white transition-all"
+            >
               <span className="material-icons text-gray-700">menu</span>
             </button>
-            <button className="p-2 rounded-full bg-white/80 shadow-lg hover:bg-white transition-all">
+            <button 
+              aria-label="검색"
+              className="p-2 rounded-full bg-white/80 shadow-lg hover:bg-white transition-all"
+            >
               <span className="material-icons text-gray-700">search</span>
             </button>
-            <button className="p-2 rounded-full bg-white/80 shadow-lg hover:bg-white transition-all">
+            <button 
+              aria-label="위치 설정"
+              className="p-2 rounded-full bg-white/80 shadow-lg hover:bg-white transition-all"
+            >
               <span className="material-icons text-gray-700">location_on</span>
             </button>
           </div>
@@ -51,12 +60,14 @@ const Header = ({ height = 'lg', className = '', overlay = false }: HeaderProps)
           {/* 오른쪽 버튼들 */}
           <div className="flex gap-2">
             <button 
+              aria-label="프로필 페이지로 이동"
               onClick={() => navigate('/profile')}
               className="p-2 rounded-full bg-white/80 shadow-lg hover:bg-white transition-all"
             >
               <span className="material-icons text-gray-700">person</span>
             </button>
             <button 
+              aria-label="친구 목록으로 이동"
               onClick={() => navigate('/friends')}
               className="p-2 rounded-full bg-white/80 shadow-lg hover:bg-white transition-all"
             >

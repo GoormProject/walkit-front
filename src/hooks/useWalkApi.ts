@@ -89,6 +89,10 @@ export const useWalkApi = () => {
       throw new Error('진행 중인 산책이 없습니다.');
     }
 
+    if (!walk.currentWalk.path || walk.currentWalk.path.length === 0) {
+      throw new Error('유효한 산책 경로가 없습니다.');
+    }
+
     try {
       actions.setWalkLoading(true);
       actions.setWalkError(null);

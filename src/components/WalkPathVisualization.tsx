@@ -13,6 +13,7 @@ export const WalkPathVisualization: React.FC<WalkPathVisualizationProps> = ({
 }) => {
   const polylineRef = useRef<kakao.maps.Polyline | null>(null);
   const markersRef = useRef<kakao.maps.Marker[]>([]);
+  const overlaysRef = useRef<kakao.maps.CustomOverlay[]>([]);
 
   useEffect(() => {
     // 기존 경로와 마커 제거
@@ -23,6 +24,9 @@ export const WalkPathVisualization: React.FC<WalkPathVisualizationProps> = ({
 
     markersRef.current.forEach(marker => marker.setMap(null));
     markersRef.current = [];
+    
+    overlaysRef.current.forEach(overlay => overlay.setMap(null));
+    overlaysRef.current = [];
 
     // 경로가 2개 이상의 포인트가 있을 때만 그리기
     if (path.length < 2) return;
@@ -69,6 +73,7 @@ export const WalkPathVisualization: React.FC<WalkPathVisualizationProps> = ({
         yAnchor: 1.5,
       });
       startOverlay.setMap(map);
+      overlaysRef.current.push(startOverlay);
 
       markersRef.current.push(startMarker);
 
@@ -96,6 +101,7 @@ export const WalkPathVisualization: React.FC<WalkPathVisualizationProps> = ({
           yAnchor: 1.5,
         });
         endOverlay.setMap(map);
+        overlaysRef.current.push(endOverlay);
 
         markersRef.current.push(endMarker);
       }
@@ -113,6 +119,7 @@ export const WalkPathVisualization: React.FC<WalkPathVisualizationProps> = ({
         polylineRef.current.setMap(null);
       }
       markersRef.current.forEach(marker => marker.setMap(null));
+      overlaysRef.current.forEach(overlay => overlay.setMap(null));
     };
   }, [map, path, isActive]);
 
