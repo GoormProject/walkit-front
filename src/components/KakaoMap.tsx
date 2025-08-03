@@ -54,17 +54,21 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
           );
         }
 
-        // DOM이 완전히 렌더링될 때까지 대기
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // DOM이 완전히 렌더링될 때까지 대기 (성능 개선을 위해 시간 단축)
+        await new Promise(resolve => setTimeout(resolve, 50));
 
         // 컨테이너가 여전히 존재하는지 확인
         if (!containerRef.current) return;
 
+        console.log('🗺️ 카카오맵 SDK 로드 시작');
+        
         // 카카오 맵 SDK 로드
         await loadKakaoMapSDK();
 
         // 컨테이너가 여전히 존재하는지 다시 확인
         if (!containerRef.current) return;
+
+        console.log('🗺️ 카카오맵 인스턴스 생성 시작');
 
         // 지도 생성 (기본 좌표: 서울 시청)
         const mapInstance = new window.kakao.maps.Map(containerRef.current, {
@@ -82,14 +86,15 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
         console.log('🗺️ 카카오맵 초기화 완료');
       } catch (err) {
         console.error('카카오 맵 초기화 실패:', err);
-        setError('지도를 불러오는 중 오류가 발생했습니다.');
-        toast.error('지도를 불러오는 중 오류가 발생했습니다.');
+        const errorMessage = err instanceof Error ? err.message : '지도를 불러오는 중 오류가 발생했습니다.';
+        setError(errorMessage);
+        toast.error(errorMessage);
         setIsLoading(false);
       }
     };
 
-    // 컴포넌트가 마운트된 후 약간의 지연을 두고 초기화
-    const timer = setTimeout(initMap, 0);
+    // 컴포넌트가 마운트된 후 지연을 두고 초기화 (성능 개선)
+    const timer = setTimeout(initMap, 100);
 
     return () => {
       clearTimeout(timer);

@@ -48,6 +48,12 @@ const TestPage: React.FC = () => {
         >
           🗺️ 카카오맵 테스트
         </a>
+        <a
+          href="/test/category-search"
+          className="bg-indigo-500 text-white p-4 rounded-lg text-center hover:bg-indigo-600 transition-colors"
+        >
+          🏪 장소 검색 테스트
+        </a>
       </div>
       
       {/* API 모드 정보 */}

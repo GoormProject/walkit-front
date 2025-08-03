@@ -17,6 +17,7 @@ import ShadcnDialogTestPage from '@/pages/test/shadcn-dialog';
 import GPSTestPage from '@/pages/test/gps-test';
 import TrailProgressTest from '@/pages/test/trail-progress';
 import SimpleMapTest from '@/pages/test/simple-map';
+import CategorySearchTest from '@/pages/test/category-search';
 import WalkApiTest from '@/pages/test/walk-api-test';
 import WalkZustandTest from '@/pages/test/walk-zustand-test';
 import WalkIntegrationTest from '@/pages/test/walk-integration-test';
@@ -57,6 +58,9 @@ function App() {
 
         {/* 카카오맵 단순 테스트 페이지 */}
         <Route path="/test/simple-map" element={<SimpleMapTest />} />
+
+        {/* 카테고리별 장소 검색 테스트 페이지 */}
+        <Route path="/test/category-search" element={<CategorySearchTest />} />
 
         {/* 산책 API 테스트 페이지 */}
         <Route path="/test/walk-api" element={<WalkApiTest />} />

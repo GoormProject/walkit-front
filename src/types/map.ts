@@ -49,7 +49,7 @@ declare global {
     interface CustomOverlayOptions {
       content: HTMLElement;
       map?: Map;
-      position: LatLng;
+      position?: LatLng;
       xAnchor?: number;
       yAnchor?: number;
       zIndex?: number;
@@ -60,8 +60,31 @@ declare global {
       setMap(map: Map | null): void;
       setPosition(position: LatLng): void;
       setContent(content: HTMLElement): void;
+      getContent(): HTMLElement;
       setVisible(visible: boolean): void;
       setZIndex(zIndex: number): void;
+    }
+
+    // Places 서비스 관련 타입
+    namespace services {
+      class Places {
+        constructor(map: Map);
+        categorySearch(category: string, callback: (data: any[], status: Status) => void, options?: any): void;
+        keywordSearch(keyword: string, callback: (data: any[], status: Status) => void, options?: any): void;
+      }
+
+      enum Status {
+        OK = 'OK',
+        ZERO_RESULT = 'ZERO_RESULT',
+        ERROR = 'ERROR'
+      }
+    }
+
+    // 이벤트 관련 타입
+    namespace event {
+      function addListener(target: any, type: string, handler: Function): void;
+      function removeListener(target: any, type: string, handler: Function): void;
+      function preventMap(): void;
     }
   }
 } 
