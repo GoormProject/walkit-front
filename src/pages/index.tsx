@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { toast, Toaster } from 'sonner';
 import KakaoMap from '../components/KakaoMap';
@@ -6,8 +6,6 @@ import { GPSTracker } from '@/components/GPSTracker';
 import { useGPSStore } from '@/features/gps/gpsSlice';
 import { calculateDistance as calculateCoordinateDistance } from '@/utils/converter/pathConverter';
 import { isOAuthCallback } from '@/utils/oauth';
-import { logoutUser } from '@/utils/logout';
-import { useAuthActions } from '@/features/auth/authSlice';
 
 interface Place {
   id: string;
@@ -41,7 +39,6 @@ const Home = () => {
   const isSearchingRef = useRef(false);
   const { error, isLoading, position } = useGPSStore();
   const navigate = useNavigate();
-  const { logout } = useAuthActions();
 
   // 카테고리 정의
   const categories: Category[] = [
@@ -297,27 +294,7 @@ const Home = () => {
     }
   }, [selectedCategory, removeMarkers]);
 
-  // 로그아웃 핸들러
-  const handleLogout = async () => {
-    try {
-      console.log('🚪 로그아웃 버튼 클릭됨');
 
-      // API 로그아웃 호출
-      const success = await logoutUser();
-
-      if (success) {
-        // Zustand store에서 로그아웃 처리
-        logout();
-        toast.success('로그아웃되었습니다.');
-        navigate('/login');
-      } else {
-        toast.error('로그아웃에 실패했습니다.');
-      }
-    } catch (error) {
-      console.error('❌ 로그아웃 처리 실패:', error);
-      toast.error('로그아웃 처리 중 오류가 발생했습니다.');
-    }
-  };
 
   // 경로 표시 업데이트
   useEffect(() => {
@@ -498,43 +475,6 @@ const Home = () => {
           </div>
         )}
       </div>
-
-      {/* 네비게이션 */}
-      <nav className="bg-white p-4 shadow-md">
-        <div className="container mx-auto flex justify-around items-center">
-          <Link
-            to="/profile"
-            className="flex flex-col items-center text-gray-600 hover:text-gray-900"
-          >
-            <span className="material-icons mb-1">person</span>
-            <span>프로필</span>
-          </Link>
-          <Link
-            to="/friends"
-            className="flex flex-col items-center text-gray-600 hover:text-gray-900"
-          >
-            <span className="material-icons mb-1">group</span>
-            <span>친구</span>
-          </Link>
-          <Link
-            to="/reviews"
-            className="flex flex-col items-center text-gray-600 hover:text-gray-900"
-          >
-            <span className="material-icons mb-1">star</span>
-            <span>리뷰</span>
-          </Link>
-        </div>
-
-        {/* 로그아웃 버튼 (임시) */}
-        <div className="mt-4 flex justify-center">
-          <button
-            onClick={handleLogout}
-            className="px-8 py-3 bg-red-500 text-white rounded-lg shadow-lg hover:bg-red-600 transition-all text-lg font-semibold"
-          >
-            로그아웃
-          </button>
-        </div>
-      </nav>
       
       {/* 장소 정보 오버레이 스타일 */}
       <style dangerouslySetInnerHTML={{
