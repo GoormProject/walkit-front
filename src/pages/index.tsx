@@ -349,26 +349,40 @@ const Home = () => {
       <div className="relative flex-1">
         <KakaoMap
           onMapLoad={mapInstance => {
+            console.log('🗺️ 지도 로드 콜백 실행');
             map.current = mapInstance;
             
             // Places 서비스 초기화
+            console.log('🔍 Places 서비스 초기화 시도:', {
+              hasKakao: !!window.kakao,
+              hasMaps: !!(window.kakao && window.kakao.maps),
+              hasServices: !!(window.kakao && window.kakao.maps && window.kakao.maps.services)
+            });
+            
             if (window.kakao && window.kakao.maps.services) {
-              const placesService = new window.kakao.maps.services.Places(mapInstance);
-              placesServiceRef.current = placesService;
-              setIsPlacesServiceReady(true);
-              console.log('✅ Places 서비스 초기화 완료');
+              try {
+                const placesService = new window.kakao.maps.services.Places(mapInstance);
+                placesServiceRef.current = placesService;
+                setIsPlacesServiceReady(true);
+                console.log('✅ Places 서비스 초기화 완료');
 
-              // 커스텀 오버레이 생성
-              const contentNode = document.createElement('div');
-              contentNode.className = 'placeinfo_wrap';
-              
-              const placeOverlay = new window.kakao.maps.CustomOverlay({
-                zIndex: 1,
-                content: contentNode
-              });
-              placeOverlayRef.current = placeOverlay;
+                // 커스텀 오버레이 생성
+                const contentNode = document.createElement('div');
+                contentNode.className = 'placeinfo_wrap';
+                
+                const placeOverlay = new window.kakao.maps.CustomOverlay({
+                  zIndex: 1,
+                  content: contentNode
+                });
+                placeOverlayRef.current = placeOverlay;
+              } catch (error) {
+                console.error('❌ Places 서비스 생성 중 오류:', error);
+              }
             } else {
-              console.log('❌ Places 서비스 초기화 실패');
+              console.log('❌ Places 서비스 초기화 실패 - services 없음');
+              console.log('window.kakao:', window.kakao);
+              console.log('window.kakao.maps:', window.kakao?.maps);
+              console.log('window.kakao.maps.services:', window.kakao?.maps?.services);
             }
           }}
         />
