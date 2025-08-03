@@ -131,9 +131,17 @@ const Home = () => {
     markersRef.current = [];
   }, []);
 
-  // 장소 마커 표시
+  // 장소 마커 표시 (기존 마커 제거 후 새로 생성)
   const displayPlaces = useCallback((places: Place[], category: Category) => {
     if (!map.current) return;
+
+    // 기존 검색 마커 제거
+    markersRef.current.forEach(marker => {
+      marker.setMap(null);
+    });
+    markersRef.current = [];
+
+    console.log('📍 새로운 마커 생성:', places.length, '개');
 
     places.forEach((place, index) => {
       const marker = new window.kakao.maps.Marker({
@@ -178,7 +186,7 @@ const Home = () => {
 
 
 
-  // 카테고리 변경 시 검색 실행
+  // 카테고리 변경 시 검색 실행 (GPS 위치 업데이트와 분리)
   useEffect(() => {
     console.log('🔄 카테고리 변경 감지:', selectedCategory, 'placesService:', !!placesServiceRef.current, 'isReady:', isPlacesServiceReady);
     if (selectedCategory && placesServiceRef.current && isPlacesServiceReady) {
@@ -188,8 +196,8 @@ const Home = () => {
       if (category) {
         isSearchingRef.current = true;
         setIsSearching(true);
-        removeMarkers();
         
+        // 마커 제거하지 않고 새로운 검색만 실행
         if (placeOverlayRef.current) {
           placeOverlayRef.current.setMap(null);
         }
@@ -274,7 +282,7 @@ const Home = () => {
     } else if (selectedCategory && !isPlacesServiceReady) {
       console.log('⏳ Places 서비스 대기 중...');
     }
-  }, [selectedCategory, isPlacesServiceReady, categories, removeMarkers, displayPlaces]);
+  }, [selectedCategory, isPlacesServiceReady]); // GPS 위치와 관련 없는 의존성만 포함
 
   // Places 서비스 준비 시 이전 선택된 카테고리 검색 실행
   useEffect(() => {
@@ -292,7 +300,7 @@ const Home = () => {
       console.log('🔴 카테고리 해제:', categoryId);
       setSelectedCategory('');
       setPlaces([]);
-      removeMarkers();
+      // 마커 제거는 displayPlaces에서 처리
       if (placeOverlayRef.current) {
         placeOverlayRef.current.setMap(null);
       }
@@ -301,7 +309,7 @@ const Home = () => {
       console.log('🟢 카테고리 선택:', categoryId);
       setSelectedCategory(categoryId);
     }
-  }, [selectedCategory, removeMarkers]);
+  }, [selectedCategory]);
 
 
 
