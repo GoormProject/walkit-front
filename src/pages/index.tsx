@@ -133,7 +133,11 @@ const Home = () => {
 
   // 장소 마커 표시 (기존 마커 제거 후 새로 생성)
   const displayPlaces = useCallback((places: Place[], category: Category) => {
-    if (!map.current) return;
+    console.log('🎯 displayPlaces 호출됨:', { placesCount: places?.length, category, hasMap: !!map.current });
+    if (!map.current) {
+      console.log('❌ map.current가 없음');
+      return;
+    }
 
     // 기존 검색 마커 제거
     markersRef.current.forEach(marker => {
@@ -144,6 +148,7 @@ const Home = () => {
     console.log('📍 새로운 마커 생성:', places.length, '개');
 
     places.forEach((place, index) => {
+      console.log('📍 마커 생성 중:', index + 1, '/', places.length, place.place_name);
       const marker = new window.kakao.maps.Marker({
         position: new window.kakao.maps.LatLng(parseFloat(place.y), parseFloat(place.x)),
         map: map.current!
@@ -156,6 +161,8 @@ const Home = () => {
 
       markersRef.current.push(marker);
     });
+    
+    console.log('✅ 마커 생성 완료:', markersRef.current.length, '개');
   }, []);
 
   // 장소 정보 표시
@@ -215,7 +222,9 @@ const Home = () => {
             placesServiceRef.current.keywordSearch(
               toiletKeywords[idx],
               (data: Place[], status: any) => {
+                console.log('🔍 화장실 검색 결과:', { keyword: toiletKeywords[idx], status, count: data?.length });
                 if (status === window.kakao.maps.services.Status.OK && data.length > 0) {
+                  console.log('✅ 화장실 검색 성공, displayPlaces 호출');
                   setPlaces(data);
                   displayPlaces(data, { ...category, name: toiletKeywords[idx] });
                   setIsSearching(false);
@@ -244,7 +253,9 @@ const Home = () => {
             placesServiceRef.current.keywordSearch(
               subwayKeywords[idx],
               (data: Place[], status: any) => {
+                console.log('🔍 지하철역 검색 결과:', { keyword: subwayKeywords[idx], status, count: data?.length });
                 if (status === window.kakao.maps.services.Status.OK && data.length > 0) {
+                  console.log('✅ 지하철역 검색 성공, displayPlaces 호출');
                   setPlaces(data);
                   displayPlaces(data, { ...category, name: subwayKeywords[idx] });
                   setIsSearching(false);
@@ -265,10 +276,11 @@ const Home = () => {
         placesServiceRef.current.categorySearch(
           category.code,
           (data: Place[], status: any) => {
-            console.log('🔍 편의점 검색 결과:', { status, count: data?.length });
+            console.log('🔍 편의점 검색 결과:', { status, count: data?.length, data: data?.slice(0, 3) });
             isSearchingRef.current = false;
             setIsSearching(false);
             if (status === window.kakao.maps.services.Status.OK) {
+              console.log('✅ 편의점 검색 성공, displayPlaces 호출');
               setPlaces(data);
               displayPlaces(data, category);
             } else {
