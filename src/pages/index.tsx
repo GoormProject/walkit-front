@@ -255,33 +255,40 @@ const Home = () => {
     }
 
     // 나머지 카테고리는 기존대로 categorySearch
+    console.log('🔍 편의점 검색 시작:', category.code);
     placesServiceRef.current.categorySearch(
       category.code,
       (data: Place[], status: any) => {
+        console.log('🔍 편의점 검색 결과:', { status, count: data?.length });
         isSearchingRef.current = false;
         setIsSearching(false);
         if (status === window.kakao.maps.services.Status.OK) {
           setPlaces(data);
           displayPlaces(data, category);
         } else {
+          console.log('❌ 편의점 검색 실패:', status);
           setPlaces([]);
         }
       },
-      { useMapBounds: true }
+      { useMapBounds: false } // useMapBounds를 false로 변경하여 전체 지역에서 검색
     );
   }, [selectedCategory, categories, removeMarkers, displayPlaces]);
 
   // 카테고리 변경 시 검색 실행
   useEffect(() => {
+    console.log('🔄 카테고리 변경 감지:', selectedCategory, 'placesService:', !!placesServiceRef.current);
     if (selectedCategory && placesServiceRef.current) {
+      console.log('🚀 검색 실행');
       searchPlaces();
     }
   }, [selectedCategory, searchPlaces]);
 
   // 카테고리 선택
   const handleCategoryClick = useCallback((categoryId: string) => {
+    console.log('🎯 카테고리 클릭:', categoryId, '현재 선택:', selectedCategory);
     if (selectedCategory === categoryId) {
       // 같은 카테고리 클릭 시 해제
+      console.log('🔴 카테고리 해제:', categoryId);
       setSelectedCategory('');
       setPlaces([]);
       removeMarkers();
@@ -290,6 +297,7 @@ const Home = () => {
       }
     } else {
       // 새로운 카테고리 선택
+      console.log('🟢 카테고리 선택:', categoryId);
       setSelectedCategory(categoryId);
     }
   }, [selectedCategory, removeMarkers]);
