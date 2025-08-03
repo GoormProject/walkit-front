@@ -74,19 +74,11 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
         const mapInstance = new window.kakao.maps.Map(containerRef.current, {
           center: new window.kakao.maps.LatLng(DEFAULT_COORDS.lat, DEFAULT_COORDS.lng),
           level: 4,
-          currentLocationMarker: false, // 기본 현재 위치 마커 비활성화
-          draggable: true, // 드래그 활성화
-          zoomable: true, // 줌 활성화
-          scrollwheel: true, // 마우스 휠 줌 활성화
-          disableDoubleClickZoom: false, // 더블클릭 줌 활성화
-          disableDoubleTapZoom: false, // 더블탭 줌 활성화
-        } as any);
+        });
         
-        // 지도 상호작용 활성화 (카카오맵 API에 맞게 수정)
+        // 지도 상호작용 명시적 활성화
         (mapInstance as any).setDraggable(true);
         (mapInstance as any).setZoomable(true);
-        // scrollwheel은 생성 시 옵션으로만 설정 가능
-        // disableDoubleClickZoom, disableDoubleTapZoom도 생성 시 옵션으로만 설정 가능
         mapRef.current = mapInstance;
 
         // 지도 인스턴스 콜백
@@ -141,7 +133,11 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
         <div 
           ref={containerRef} 
           className="w-full h-full rounded-lg shadow-lg bg-gray-100"
-          style={{ minHeight: '300px' }}
+          style={{ 
+            minHeight: '100%',
+            position: 'relative',
+            zIndex: 1
+          }}
         >
           {mapRef.current && <GPSTracker map={mapRef.current} />}
         </div>
