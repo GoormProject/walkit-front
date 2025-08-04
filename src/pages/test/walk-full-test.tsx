@@ -35,6 +35,16 @@ const WalkFullTest: React.FC = () => {
     }
   }, [currentWalk.status, walkActions]);
 
+  // 산책 상태 변경 시 경로 초기화
+  useEffect(() => {
+    if (currentWalk.status === 'idle') {
+      setPathPositions([]);
+    } else if (currentWalk.status === 'walking' && currentWalk.path.length === 0) {
+      // 새로운 산책 시작 시 경로 초기화
+      setPathPositions([]);
+    }
+  }, [currentWalk.status, currentWalk.path.length]);
+
   // 경로 표시 업데이트
   useEffect(() => {
     if (!map) return;
