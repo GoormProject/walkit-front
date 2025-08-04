@@ -14,6 +14,7 @@ export const GPSSimulator: React.FC<GPSSimulatorProps> = ({ onPositionUpdate }) 
   
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const onPositionUpdateRef = useRef(onPositionUpdate);
+  const lastCallTimeRef = useRef<number>(0);
   const { actions: gpsActions } = useGPSStore();
 
   // onPositionUpdate 콜백을 ref로 최신 상태 유지
@@ -78,6 +79,14 @@ export const GPSSimulator: React.FC<GPSSimulatorProps> = ({ onPositionUpdate }) 
       // GPS Store 업데이트
       gpsActions.setPosition(kakaoPosition);
 
+      // 중복 호출 방지 (100ms 이내 중복 호출 차단)
+      const now = Date.now();
+      if (now - lastCallTimeRef.current < 100) {
+        console.log('⚠️ GPSSimulator 중복 호출 방지');
+        return;
+      }
+      lastCallTimeRef.current = now;
+      
       // 콜백 호출
       console.log(`🎯 GPSSimulator 콜백 호출: ${nextIndex + 1}/${simulationData.path.length}`);
       onPositionUpdateRef.current?.(kakaoPosition);

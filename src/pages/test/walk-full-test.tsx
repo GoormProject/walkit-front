@@ -35,6 +35,15 @@ const WalkFullTest: React.FC = () => {
       });
       
       setPathPositions(prev => {
+        // 중복 체크: 마지막 위치와 동일한지 확인
+        const lastPosition = prev[prev.length - 1];
+        if (lastPosition && 
+            Math.abs(lastPosition.getLat() - position.getLat()) < 0.000001 &&
+            Math.abs(lastPosition.getLng() - position.getLng()) < 0.000001) {
+          console.log('⚠️ 중복 위치 감지 - 건너뜀');
+          return prev;
+        }
+        
         const newPath = [...prev, position];
         console.log('🛤️ 경로 포인트 추가:', newPath.length);
         return newPath;
