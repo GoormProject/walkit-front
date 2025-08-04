@@ -2,6 +2,41 @@ import React from 'react';
 import { useWalkStore } from '@/features/walk/walkSlice';
 import { toast } from 'sonner';
 
+// 시간 문자열을 분 단위로 변환 (HH:MM:SS → 분)
+const parseTimeToMinutes = (timeString: string | number): number => {
+  if (typeof timeString === 'number') {
+    return Math.floor(timeString / 60);
+  }
+  
+  if (typeof timeString === 'string') {
+    // "00:00:30" 형식을 분으로 변환
+    const parts = timeString.split(':');
+    if (parts.length === 3) {
+      const hours = parseInt(parts[0], 10);
+      const minutes = parseInt(parts[1], 10);
+      const seconds = parseInt(parts[2], 10);
+      return hours * 60 + minutes + Math.floor(seconds / 60);
+    }
+  }
+  
+  return 0;
+};
+
+// pace(분/km)를 시속(km/h)으로 변환
+const convertPaceToSpeed = (pace: string | number): number => {
+  if (typeof pace === 'string') {
+    pace = parseFloat(pace);
+  }
+  
+  if (typeof pace === 'number' && pace > 0) {
+    // 분/킬로미터 → 시속(km/h) 변환
+    // 1시간 = 60분이므로, 60 / pace = 시속
+    return 60 / pace;
+  }
+  
+  return 0;
+};
+
 export const WalkRecordsList: React.FC = () => {
   const {
     walkRecords,
@@ -64,9 +99,9 @@ export const WalkRecordsList: React.FC = () => {
                 <div className="flex-1 min-w-0">
                   <h3 className="font-medium truncate">{record.title}</h3>
                   <p className="text-sm text-gray-600">
-                    거리: {(record.totalDistance / 1000).toFixed(2)}km | 
-                    시간: {Math.floor(record.totalTime / 60)}분 | 
-                    속도: {record.pace.toFixed(2)}m/s
+                    거리: {record.totalDistance ? record.totalDistance.toFixed(3) : '0.000'}km | 
+                    시간: {record.totalTime ? parseTimeToMinutes(record.totalTime) : 0}분 | 
+                    속도: {record.pace ? convertPaceToSpeed(record.pace).toFixed(1) : 'N/A'}km/h
                   </p>
                   <p className="text-xs text-gray-500">
                     {new Date(record.eventTime).toLocaleString()}

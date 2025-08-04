@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { toast, Toaster } from 'sonner';
 import KakaoMap from '@/components/KakaoMap';
 import { GPSTracker } from '@/components/GPSTracker';
+import { GPSSimulator } from '@/components/GPSSimulator';
 import { useWalkStore } from '@/features/walk/walkSlice';
 import { useGPSStore } from '@/features/gps/gpsSlice';
 import { AuthenticationPanel } from '@/components/test/AuthenticationPanel';
@@ -11,6 +12,7 @@ import { WalkRecordsList } from '@/components/test/WalkRecordsList';
 const WalkFullTest: React.FC = () => {
   const [map, setMap] = useState<kakao.maps.Map | null>(null);
   const [pathPositions, setPathPositions] = useState<kakao.maps.LatLng[]>([]);
+  const [showSimulator, setShowSimulator] = useState(false);
   const polyline = useRef<kakao.maps.Polyline | null>(null);
   
   // Walk Store
@@ -26,12 +28,41 @@ const WalkFullTest: React.FC = () => {
   // 위치 업데이트 시 경로 그리기 및 저장
   const handlePositionUpdate = useCallback((position: kakao.maps.LatLng) => {
     if (currentWalk.status === 'walking') {
-      setPathPositions(prev => [...prev, position]);
+      console.log('📍 위치 업데이트:', {
+        lat: position.getLat(),
+        lng: position.getLng(),
+        walkStatus: currentWalk.status
+      });
+      
+      setPathPositions(prev => {
+        // 중복 체크: 마지막 위치와 동일한지 확인
+        const lastPosition = prev[prev.length - 1];
+        if (lastPosition && 
+            Math.abs(lastPosition.getLat() - position.getLat()) < 0.000001 &&
+            Math.abs(lastPosition.getLng() - position.getLng()) < 0.000001) {
+          console.log('⚠️ 중복 위치 감지 - 건너뜀');
+          return prev;
+        }
+        
+        const newPath = [...prev, position];
+        console.log('🛤️ 경로 포인트 추가:', newPath.length);
+        return newPath;
+      });
       
       // Walk Store에 좌표 추가
       walkActions.addPathCoordinate([position.getLng(), position.getLat()]);
     }
   }, [currentWalk.status, walkActions]);
+
+  // 산책 상태 변경 시 경로 초기화
+  useEffect(() => {
+    if (currentWalk.status === 'idle') {
+      setPathPositions([]);
+    } else if (currentWalk.status === 'walking' && currentWalk.path.length === 0) {
+      // 새로운 산책 시작 시 경로 초기화
+      setPathPositions([]);
+    }
+  }, [currentWalk.status, currentWalk.path.length]);
 
   // 경로 표시 업데이트
   useEffect(() => {
@@ -85,14 +116,19 @@ const WalkFullTest: React.FC = () => {
           <GPSTracker
             map={map}
             onPositionUpdate={handlePositionUpdate}
+            disabled={showSimulator}
           />
         )}
 
         {/* 상단 컨트롤 */}
         <div className="absolute top-4 left-4 right-4 flex justify-between items-center z-10">
           <div className="flex gap-2">
-            <button className="p-2 rounded-full bg-white shadow-lg hover:bg-gray-50 transition-all">
-              <span className="material-icons text-gray-700">menu</span>
+            <button 
+              onClick={() => setShowSimulator(!showSimulator)}
+              className="p-2 rounded-full bg-white shadow-lg hover:bg-gray-50 transition-all"
+              title="가상 GPS 시뮬레이터"
+            >
+              🎯
             </button>
           </div>
           
@@ -122,6 +158,13 @@ const WalkFullTest: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* 가상 GPS 시뮬레이터 */}
+        {showSimulator && (
+          <div className="absolute top-16 left-4 right-4 z-20">
+            <GPSSimulator onPositionUpdate={handlePositionUpdate} />
+          </div>
+        )}
       </div>
 
       {/* 하단 패널들 */}

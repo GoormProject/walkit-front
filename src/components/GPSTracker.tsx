@@ -8,9 +8,10 @@ import { handleGPSError } from '@/utils/gpsErrorHandler';
 interface GPSTrackerProps {
   map: kakao.maps.Map;
   onPositionUpdate?: (position: kakao.maps.LatLng) => void;
+  disabled?: boolean;
 }
 
-export const GPSTracker: React.FC<GPSTrackerProps> = ({ map, onPositionUpdate }) => {
+export const GPSTracker: React.FC<GPSTrackerProps> = ({ map, onPositionUpdate, disabled = false }) => {
   const [heading, setHeading] = useState(0);
   const lastPosition = useRef<kakao.maps.LatLng | null>(null);
   
@@ -37,6 +38,11 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map, onPositionUpdate })
 
   // 위치가 변경될 때마다 콜백 호출
   useEffect(() => {
+    if (disabled) {
+      debugLog('⏸️ GPSTracker 비활성화 - 위치 업데이트 건너뜀');
+      return;
+    }
+    
     if (currentPosition) {
       debugLog('📍 GPS 위치 업데이트:', {
         lat: currentPosition.getLat().toFixed(6), // 정밀도 제한
@@ -44,9 +50,14 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map, onPositionUpdate })
       });
       onPositionUpdate?.(currentPosition);
     }
-  }, [currentPosition, onPositionUpdate]);
+  }, [currentPosition, onPositionUpdate, disabled]);
 
   useEffect(() => {
+    if (disabled) {
+      debugLog('⏸️ GPSTracker 비활성화됨');
+      return;
+    }
+    
     debugLog('🎯 GPSTracker 초기화 시작');
     debugLog('🌐 HTTPS 환경:', window.location.protocol === 'https:');
     debugLog('📱 Geolocation 지원:', !!navigator.geolocation);
@@ -67,8 +78,10 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map, onPositionUpdate })
         }
         lastPosition.current = position;
         
-        // 위치 업데이트
-        setPosition(position);
+        // 위치 업데이트 (disabled 상태가 아닐 때만)
+        if (!disabled) {
+          setPosition(position);
+        }
       },
       (loading) => {
         debugLog('🔄 GPS 로딩 상태:', loading);
