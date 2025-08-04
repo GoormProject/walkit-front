@@ -161,7 +161,7 @@ const ProfileEdit = () => {
       );
 
       console.log('✅ 프로필 수정 성공:', response.data);
-      setSuccess('프로필이 성공적으로 수정되었습니다!');
+      setSuccess('프로필이 성공적으로 수정되었습니다!
 
       // 3초 후 프로필 페이지로 이동
       setTimeout(() => {

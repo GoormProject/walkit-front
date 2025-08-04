@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef, type ReactNode } from 'react';
+import React, { useState, useRef, type ReactNode } from 'react';
 import { X } from 'lucide-react';
+import * as Dialog from '@radix-ui/react-dialog';
 
 interface BottomSheetProps {
   isOpen: boolean;
@@ -27,26 +28,6 @@ const BottomSheet = ({
   const [startY, setStartY] = useState(0);
   const [currentY, setCurrentY] = useState(0);
   const sheetRef = useRef<HTMLDivElement>(null);
-  const backdropRef = useRef<HTMLDivElement>(null);
-
-  // ESC 키로 닫기
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen, onClose]);
 
   // 터치/마우스 이벤트 처리
   const handleTouchStart = (e: React.TouchEvent | React.MouseEvent) => {
@@ -87,71 +68,62 @@ const BottomSheet = ({
     }
   };
 
-  // 백드롭 클릭으로 닫기
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === backdropRef.current) {
-      onClose();
-    }
-  };
-
-  if (!isOpen) return null;
-
   return (
-    <div
-      ref={backdropRef}
-      className={`fixed inset-0 z-50 flex items-end ${showBackdrop ? 'bg-black/50' : ''}`}
-      onClick={handleBackdropClick}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby={title ? 'bottom-sheet-title' : undefined}
-    >
-      <div
-        ref={sheetRef}
-        className={`bg-white rounded-t-xl shadow-2xl w-full max-h-screen transition-transform duration-300 ease-out ${className}`}
-        style={{
-          height: `${currentSnapPoint}vh`,
-          transform: isDragging
-            ? `translateY(${currentY - startY}px)`
-            : 'translateY(0)',
-        }}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onMouseDown={handleTouchStart}
-        onMouseMove={handleTouchMove}
-        onMouseUp={handleTouchEnd}
-        onMouseLeave={handleTouchEnd}
-      >
-        {/* 핸들 */}
-        <div className="flex justify-center pt-3 pb-2">
-          <div className="w-12 h-1 bg-gray-300 rounded-full" />
-        </div>
-
-        {/* 헤더 */}
-        {(title || onClose) && (
-          <div className="flex items-center justify-between px-4 pb-2 border-b border-gray-200">
-            {title && (
-              <h2
-                id="bottom-sheet-title"
-                className="text-lg font-semibold text-gray-900"
-              >
-                {title}
-              </h2>
-            )}
-            <button
-              onClick={onClose}
-              className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-              aria-label="닫기"
-            >
-              <X size={20} />
-            </button>
+    <Dialog.Root open={isOpen} onOpenChange={open => !open && onClose()}>
+      <Dialog.Portal>
+        <Dialog.Overlay
+          className={`fixed inset-0 z-50 ${
+            showBackdrop ? 'bg-black/50' : 'bg-transparent'
+          }`}
+        />
+        <Dialog.Content
+          ref={sheetRef}
+          className={`fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-xl shadow-2xl w-full max-h-screen transition-transform duration-300 ease-out ${className}`}
+          style={{
+            height: `${currentSnapPoint}vh`,
+            transform: isDragging
+              ? `translateY(${currentY - startY}px)`
+              : 'translateY(0)',
+          }}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onMouseDown={handleTouchStart}
+          onMouseMove={handleTouchMove}
+          onMouseUp={handleTouchEnd}
+          onMouseLeave={handleTouchEnd}
+          onEscapeKeyDown={onClose}
+          onInteractOutside={showBackdrop ? () => onClose() : undefined}
+        >
+          {/* 핸들 */}
+          <div className="flex justify-center pt-3 pb-2">
+            <div className="w-12 h-1 bg-gray-300 rounded-full" />
           </div>
-        )}
 
-        {/* 콘텐츠 */}
-        <div className="flex-1 overflow-y-auto p-4">{children}</div>
-      </div>
-    </div>
+          {/* 헤더 */}
+          {title && (
+            <div className="flex items-center justify-between px-4 pb-2 border-b border-gray-200">
+              {title && (
+                <Dialog.Title className="text-lg font-semibold text-gray-900">
+                  {title}
+                </Dialog.Title>
+              )}
+              <Dialog.Close asChild>
+                <button
+                  className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                  aria-label="닫기"
+                >
+                  <X size={20} />
+                </button>
+              </Dialog.Close>
+            </div>
+          )}
+
+          {/* 콘텐츠 */}
+          <div className="flex-1 overflow-y-auto p-4">{children}</div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 };
 

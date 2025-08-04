@@ -69,7 +69,10 @@ function App() {
         <Route path="/test/walk-zustand" element={<WalkZustandTest />} />
 
         {/* 산책 통합 테스트 페이지 (GPS + 지도) */}
-        <Route path="/test/walk-integration" element={<WalkIntegrationTest />} />
+        <Route
+          path="/test/walk-integration"
+          element={<WalkIntegrationTest />}
+        />
 
         {/* 산책 간단 테스트 페이지 (지도 없음) */}
         <Route path="/test/walk-simple" element={<WalkSimpleTest />} />
