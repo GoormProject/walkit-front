@@ -31,7 +31,6 @@ const WalkFullTest: React.FC = () => {
       console.log('📍 위치 업데이트:', {
         lat: position.getLat(),
         lng: position.getLng(),
-        currentPathLength: pathPositions.length,
         walkStatus: currentWalk.status
       });
       
@@ -44,7 +43,7 @@ const WalkFullTest: React.FC = () => {
       // Walk Store에 좌표 추가
       walkActions.addPathCoordinate([position.getLng(), position.getLat()]);
     }
-  }, [currentWalk.status, walkActions, pathPositions.length]);
+  }, [currentWalk.status, walkActions]);
 
   // 산책 상태 변경 시 경로 초기화
   useEffect(() => {
