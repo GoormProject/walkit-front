@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { createMap as createKakaoMap } from '../../utils/kakaoMapApi';
+import { createMap as createKakaoMap, loadKakaoMapSDK } from '../../utils/kakaoMapApi';
+import './category-search.css';
 
 interface Place {
   id: string;
@@ -282,45 +283,15 @@ const CategorySearchTest: React.FC = () => {
         // 현재 위치 가져오기
         const position = await getCurrentPosition();
         setCurrentPosition(position);
+        
         // 카카오맵 SDK 로드
-        if (!window.kakao) {
-          const script = document.createElement('script');
-          script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&autoload=false&libraries=services`;
-          script.async = true;
-          // 타임아웃 설정
-          const timeout = setTimeout(() => {
-            console.error('카카오맵 SDK 로드 타임아웃');
-            setError('카카오맵 SDK 로드 타임아웃 - 네트워크 연결을 확인해주세요');
-            setIsLoading(false);
-          }, 10000);
-          script.onload = () => {
-            clearTimeout(timeout);
-            console.log('카카오맵 SDK 스크립트 로드 완료');
-            // SDK 완전 로드 후 createMap
-            window.kakao.maps.load(() => {
-              console.log('카카오맵 SDK 초기화 완료');
-              createMap(position);
-            });
-          };
-          script.onerror = (error) => {
-            clearTimeout(timeout);
-            console.error('카카오맵 SDK 스크립트 로드 실패:', error);
-            setError('카카오맵 SDK 로드 실패 - API 키 또는 도메인 설정을 확인해주세요');
-            setIsLoading(false);
-          };
-          document.head.appendChild(script);
-        } else {
-          // 이미 로드된 경우에도 services가 있는지 반드시 체크
-          if (window.kakao.maps.services) {
-            createMap(position);
-          } else if (window.kakao.maps.load) {
-            window.kakao.maps.load(() => {
-              createMap(position);
-            });
-          } else {
-            setError('카카오맵 SDK가 올바르게 로드되지 않았습니다.');
-            setIsLoading(false);
-          }
+        try {
+          await loadKakaoMapSDK();
+          createMap(position);
+        } catch (error) {
+          console.error('카카오맵 SDK 로드 실패:', error);
+          setError(error instanceof Error ? error.message : '카카오맵 SDK 로드 실패');
+          setIsLoading(false);
         }
       } catch (err) {
         console.error('맵 초기화 실패:', err);
@@ -478,65 +449,6 @@ const CategorySearchTest: React.FC = () => {
           </div>
         </div>
       </div>
-
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          .placeinfo_wrap {
-            position: absolute;
-            bottom: 28px;
-            left: -150px;
-            width: 300px;
-          }
-          .placeinfo {
-            position: relative;
-            width: 100%;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            border-bottom: 2px solid #ddd;
-            padding-bottom: 10px;
-            background: #fff;
-          }
-          .placeinfo:nth-of-type(1) {
-            border: 0;
-            box-shadow: 0px 1px 2px #888;
-          }
-          .placeinfo a {
-            color: #2c3e50;
-            text-decoration: none;
-          }
-          .placeinfo a:hover,
-          .placeinfo a:active {
-            color: #21f1bf;
-            text-decoration: underline;
-          }
-          .placeinfo .title {
-            display: block;
-            overflow: hidden;
-            margin: 14px 0 0 10px;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            font-size: 14px;
-            font-weight: 700;
-          }
-          .placeinfo .tel {
-            color: #0f7833;
-          }
-          .placeinfo .jibun {
-            color: #999;
-            font-size: 11px;
-            margin-top: 0;
-          }
-          .after {
-            content: '';
-            position: relative;
-            margin-left: -12px;
-            left: 50%;
-            width: 22px;
-            height: 12px;
-            background: url('https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/vertex_white.png');
-          }
-        `
-      }} />
     </div>
   );
 };

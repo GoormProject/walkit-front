@@ -15,7 +15,7 @@ export const validateKakaoMapApiKey = (): { isValid: boolean; message: string } 
     return { isValid: false, message: `API 키 길이가 올바르지 않습니다. (현재: ${apiKey.length}자)` };
   }
   
-  if (!/^[a-f0-9]{32}$/i.test(apiKey)) {
+  if (!/^[A-Za-z0-9]{32}$/.test(apiKey)) {
     return { isValid: false, message: 'API 키 형식이 올바르지 않습니다.' };
   }
   

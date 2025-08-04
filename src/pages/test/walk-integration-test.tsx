@@ -63,11 +63,19 @@ const WalkIntegrationTest: React.FC = () => {
 
   // 타이머 관리
   useEffect(() => {
+    // 이전 인터벌 정리
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
     if (isRecording && walk.currentWalk.status === 'walking') {
+      // 시작 시간 설정
       if (!startTimeRef.current) {
         startTimeRef.current = Date.now();
       }
       
+      // 타이머 시작
       const interval = setInterval(() => {
         if (startTimeRef.current) {
           setElapsedTime(Math.floor((Date.now() - startTimeRef.current) / 1000));
@@ -76,18 +84,17 @@ const WalkIntegrationTest: React.FC = () => {
       
       intervalRef.current = interval;
     } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
+      // 산책 완료 시 시작 시간 초기화
       if (walk.currentWalk.status === 'completed') {
         startTimeRef.current = null;
       }
     }
 
+    // 클린업 함수
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     };
   }, [isRecording, walk.currentWalk.status]);
