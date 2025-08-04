@@ -25,8 +25,10 @@ const Profile = () => {
       }
 
       try {
-        console.log('🔍 프로필 조회 시작');
-        console.log('👤 memberId:', user.memberId);
+        if (import.meta.env.DEV) {
+          console.log('🔍 프로필 조회 시작');
+          console.log('👤 memberId:', user.memberId);
+        }
 
         const api = new Api({
           baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -34,19 +36,29 @@ const Profile = () => {
         });
 
         const response = await api.api.getProfile(parseInt(user.memberId));
-        console.log('✅ 프로필 조회 성공:', response.data);
+
+        if (import.meta.env.DEV) {
+          console.log('✅ 프로필 조회 성공:', response.data);
+        }
 
         if (response.data?.data) {
-          console.log('🔍 백엔드에서 받은 프로필 데이터:', response.data.data);
-          console.log('📝 name:', response.data.data.name);
-          console.log('📝 nickname:', response.data.data.nickname);
-          console.log('📧 email:', response.data.data.email);
+          if (import.meta.env.DEV) {
+            console.log(
+              '🔍 백엔드에서 받은 프로필 데이터:',
+              response.data.data
+            );
+            console.log('📝 name:', response.data.data.name);
+            console.log('📝 nickname:', response.data.data.nickname);
+            console.log('📧 email:', response.data.data.email);
+          }
           setProfile(response.data.data);
         } else {
           setError('프로필 정보를 가져올 수 없습니다.');
         }
       } catch (err) {
-        console.error('❌ 프로필 조회 실패:', err);
+        if (import.meta.env.DEV) {
+          console.error('❌ 프로필 조회 실패:', err);
+        }
         setError('프로필 조회 중 오류가 발생했습니다.');
       } finally {
         setLoading(false);

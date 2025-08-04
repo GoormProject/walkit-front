@@ -156,36 +156,49 @@ export const useAuthStore = create<AuthStore>()(
             withCredentials: true, // HttpOnly 쿠키 전송을 위해 필요
           });
 
-          console.log('📡 /api/auth/me API 호출 시작...');
+          if (import.meta.env.DEV) {
+            console.log('📡 /api/auth/me API 호출 시작...');
+          }
 
           // 현재 사용자 정보 조회
           const response = await api.api.getCurrentUser();
 
-          console.log('🔍 /api/auth/me API 응답 전체:', response);
-          console.log('📊 response.data:', response.data);
-          console.log('📊 response.data.data:', response.data?.data);
-          console.log('📊 response.status:', response.status);
-          console.log('📊 response.headers:', response.headers);
+          if (import.meta.env.DEV) {
+            console.log('🔍 /api/auth/me API 응답 전체:', response);
+            console.log('📊 response.data:', response.data);
+            console.log('📊 response.data.data:', response.data?.data);
+            console.log('📊 response.status:', response.status);
+            console.log('📊 response.headers:', response.headers);
+          }
 
           if (response.data?.data) {
             const userData = response.data.data;
-            console.log('✅ validateToken - 사용자 정보 확인됨');
-            console.log('👤 API 응답 사용자 정보:', userData);
-            console.log('🔍 userData.memberId:', userData.memberId);
-            console.log('🔍 userData.email:', userData.email);
-            console.log('🔍 userData.isProfileSet:', userData.isProfileSet);
-            console.log(
-              '🔍 userData.isProfileSet 타입:',
-              typeof userData.isProfileSet
-            );
+            if (import.meta.env.DEV) {
+              console.log('✅ validateToken - 사용자 정보 확인됨');
+              console.log('👤 API 응답 사용자 정보:', userData);
+              console.log('🔍 userData.memberId:', userData.memberId);
+              console.log('🔍 userData.email:', userData.email);
+              console.log('🔍 userData.isProfileSet:', userData.isProfileSet);
+              console.log(
+                '🔍 userData.isProfileSet 타입:',
+                typeof userData.isProfileSet
+              );
+            }
 
             // deviceId가 없으면 새로 생성
             let deviceId = currentState.user.deviceId;
             if (!deviceId) {
               deviceId = crypto.randomUUID();
-              console.log('📱 Device ID 새로 생성 (validateToken):', deviceId);
+              if (import.meta.env.DEV) {
+                console.log(
+                  '📱 Device ID 새로 생성 (validateToken):',
+                  deviceId
+                );
+              }
             } else {
-              console.log('📱 기존 deviceId 유지:', deviceId);
+              if (import.meta.env.DEV) {
+                console.log('📱 기존 deviceId 유지:', deviceId);
+              }
             }
 
             // 사용자 정보로 상태 업데이트 (localStorage에 저장됨)
@@ -201,26 +214,37 @@ export const useAuthStore = create<AuthStore>()(
               error: null,
             };
 
-            console.log('📊 localStorage에 저장할 새 상태:', newState);
+            if (import.meta.env.DEV) {
+              console.log('📊 localStorage에 저장할 새 상태:', newState);
+            }
             set(newState);
 
-            console.log('✅ validateToken 완료 - localStorage에 저장됨');
-            console.log(
-              '💾 localStorage 확인:',
-              localStorage.getItem('auth-storage')
-            );
+            if (import.meta.env.DEV) {
+              console.log('✅ validateToken 완료 - localStorage에 저장됨');
+              // localStorage 내용은 개발 환경에서만 로깅
+              console.log(
+                '💾 localStorage 확인:',
+                localStorage.getItem('auth-storage')
+              );
+            }
             return true;
           }
 
-          console.log('❌ 사용자 정보 없음');
+          if (import.meta.env.DEV) {
+            console.log('❌ 사용자 정보 없음');
+          }
           return false;
         } catch (error: unknown) {
-          console.error('❌ /api/auth/me API 호출 실패:', error);
-          console.error('🚨 에러 상세:', error);
+          if (import.meta.env.DEV) {
+            console.error('❌ /api/auth/me API 호출 실패:', error);
+            console.error('🚨 에러 상세:', error);
+          }
 
           // 401 에러면 인증되지 않은 상태
           if ((error as any)?.response?.status === 401) {
-            console.log('🔒 401 에러 - 인증되지 않은 상태로 설정');
+            if (import.meta.env.DEV) {
+              console.log('🔒 401 에러 - 인증되지 않은 상태로 설정');
+            }
             set({
               isAuthenticated: false,
               user: {
@@ -249,10 +273,12 @@ export const useAuthStore = create<AuthStore>()(
       name: 'auth-storage',
       // 로그인 성공한 상태만 persist (새로운 구조만 저장)
       partialize: state => {
-        console.log('💾 partialize 호출됨');
-        console.log('📊 현재 상태:', state);
-        console.log('📱 현재 deviceId:', state.user.deviceId);
-        console.log('👤 현재 isProfileSet:', state.user.isProfileSet);
+        if (import.meta.env.DEV) {
+          console.log('💾 partialize 호출됨');
+          console.log('📊 현재 상태:', state);
+          console.log('📱 현재 deviceId:', state.user.deviceId);
+          console.log('👤 현재 isProfileSet:', state.user.isProfileSet);
+        }
 
         // 인증된 상태일 때만 저장
         if (state.isAuthenticated && state.user.memberId) {
@@ -265,31 +291,43 @@ export const useAuthStore = create<AuthStore>()(
               isProfileSet: state.user.isProfileSet,
             },
           };
-          console.log('💾 저장할 데이터:', persistedData);
+          if (import.meta.env.DEV) {
+            console.log('💾 저장할 데이터:', persistedData);
+          }
           return persistedData;
         }
         // 인증되지 않은 상태면 저장하지 않음
-        console.log('💾 인증되지 않음 - 빈 객체 반환');
+        if (import.meta.env.DEV) {
+          console.log('💾 인증되지 않음 - 빈 객체 반환');
+        }
         return {};
       },
       // 초기화 시 환경변수 우선 적용
       onRehydrateStorage: () => state => {
-        console.log('🔄 onRehydrateStorage 호출됨');
-        console.log('📊 복원된 상태:', state);
+        if (import.meta.env.DEV) {
+          console.log('🔄 onRehydrateStorage 호출됨');
+          console.log('📊 복원된 상태:', state);
+        }
 
         if (state) {
-          console.log('📱 복원된 deviceId:', state.user?.deviceId);
+          if (import.meta.env.DEV) {
+            console.log('📱 복원된 deviceId:', state.user?.deviceId);
+          }
 
           // deviceId는 인증된 상태에서만 관리
           // 인증되지 않은 상태에서는 null로 유지
 
           // 환경변수 우선 적용 (인증 상태만 설정)
           if (isBypassEnabled || isTestJwtEnabled) {
-            console.log('🔧 환경변수로 인증 상태 설정');
+            if (import.meta.env.DEV) {
+              console.log('🔧 환경변수로 인증 상태 설정');
+            }
             state.isAuthenticated = true;
           }
         } else {
-          console.log('❌ 복원된 상태가 없음');
+          if (import.meta.env.DEV) {
+            console.log('❌ 복원된 상태가 없음');
+          }
         }
       },
     }
