@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTrailPathsSafe } from '../../hooks/useTrailPaths';
 import { useWalkPaths } from '../../hooks/useWalkRecords';
 
@@ -18,36 +19,42 @@ const TestPage: React.FC = () => {
       
       {/* 빠른 테스트 링크 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <a
-          href="/test/trail-visualization"
+        <Link
+          to="/test/trail-visualization"
           className="bg-blue-500 text-white p-4 rounded-lg text-center hover:bg-blue-600 transition-colors"
         >
           🗺️ 경로 시각화
-        </a>
-        <a
-          href="/test/gps"
+        </Link>
+        <Link
+          to="/test/gps"
           className="bg-green-500 text-white p-4 rounded-lg text-center hover:bg-green-600 transition-colors"
         >
           📍 GPS 테스트
-        </a>
-        <a
-          href="/test/trail-progress"
+        </Link>
+        <Link
+          to="/test/trail-progress"
           className="bg-purple-500 text-white p-4 rounded-lg text-center hover:bg-purple-600 transition-colors"
         >
           🚶‍♂️ 진행률 추적
-        </a>
-        <a
-          href="/test/bottom-sheet"
+        </Link>
+        <Link
+          to="/test/bottom-sheet"
           className="bg-orange-500 text-white p-4 rounded-lg text-center hover:bg-orange-600 transition-colors"
         >
           📱 BottomSheet
-        </a>
-        <a
-          href="/test/simple-map"
+        </Link>
+        <Link
+          to="/test/simple-map"
           className="bg-red-500 text-white p-4 rounded-lg text-center hover:bg-red-600 transition-colors"
         >
           🗺️ 카카오맵 테스트
-        </a>
+        </Link>
+        <Link
+          to="/test/category-search"
+          className="bg-indigo-500 text-white p-4 rounded-lg text-center hover:bg-indigo-600 transition-colors"
+        >
+          🏪 장소 검색 테스트
+        </Link>
       </div>
       
       {/* API 모드 정보 */}

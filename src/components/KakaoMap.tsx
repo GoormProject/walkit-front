@@ -9,6 +9,7 @@ import {
 import LoadingSpinner from './LoadingSpinner';
 import TrailVisualization from './TrailVisualization';
 import { GPSTracker } from './GPSTracker';
+import { MapFallback } from './MapFallback';
 import { useGPSStore } from '@/features/gps/gpsSlice';
 import { handleGPSError } from '@/utils/gpsErrorHandler';
 
@@ -29,6 +30,7 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isMapReady, setIsMapReady] = useState(false);
   const mapRef = useRef<kakao.maps.Map | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { setError: setGPSError } = useGPSStore(state => state.actions);
@@ -53,40 +55,98 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
           );
         }
 
+        // DOM이 완전히 렌더링될 때까지 대기 (성능 개선을 위해 시간 단축)
+        await new Promise(resolve => setTimeout(resolve, 50));
+
+        // 컨테이너가 여전히 존재하는지 확인
+        if (!containerRef.current) return;
+
+        console.log('🗺️ 카카오맵 SDK 로드 시작');
+        
         // 카카오 맵 SDK 로드
         await loadKakaoMapSDK();
 
-        // 지도 생성 (기본 좌표: 서울 시청)
-        const mapInstance = new kakao.maps.Map(containerRef.current, {
-          center: new kakao.maps.LatLng(DEFAULT_COORDS.lat, DEFAULT_COORDS.lng),
-          level: 4,
-          currentLocationMarker: false, // 기본 현재 위치 마커 비활성화
-        });
-        mapRef.current = mapInstance;
+        // 컨테이너가 여전히 존재하는지 다시 확인
+        if (!containerRef.current) return;
 
-        // 위치 추적은 GPSTracker 컴포넌트에서 처리하므로 여기서는 제거
+        console.log('🗺️ 카카오맵 인스턴스 생성 시작');
+
+        // 지도 생성 (기본 좌표: 서울 시청)
+        const mapInstance = new window.kakao.maps.Map(containerRef.current, {
+          center: new window.kakao.maps.LatLng(DEFAULT_COORDS.lat, DEFAULT_COORDS.lng),
+          level: 4,
+        });
+        
+        // 지도 상호작용 명시적 활성화
+        (mapInstance as any).setDraggable(true);
+        (mapInstance as any).setZoomable(true);
+        mapRef.current = mapInstance;
 
         // 지도 인스턴스 콜백
         onMapLoad?.(mapInstance);
 
+        // 지도 준비 상태 설정
+        setIsMapReady(true);
+        
+        // 로딩 상태를 확실히 false로 설정
         setIsLoading(false);
+        console.log('🗺️ 카카오맵 초기화 완료 - 마커 생성 가능');
       } catch (err) {
         console.error('카카오 맵 초기화 실패:', err);
-        setError('지도를 불러오는 중 오류가 발생했습니다.');
-        toast.error('지도를 불러오는 중 오류가 발생했습니다.');
+        const errorMessage = err instanceof Error ? err.message : '지도를 불러오는 중 오류가 발생했습니다.';
+        setError(errorMessage);
+        toast.error(errorMessage);
         setIsLoading(false);
       }
     };
 
-    initMap();
+    // 컴포넌트가 마운트된 후 지연을 두고 초기화 (성능 개선)
+    const timer = setTimeout(initMap, 100);
+
+    return () => {
+      clearTimeout(timer);
+    };
   }, [onMapLoad, setGPSError]);
+
+  // 지도가 로드된 후 로딩 상태 확인
+  useEffect(() => {
+    if (mapRef.current && isLoading) {
+      console.log('🗺️ 지도 로드 완료 - 로딩 상태 강제 해제');
+      setIsLoading(false);
+      setIsMapReady(true);
+    }
+  }, [mapRef.current, isLoading]);
 
   return (
     <div className="relative w-full h-full">
+      {/* 에러 상태 */}
+      {error && !isLoading && (
+        <MapFallback 
+          error={error} 
+          onRetry={() => {
+            setError(null);
+            setIsLoading(false);
+            mapRef.current = null;
+            // 컴포넌트를 다시 마운트하기 위해 key를 변경
+            window.location.reload();
+          }} 
+        />
+      )}
+
       {/* 지도 컨테이너 */}
-      <div ref={containerRef} className="w-full h-full rounded-lg shadow-lg">
-        {mapRef.current && <GPSTracker map={mapRef.current} />}
-      </div>
+      {!error && (
+        <div 
+          ref={containerRef} 
+          className="w-full h-full rounded-lg shadow-lg bg-gray-100"
+          style={{ 
+            minHeight: '100%',
+            position: 'relative',
+            zIndex: 1
+          }}
+        >
+          {mapRef.current && <GPSTracker map={mapRef.current} />}
+        </div>
+      )}
 
       {/* 산책 경로 시각화 */}
       {showTrailPaths && mapRef.current && (
@@ -99,16 +159,8 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
         />
       )}
 
-      {/* 로딩 스피너 - 위치정보 로딩 문제로 임시 비활성화 */}
-      {/* <LoadingSpinner show={isLoading || gpsLoading} /> */}
-
-      {/* 에러 메시지 */}
-      {error && (
-        <div className="absolute top-4 left-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          <strong className="font-bold">오류: </strong>
-          <span className="block sm:inline">{error}</span>
-        </div>
-      )}
+      {/* 로딩 스피너 */}
+      <LoadingSpinner show={isLoading} variant="inline" />
     </div>
   );
 };

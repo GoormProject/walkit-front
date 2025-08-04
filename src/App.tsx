@@ -17,6 +17,12 @@ import ShadcnDialogTestPage from '@/pages/test/shadcn-dialog';
 import GPSTestPage from '@/pages/test/gps-test';
 import TrailProgressTest from '@/pages/test/trail-progress';
 import SimpleMapTest from '@/pages/test/simple-map';
+import CategorySearchTest from '@/pages/test/category-search';
+import WalkApiTest from '@/pages/test/walk-api-test';
+import WalkZustandTest from '@/pages/test/walk-zustand-test';
+import WalkIntegrationTest from '@/pages/test/walk-integration-test';
+import WalkSimpleTest from '@/pages/test/walk-simple-test';
+import WalkFullTest from '@/pages/test/walk-full-test';
 import '@/App.css';
 
 function App() {
@@ -52,6 +58,24 @@ function App() {
 
         {/* 카카오맵 단순 테스트 페이지 */}
         <Route path="/test/simple-map" element={<SimpleMapTest />} />
+
+        {/* 카테고리별 장소 검색 테스트 페이지 */}
+        <Route path="/test/category-search" element={<CategorySearchTest />} />
+
+        {/* 산책 API 테스트 페이지 */}
+        <Route path="/test/walk-api" element={<WalkApiTest />} />
+
+        {/* 산책 Zustand 스토어 테스트 페이지 */}
+        <Route path="/test/walk-zustand" element={<WalkZustandTest />} />
+
+        {/* 산책 통합 테스트 페이지 (GPS + 지도) */}
+        <Route path="/test/walk-integration" element={<WalkIntegrationTest />} />
+
+        {/* 산책 간단 테스트 페이지 (지도 없음) */}
+        <Route path="/test/walk-simple" element={<WalkSimpleTest />} />
+
+        {/* 산책 통합 테스트 페이지 (GPS + 지도 + API) */}
+        <Route path="/test/walk-full" element={<WalkFullTest />} />
 
         {/* 모든 페이지에 RootLayout 적용 */}
         <Route element={<RootLayout />}>

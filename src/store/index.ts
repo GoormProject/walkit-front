@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
+import type { WalkRecord, WalkStatus, CurrentWalk } from '../types/walk';
 
 // 테마 타입 정의
 type Theme = 'light' | 'dark';
@@ -32,6 +33,14 @@ interface AppState {
     sidebarOpen: boolean;
   };
 
+  // 산책 관련 상태
+  walk: {
+    currentWalk: CurrentWalk;
+    walkList: WalkRecord[];
+    loading: boolean;
+    error: string | null;
+  };
+
   // 액션들
   actions: {
     // 사용자 액션
@@ -42,6 +51,19 @@ interface AppState {
     setLoading: (loading: boolean) => void;
     toggleTheme: () => void;
     toggleSidebar: () => void;
+
+    // 산책 액션
+    startWalk: (walkId: number, eventId: number) => void;
+    pauseWalk: () => void;
+    resumeWalk: () => void;
+    endWalk: () => void;
+    resetWalk: () => void;
+    updateWalkPath: (path: number[][]) => void;
+    setWalkList: (walkList: WalkRecord[]) => void;
+    addWalkRecord: (walkRecord: WalkRecord) => void;
+    removeWalkRecord: (walkId: number) => void;
+    setWalkError: (error: string | null) => void;
+    setWalkLoading: (loading: boolean) => void;
   };
 }
 
@@ -61,6 +83,19 @@ export const useAppStore = create<AppState>()(
         isLoading: false,
         theme: getInitialTheme(), // localStorage에서 초기 테마 읽기
         sidebarOpen: false,
+      },
+
+      walk: {
+        currentWalk: {
+          walkId: null,
+          eventId: null,
+          status: 'idle' as WalkStatus,
+          startTime: null,
+          path: [],
+        },
+        walkList: [],
+        loading: false,
+        error: null,
       },
 
       // 액션들
@@ -147,6 +182,176 @@ export const useAppStore = create<AppState>()(
             false,
             'toggleSidebar'
           ),
+
+        // 산책 시작
+        startWalk: (walkId: number, eventId: number) =>
+          set(
+            state => ({
+              walk: {
+                ...state.walk,
+                currentWalk: {
+                  walkId,
+                  eventId,
+                  status: 'walking' as WalkStatus,
+                  startTime: new Date().toISOString(),
+                  path: [],
+                },
+                error: null,
+              },
+            }),
+            false,
+            'startWalk'
+          ),
+
+        // 산책 일시정지
+        pauseWalk: () =>
+          set(
+            state => ({
+              walk: {
+                ...state.walk,
+                currentWalk: {
+                  ...state.walk.currentWalk,
+                  status: 'paused' as WalkStatus,
+                },
+              },
+            }),
+            false,
+            'pauseWalk'
+          ),
+
+        // 산책 재개
+        resumeWalk: () =>
+          set(
+            state => ({
+              walk: {
+                ...state.walk,
+                currentWalk: {
+                  ...state.walk.currentWalk,
+                  status: 'walking' as WalkStatus,
+                },
+              },
+            }),
+            false,
+            'resumeWalk'
+          ),
+
+        // 산책 종료
+        endWalk: () =>
+          set(
+            state => ({
+              walk: {
+                ...state.walk,
+                currentWalk: {
+                  ...state.walk.currentWalk,
+                  status: 'completed' as WalkStatus,
+                },
+              },
+            }),
+            false,
+            'endWalk'
+          ),
+
+        // 산책 상태 초기화
+        resetWalk: () =>
+          set(
+            state => ({
+              walk: {
+                ...state.walk,
+                currentWalk: {
+                  walkId: null,
+                  eventId: null,
+                  status: 'idle' as WalkStatus,
+                  startTime: null,
+                  path: [],
+                },
+                error: null,
+              },
+            }),
+            false,
+            'resetWalk'
+          ),
+
+        // 산책 경로 업데이트
+        updateWalkPath: (path: number[][]) =>
+          set(
+            state => ({
+              walk: {
+                ...state.walk,
+                currentWalk: {
+                  ...state.walk.currentWalk,
+                  path,
+                },
+              },
+            }),
+            false,
+            'updateWalkPath'
+          ),
+
+        // 산책 목록 설정
+        setWalkList: (walkList: WalkRecord[]) =>
+          set(
+            state => ({
+              walk: {
+                ...state.walk,
+                walkList,
+                error: null,
+              },
+            }),
+            false,
+            'setWalkList'
+          ),
+
+        // 산책 기록 추가
+        addWalkRecord: (walkRecord: WalkRecord) =>
+          set(
+            state => ({
+              walk: {
+                ...state.walk,
+                walkList: [walkRecord, ...state.walk.walkList],
+              },
+            }),
+            false,
+            'addWalkRecord'
+          ),
+
+        // 산책 기록 삭제
+        removeWalkRecord: (walkId: number) =>
+          set(
+            state => ({
+              walk: {
+                ...state.walk,
+                walkList: state.walk.walkList.filter(walk => walk.walkId !== walkId),
+              },
+            }),
+            false,
+            'removeWalkRecord'
+          ),
+
+        // 산책 에러 설정
+        setWalkError: (error: string | null) =>
+          set(
+            state => ({
+              walk: {
+                ...state.walk,
+                error,
+              },
+            }),
+            false,
+            'setWalkError'
+          ),
+
+        // 산책 로딩 상태 설정
+        setWalkLoading: (loading: boolean) =>
+          set(
+            state => ({
+              walk: {
+                ...state.walk,
+                loading,
+              },
+            }),
+            false,
+            'setWalkLoading'
+          ),
       },
     }),
     {
@@ -165,3 +370,19 @@ export const useUIActions = () =>
     toggleTheme: state.actions.toggleTheme,
     toggleSidebar: state.actions.toggleSidebar,
   }));
+
+// 산책 관련 훅들
+export const useWalk = () => useAppStore(state => state.walk);
+export const useWalkActions = () => useAppStore(state => ({
+  startWalk: state.actions.startWalk,
+  pauseWalk: state.actions.pauseWalk,
+  resumeWalk: state.actions.resumeWalk,
+  endWalk: state.actions.endWalk,
+  resetWalk: state.actions.resetWalk,
+  updateWalkPath: state.actions.updateWalkPath,
+  setWalkList: state.actions.setWalkList,
+  addWalkRecord: state.actions.addWalkRecord,
+  removeWalkRecord: state.actions.removeWalkRecord,
+  setWalkError: state.actions.setWalkError,
+  setWalkLoading: state.actions.setWalkLoading,
+}));
