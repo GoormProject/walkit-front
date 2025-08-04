@@ -38,6 +38,11 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map, onPositionUpdate, d
 
   // 위치가 변경될 때마다 콜백 호출
   useEffect(() => {
+    if (disabled) {
+      debugLog('⏸️ GPSTracker 비활성화 - 위치 업데이트 건너뜀');
+      return;
+    }
+    
     if (currentPosition) {
       debugLog('📍 GPS 위치 업데이트:', {
         lat: currentPosition.getLat().toFixed(6), // 정밀도 제한
@@ -45,7 +50,7 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map, onPositionUpdate, d
       });
       onPositionUpdate?.(currentPosition);
     }
-  }, [currentPosition, onPositionUpdate]);
+  }, [currentPosition, onPositionUpdate, disabled]);
 
   useEffect(() => {
     if (disabled) {
@@ -73,8 +78,10 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map, onPositionUpdate, d
         }
         lastPosition.current = position;
         
-        // 위치 업데이트
-        setPosition(position);
+        // 위치 업데이트 (disabled 상태가 아닐 때만)
+        if (!disabled) {
+          setPosition(position);
+        }
       },
       (loading) => {
         debugLog('🔄 GPS 로딩 상태:', loading);
