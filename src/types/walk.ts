@@ -1,14 +1,57 @@
-// 산책 기록 데이터 타입
+// 산책 기록 데이터 타입 (새로운 API 스펙에 맞게 업데이트)
 export interface WalkRecord {
   walkId: number;
+  trailId: number | null;
+  eventId: number;
+  eventTime: string; // 산책 종료 시각
+  trailImageId?: number;
+  routeImageUrl?: string;
+  totalDistance: number; // m 단위
+  totalTime: number; // 초 단위
+  pace: number; // 평균 속도
+  title: string; // trailId가 있으면 산책로 제목, 없으면 walkTitle
+  isUploaded: boolean;
+}
+
+// 산책 시작 응답
+export interface WalkStartResponse {
+  walkId: number;
+  eventId: number;
+  eventType: 'START';
+  eventTime: string;
+}
+
+// 산책 이벤트 응답 (일시정지, 재개, 종료)
+export interface WalkEventResponse {
+  eventId: number;
+  eventType: 'PAUSE' | 'RESUME' | 'END';
+  eventTime: string;
+  totalTime?: number; // 종료 시에만 포함
+}
+
+// 산책 등록 요청
+export interface WalkCreateRequest {
+  walkId: number;
+  walkTitle: string;
+  totalTime: number;
+  totalDistance: number;
+  pace: number;
+  path: number[][]; // 좌표 배열 [[lng, lat], [lng, lat], ...]
+  startPoint: number[]; // [lng, lat]
+  eventId: number;
+  eventType: 'END';
+  routeUrl?: string;
+}
+
+// 산책 등록 응답
+export interface WalkCreateResponse {
+  walkId: number;
+}
+
+// 산책 삭제 응답
+export interface WalkDeleteResponse {
+  walkId: number;
   memberId: number;
-  date: string; // yyyy-MM-dd
-  startedAt: string; // ISO 8601 형식
-  endedAt: string; // ISO 8601 형식
-  totalDistance: number; // km 단위
-  totalTime: string; // hh:mm:ss 형식
-  pace: string; // mm:ss/km 형식
-  locationName: string;
 }
 
 // API 응답 공통 타입
@@ -19,49 +62,19 @@ export interface ApiResponse<T> {
 }
 
 // 산책 기록 목록 조회 응답
-export interface WalkRecordsResponse extends ApiResponse<WalkRecord[]> {}
+export interface WalkListResponse extends ApiResponse<WalkRecord[]> {}
 
-// 산책 기록 상세 조회 응답
-export interface WalkRecordDetailResponse extends ApiResponse<WalkRecord> {}
+// 산책 시작 응답
+export interface WalkStartApiResponse extends ApiResponse<WalkStartResponse> {}
 
-// 산책 기록 등록 요청 (필요시)
-export interface CreateWalkRecordRequest {
-  memberId: number;
-  date: string;
-  startedAt: string;
-  endedAt: string;
-  totalDistance: number;
-  totalTime: string;
-  pace: string;
-  locationName: string;
-}
+// 산책 이벤트 응답
+export interface WalkEventApiResponse extends ApiResponse<WalkEventResponse> {}
 
-// 산책 기록 등록 응답
-export interface CreateWalkRecordResponse extends ApiResponse<WalkRecord> {}
+// 산책 등록 응답
+export interface WalkCreateApiResponse extends ApiResponse<WalkCreateResponse> {}
 
-// 산책 경로 데이터 타입
-export interface WalkPath {
-  pathId: number;
-  path: string; // LINESTRING 형식 (WKT)
-  name?: string;
-  description?: string;
-  courseType?: string;
-  difficulty?: string;
-  distance?: number;
-  duration?: number;
-}
-
-// 산책 기록 상세 조회 응답 (경로 정보 포함)
-export interface WalkRecordWithPath extends WalkRecord {
-  pathId: number;
-  path?: WalkPath; // 경로 상세 정보 (별도 API 호출 시)
-}
-
-// 산책 경로 상세 조회 응답
-export interface WalkPathDetailResponse extends ApiResponse<WalkPath> {}
-
-// 산책 경로 목록 조회 응답
-export interface WalkPathsResponse extends ApiResponse<WalkPath[]> {}
+// 산책 삭제 응답
+export interface WalkDeleteApiResponse extends ApiResponse<WalkDeleteResponse> {}
 
 // API 에러 응답
 export interface ApiErrorResponse {
@@ -69,4 +82,21 @@ export interface ApiErrorResponse {
   message: string;
   error?: string;
   timestamp?: string;
+}
+
+// 산책 상태 Enum
+export enum WalkStatus {
+  IDLE = 'idle',
+  WALKING = 'walking',
+  PAUSED = 'paused',
+  COMPLETED = 'completed'
+}
+
+// 현재 진행 중인 산책 정보
+export interface CurrentWalk {
+  walkId: number | null;
+  eventId: number | null;
+  status: WalkStatus;
+  startTime: string | null;
+  path: number[][];
 } 

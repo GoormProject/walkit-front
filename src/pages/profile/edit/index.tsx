@@ -144,9 +144,15 @@ const ProfileEdit = () => {
         formDataToSend.append('profileImage', profileImage);
       }
 
-      const response = await api.api.updateProfile(parseInt(user.memberId), {
+      console.log('📤 전송할 데이터 구조:', {
         data: formData,
-        profileImage: profileImage || new File([], ''),
+        profileImage: profileImage ? 'File exists' : 'No file',
+      });
+
+      // Swagger API 정의에 맞는 구조로 전송
+      const response = await api.api.updateProfile(parseInt(user.memberId), {
+        data: formData, // ProfileRequest 객체
+        profileImage: profileImage || new File([], ''), // MultipartFile
       });
 
       console.log('✅ 프로필 수정 성공:', response.data);
@@ -156,8 +162,16 @@ const ProfileEdit = () => {
       setTimeout(() => {
         navigate('/profile');
       }, 3000);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('❌ 프로필 수정 실패:', err);
+      console.error('🚨 에러 상세 정보:', {
+        message: (err as any)?.message,
+        status: (err as any)?.response?.status,
+        statusText: (err as any)?.response?.statusText,
+        data: (err as any)?.response?.data,
+        dataString: JSON.stringify((err as any)?.response?.data),
+        config: (err as any)?.config,
+      });
       setError('프로필 수정 중 오류가 발생했습니다.');
     } finally {
       setSaving(false);

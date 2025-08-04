@@ -213,6 +213,7 @@ export class HttpClient<SecurityDataType = unknown> {
     this.instance = axios.create({
       ...axiosConfig,
       baseURL: axiosConfig.baseURL || 'http://localhost:8080',
+      withCredentials: true, // HttpOnly 쿠키 전송을 위해 필요
     });
     this.secure = secure;
     this.format = format;

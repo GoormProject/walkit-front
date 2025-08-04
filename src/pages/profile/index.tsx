@@ -37,6 +37,10 @@ const Profile = () => {
         console.log('✅ 프로필 조회 성공:', response.data);
 
         if (response.data?.data) {
+          console.log('🔍 백엔드에서 받은 프로필 데이터:', response.data.data);
+          console.log('📝 name:', response.data.data.name);
+          console.log('📝 nickname:', response.data.data.nickname);
+          console.log('📧 email:', response.data.data.email);
           setProfile(response.data.data);
         } else {
           setError('프로필 정보를 가져올 수 없습니다.');

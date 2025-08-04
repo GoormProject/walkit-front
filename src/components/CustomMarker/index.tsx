@@ -118,7 +118,7 @@ export const CustomMarker: React.FC<CustomMarkerProps> = ({
       map,
       yAnchor: 0.5,
       xAnchor: 0.5,
-      zIndex: 3
+      zIndex: 1  // 검색 마커보다 낮은 z-index로 설정
     });
 
     // 정확도 표시 원 생성
@@ -144,7 +144,17 @@ export const CustomMarker: React.FC<CustomMarkerProps> = ({
         accuracyCircleRef.current.setMap(null);
       }
     };
-  }, [map, position, heading, accuracy]);
+  }, [map, position, heading, accuracy, createMarkerElement]);
+
+  // 위치만 변경될 때는 오버레이 위치만 업데이트 (재생성 방지)
+  useEffect(() => {
+    if (overlayRef.current) {
+      overlayRef.current.setPosition(position);
+    }
+    if (accuracyCircleRef.current) {
+      accuracyCircleRef.current.setCenter(position);
+    }
+  }, [position]);
 
   // 컴포넌트는 실제 DOM을 렌더링하지 않음
   return null;
