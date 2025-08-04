@@ -13,7 +13,13 @@ export const GPSSimulator: React.FC<GPSSimulatorProps> = ({ onPositionUpdate }) 
   const [simulationData, setSimulationData] = useState<ReturnType<typeof createHongdaeToSinchonPath> | null>(null);
   
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const onPositionUpdateRef = useRef(onPositionUpdate);
   const { actions: gpsActions } = useGPSStore();
+
+  // onPositionUpdate 콜백을 ref로 최신 상태 유지
+  useEffect(() => {
+    onPositionUpdateRef.current = onPositionUpdate;
+  }, [onPositionUpdate]);
 
   // 시뮬레이션 데이터 초기화
   useEffect(() => {
@@ -31,6 +37,14 @@ export const GPSSimulator: React.FC<GPSSimulatorProps> = ({ onPositionUpdate }) 
   const startSimulation = useCallback(() => {
     if (!simulationData) return;
 
+    console.log('🚀 시뮬레이션 시작 - 기존 타이머 정리');
+    
+    // 기존 타이머가 있다면 정리
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
     setIsSimulating(true);
     setCurrentIndex(0);
     setProgress(0);
@@ -46,6 +60,7 @@ export const GPSSimulator: React.FC<GPSSimulatorProps> = ({ onPositionUpdate }) 
     onPositionUpdate?.(kakaoPosition);
 
     // 5초마다 다음 위치로 이동
+    console.log('⏰ 타이머 설정:', simulationData.intervalTime * 1000, 'ms');
     intervalRef.current = setInterval(() => {
       setCurrentIndex(prevIndex => {
         const nextIndex = prevIndex + 1;
@@ -68,7 +83,7 @@ export const GPSSimulator: React.FC<GPSSimulatorProps> = ({ onPositionUpdate }) 
 
         // 콜백 호출
         console.log(`🎯 GPSSimulator 콜백 호출: ${nextIndex + 1}/${simulationData.path.length}`);
-        onPositionUpdate?.(kakaoPosition);
+        onPositionUpdateRef.current?.(kakaoPosition);
 
         // 진행률 업데이트
         const newProgress = (nextIndex / (simulationData.path.length - 1)) * 100;
@@ -79,7 +94,7 @@ export const GPSSimulator: React.FC<GPSSimulatorProps> = ({ onPositionUpdate }) 
         return nextIndex;
       });
     }, simulationData.intervalTime * 1000);
-  }, [simulationData, gpsActions, onPositionUpdate]);
+  }, [simulationData, gpsActions]);
 
   // 시뮬레이션 중지
   const stopSimulation = useCallback(() => {
