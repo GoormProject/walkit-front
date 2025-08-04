@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { toast, Toaster } from 'sonner';
 import KakaoMap from '@/components/KakaoMap';
 import { GPSTracker } from '@/components/GPSTracker';
+import { GPSSimulator } from '@/components/GPSSimulator';
 import { useWalkStore } from '@/features/walk/walkSlice';
 import { useGPSStore } from '@/features/gps/gpsSlice';
 import { AuthenticationPanel } from '@/components/test/AuthenticationPanel';
@@ -11,6 +12,7 @@ import { WalkRecordsList } from '@/components/test/WalkRecordsList';
 const WalkFullTest: React.FC = () => {
   const [map, setMap] = useState<kakao.maps.Map | null>(null);
   const [pathPositions, setPathPositions] = useState<kakao.maps.LatLng[]>([]);
+  const [showSimulator, setShowSimulator] = useState(false);
   const polyline = useRef<kakao.maps.Polyline | null>(null);
   
   // Walk Store
@@ -91,8 +93,12 @@ const WalkFullTest: React.FC = () => {
         {/* 상단 컨트롤 */}
         <div className="absolute top-4 left-4 right-4 flex justify-between items-center z-10">
           <div className="flex gap-2">
-            <button className="p-2 rounded-full bg-white shadow-lg hover:bg-gray-50 transition-all">
-              <span className="material-icons text-gray-700">menu</span>
+            <button 
+              onClick={() => setShowSimulator(!showSimulator)}
+              className="p-2 rounded-full bg-white shadow-lg hover:bg-gray-50 transition-all"
+              title="가상 GPS 시뮬레이터"
+            >
+              🎯
             </button>
           </div>
           
@@ -122,6 +128,13 @@ const WalkFullTest: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* 가상 GPS 시뮬레이터 */}
+        {showSimulator && (
+          <div className="absolute top-16 left-4 right-4 z-20">
+            <GPSSimulator onPositionUpdate={handlePositionUpdate} />
+          </div>
+        )}
       </div>
 
       {/* 하단 패널들 */}
