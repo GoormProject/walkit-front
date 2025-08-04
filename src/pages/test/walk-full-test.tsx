@@ -28,12 +28,23 @@ const WalkFullTest: React.FC = () => {
   // 위치 업데이트 시 경로 그리기 및 저장
   const handlePositionUpdate = useCallback((position: kakao.maps.LatLng) => {
     if (currentWalk.status === 'walking') {
-      setPathPositions(prev => [...prev, position]);
+      console.log('📍 위치 업데이트:', {
+        lat: position.getLat(),
+        lng: position.getLng(),
+        currentPathLength: pathPositions.length,
+        walkStatus: currentWalk.status
+      });
+      
+      setPathPositions(prev => {
+        const newPath = [...prev, position];
+        console.log('🛤️ 경로 포인트 추가:', newPath.length);
+        return newPath;
+      });
       
       // Walk Store에 좌표 추가
       walkActions.addPathCoordinate([position.getLng(), position.getLat()]);
     }
-  }, [currentWalk.status, walkActions]);
+  }, [currentWalk.status, walkActions, pathPositions.length]);
 
   // 산책 상태 변경 시 경로 초기화
   useEffect(() => {

@@ -67,6 +67,7 @@ export const GPSSimulator: React.FC<GPSSimulatorProps> = ({ onPositionUpdate }) 
         gpsActions.setPosition(kakaoPosition);
 
         // 콜백 호출
+        console.log(`🎯 GPSSimulator 콜백 호출: ${nextIndex + 1}/${simulationData.path.length}`);
         onPositionUpdate?.(kakaoPosition);
 
         // 진행률 업데이트
