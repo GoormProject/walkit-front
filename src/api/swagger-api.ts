@@ -10,6 +10,23 @@
  * ---------------------------------------------------------------
  */
 
+export interface BaseResponseWalkEventResponse {
+  /** @format int32 */
+  httpStatus?: number;
+  message?: string;
+  data?: WalkEventResponse;
+}
+
+export interface WalkEventResponse {
+  /** @format int64 */
+  walkId?: number;
+  /** @format int64 */
+  eventId?: number;
+  eventType?: 'START' | 'PAUSE' | 'RESUME' | 'END';
+  /** @format date-time */
+  eventTime?: string;
+}
+
 export interface ProfileRequest {
   /**
    * @minLength 0
@@ -71,6 +88,42 @@ export interface FriendRequestApprovedResponse {
   friendId?: number;
 }
 
+export interface WalkRequest {
+  /** @format int64 */
+  walkId?: number;
+  /**
+   * @minLength 0
+   * @maxLength 100
+   */
+  walkTitle: string;
+  /** @format int32 */
+  totalTime: number;
+  /** @format double */
+  totalDistance: number;
+  /** @format double */
+  pace: number;
+  /** @minItems 1 */
+  path: number[][];
+  /** @minItems 1 */
+  startPoint: number[];
+  /** @format int64 */
+  eventId?: number;
+  eventType?: string;
+  routeUrl?: string;
+}
+
+export interface BaseResponseWalkCreateResponse {
+  /** @format int32 */
+  httpStatus?: number;
+  message?: string;
+  data?: WalkCreateResponse;
+}
+
+export interface WalkCreateResponse {
+  /** @format int64 */
+  walkId?: number;
+}
+
 export interface BaseResponseFriendRequestResponseDTO {
   /** @format int32 */
   httpStatus?: number;
@@ -91,6 +144,32 @@ export interface BaseResponseVoid {
   httpStatus?: number;
   message?: string;
   data?: any;
+}
+
+export interface BaseResponseListWalkListResponse {
+  /** @format int32 */
+  httpStatus?: number;
+  message?: string;
+  data?: WalkListResponse[];
+}
+
+export interface WalkListResponse {
+  /** @format int64 */
+  walkId?: number;
+  /** @format int64 */
+  trailId?: number;
+  /** @format int64 */
+  eventId?: number;
+  eventTime?: string;
+  /** @format int64 */
+  trailImageId?: number;
+  routeImageUrl?: string;
+  /** @format double */
+  totalDistance?: number;
+  totalTime?: string;
+  pace?: string;
+  title?: string;
+  isUploaded?: boolean;
 }
 
 export interface BaseResponseListFriendResponseDTO {
@@ -146,6 +225,20 @@ export interface CurrentUserDto {
   memberId?: number;
   email?: string;
   isProfileSet?: boolean;
+}
+
+export interface BaseResponseWalkDeleteResponse {
+  /** @format int32 */
+  httpStatus?: number;
+  message?: string;
+  data?: WalkDeleteResponse;
+}
+
+export interface WalkDeleteResponse {
+  /** @format int64 */
+  walkId?: number;
+  /** @format int64 */
+  memberId?: number;
 }
 
 import type {
@@ -213,7 +306,6 @@ export class HttpClient<SecurityDataType = unknown> {
     this.instance = axios.create({
       ...axiosConfig,
       baseURL: axiosConfig.baseURL || 'http://localhost:8080',
-      withCredentials: true, // HttpOnly 쿠키 전송을 위해 필요
     });
     this.secure = secure;
     this.format = format;
@@ -337,6 +429,51 @@ export class Api<
 > extends HttpClient<SecurityDataType> {
   api = {
     /**
+     * @description 일시정지된 산책을 다시 시작합니다.
+     *
+     * @tags 산책 기록
+     * @name ResumeWalk
+     * @summary 산책 기록 재개
+     * @request PUT:/api/walks/{walkId}/resume
+     */
+    resumeWalk: (walkId: number, params: RequestParams = {}) =>
+      this.request<BaseResponseWalkEventResponse, any>({
+        path: `/api/walks/${walkId}/resume`,
+        method: 'PUT',
+        ...params,
+      }),
+
+    /**
+     * @description 진행 중인 산책을 일시정지합니다.
+     *
+     * @tags 산책 기록
+     * @name PauseWalk
+     * @summary 산책 기록 일시정지
+     * @request PUT:/api/walks/{walkId}/pause
+     */
+    pauseWalk: (walkId: number, params: RequestParams = {}) =>
+      this.request<BaseResponseWalkEventResponse, any>({
+        path: `/api/walks/${walkId}/pause`,
+        method: 'PUT',
+        ...params,
+      }),
+
+    /**
+     * @description 진행 중인 산책을 최종 종료합니다.
+     *
+     * @tags 산책 기록
+     * @name EndWalk
+     * @summary 산책 기록 종료
+     * @request PUT:/api/walks/{walkId}/end
+     */
+    endWalk: (walkId: number, params: RequestParams = {}) =>
+      this.request<BaseResponseWalkEventResponse, any>({
+        path: `/api/walks/${walkId}/end`,
+        method: 'PUT',
+        ...params,
+      }),
+
+    /**
      * @description 이름과 닉네임, 프로필 이미지, 이메일을 조회합니다.
      *
      * @tags 회원
@@ -444,6 +581,38 @@ export class Api<
       }),
 
     /**
+     * @description 새로운 산책 기록을 시작하고, 생성된 walkId와 eventId를 반환합니다.
+     *
+     * @tags 산책 기록
+     * @name StartWalk
+     * @summary 산책 기록 시작
+     * @request POST:/api/walks/start
+     */
+    startWalk: (params: RequestParams = {}) =>
+      this.request<BaseResponseWalkEventResponse, any>({
+        path: `/api/walks/start`,
+        method: 'POST',
+        ...params,
+      }),
+
+    /**
+     * @description 종료된 산책의 상세 정보(경로, 시간, 거리 등)를 저장합니다.
+     *
+     * @tags 산책 기록
+     * @name CreateWalk
+     * @summary 산책 기록 저장
+     * @request POST:/api/walks/new
+     */
+    createWalk: (data: WalkRequest, params: RequestParams = {}) =>
+      this.request<BaseResponseWalkCreateResponse, any>({
+        path: `/api/walks/new`,
+        method: 'POST',
+        body: data,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
      * @description 다른 사용자에게 친구 요청을 보냅니다.
      *
      * @tags 친구
@@ -513,6 +682,21 @@ export class Api<
       }),
 
     /**
+     * @description 자신이 기록한 모든 산책 기록의 목록을 조회합니다.
+     *
+     * @tags 산책 기록
+     * @name GetWalkList
+     * @summary 산책 기록 목록 조회
+     * @request GET:/api/walks
+     */
+    getWalkList: (params: RequestParams = {}) =>
+      this.request<BaseResponseListWalkListResponse, any>({
+        path: `/api/walks`,
+        method: 'GET',
+        ...params,
+      }),
+
+    /**
      * @description 현재 사용자의 친구 목록을 조회합니다.
      *
      * @tags 친구
@@ -524,6 +708,26 @@ export class Api<
     getFriends: (params: RequestParams = {}) =>
       this.request<BaseResponseListFriendResponseDTO, any>({
         path: `/api/friends`,
+        method: 'GET',
+        secure: true,
+        ...params,
+      }),
+
+    /**
+     * @description 특정 상태(예: ONLINE)의 친구 목록을 조회합니다.
+     *
+     * @tags 친구
+     * @name GetFriendsByStatus
+     * @summary 상태별 친구 목록 조회
+     * @request GET:/api/friends/status/{status}
+     * @secure
+     */
+    getFriendsByStatus: (
+      status: 'OFFLINE' | 'ONLINE' | 'WALKING',
+      params: RequestParams = {}
+    ) =>
+      this.request<BaseResponseListFriendResponseDTO, any>({
+        path: `/api/friends/status/${status}`,
         method: 'GET',
         secure: true,
         ...params,
@@ -577,6 +781,69 @@ export class Api<
         path: `/api/auth/me`,
         method: 'GET',
         secure: true,
+        ...params,
+      }),
+
+    /**
+     * @description 특정 산책 기록을 삭제합니다.
+     *
+     * @tags 산책 기록
+     * @name DeleteWalk
+     * @summary 산책 기록 삭제
+     * @request DELETE:/api/walks/{walkId}
+     */
+    deleteWalk: (walkId: number, params: RequestParams = {}) =>
+      this.request<BaseResponseWalkDeleteResponse, any>({
+        path: `/api/walks/${walkId}`,
+        method: 'DELETE',
+        ...params,
+      }),
+
+    /**
+     * @description 친구 관계를 삭제합니다.
+     *
+     * @tags 친구
+     * @name DeleteFriend
+     * @summary 친구 삭제하기
+     * @request DELETE:/api/friends/{friendMemberId}
+     * @secure
+     */
+    deleteFriend: (friendMemberId: number, params: RequestParams = {}) =>
+      this.request<BaseResponseVoid, any>({
+        path: `/api/friends/${friendMemberId}`,
+        method: 'DELETE',
+        secure: true,
+        ...params,
+      }),
+  };
+  swagger = {
+    /**
+     * @description 카카오 OAuth2 로그인을 위한 리디렉션 URL입니다. [실제 로그인 URL: `/oauth2/authorization/kakao?state={deviceId}`] 브라우저에서 직접 접속하세요.
+     *
+     * @tags OAuth 로그인
+     * @name KakaoLoginDocOnly
+     * @summary 카카오 로그인
+     * @request GET:/swagger/oauth/kakao-login
+     */
+    kakaoLoginDocOnly: (params: RequestParams = {}) =>
+      this.request<any, void>({
+        path: `/swagger/oauth/kakao-login`,
+        method: 'GET',
+        ...params,
+      }),
+
+    /**
+     * @description 구글 OAuth2 로그인을 위한 리디렉션 URL입니다. [실제 로그인 URL: `/oauth2/authorization/google?state={deviceId}`] 브라우저에서 직접 접속하세요.
+     *
+     * @tags OAuth 로그인
+     * @name GoogleLoginDocOnly
+     * @summary 구글 로그인
+     * @request GET:/swagger/oauth/google-login
+     */
+    googleLoginDocOnly: (params: RequestParams = {}) =>
+      this.request<any, void>({
+        path: `/swagger/oauth/google-login`,
+        method: 'GET',
         ...params,
       }),
   };

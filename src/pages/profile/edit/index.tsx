@@ -136,24 +136,29 @@ const ProfileEdit = () => {
         withCredentials: true,
       });
 
-      // FormData 생성
-      const formDataToSend = new FormData();
-      formDataToSend.append('data', JSON.stringify(formData));
-
-      if (profileImage) {
-        formDataToSend.append('profileImage', profileImage);
-      }
-
       console.log('📤 전송할 데이터 구조:', {
         data: formData,
         profileImage: profileImage ? 'File exists' : 'No file',
       });
 
-      // Swagger API 정의에 맞는 구조로 전송
-      const response = await api.api.updateProfile(parseInt(user.memberId), {
-        data: formData, // ProfileRequest 객체
-        profileImage: profileImage || new File([], ''), // MultipartFile
-      });
+      // FormData 객체를 직접 구성하여 전송
+      const multipartFormData = new FormData();
+
+      // JSON 데이터를 Blob으로 변환하여 추가
+      multipartFormData.append(
+        'data',
+        new Blob([JSON.stringify(formData)], { type: 'application/json' })
+      );
+
+      // 이미지 파일 추가
+      if (profileImage) {
+        multipartFormData.append('profileImage', profileImage);
+      }
+
+      const response = await api.api.updateProfile(
+        parseInt(user.memberId),
+        multipartFormData as any
+      );
 
       console.log('✅ 프로필 수정 성공:', response.data);
       setSuccess('프로필이 성공적으로 수정되었습니다!');
