@@ -59,48 +59,52 @@ export const GPSSimulator: React.FC<GPSSimulatorProps> = ({ onPositionUpdate }) 
     // 콜백 호출
     onPositionUpdate?.(kakaoPosition);
 
-    // 5초마다 다음 위치로 이동
+    // 순차적으로 다음 위치로 이동 (setTimeout 사용)
     console.log('⏰ 타이머 설정:', simulationData.intervalTime * 1000, 'ms');
-    intervalRef.current = setInterval(() => {
-      setCurrentIndex(prevIndex => {
-        const nextIndex = prevIndex + 1;
-        
-        if (nextIndex >= simulationData.path.length) {
-          // 시뮬레이션 완료
-          setIsSimulating(false);
-          if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-            intervalRef.current = null;
-          }
-          return prevIndex;
-        }
+    
+    const moveToNextPosition = (currentIdx: number) => {
+      const nextIndex = currentIdx + 1;
+      
+      if (nextIndex >= simulationData.path.length) {
+        // 시뮬레이션 완료
+        console.log('🏁 시뮬레이션 완료');
+        setIsSimulating(false);
+        return;
+      }
 
-        const position = simulationData.path[nextIndex];
-        const kakaoPosition = new kakao.maps.LatLng(position.lat, position.lng);
-        
-        // GPS Store 업데이트
-        gpsActions.setPosition(kakaoPosition);
+      const position = simulationData.path[nextIndex];
+      const kakaoPosition = new kakao.maps.LatLng(position.lat, position.lng);
+      
+      // GPS Store 업데이트
+      gpsActions.setPosition(kakaoPosition);
 
-        // 콜백 호출
-        console.log(`🎯 GPSSimulator 콜백 호출: ${nextIndex + 1}/${simulationData.path.length}`);
-        onPositionUpdateRef.current?.(kakaoPosition);
+      // 콜백 호출
+      console.log(`🎯 GPSSimulator 콜백 호출: ${nextIndex + 1}/${simulationData.path.length}`);
+      onPositionUpdateRef.current?.(kakaoPosition);
 
-        // 진행률 업데이트
-        const newProgress = (nextIndex / (simulationData.path.length - 1)) * 100;
-        setProgress(newProgress);
+      // 상태 업데이트
+      setCurrentIndex(nextIndex);
+      
+      // 진행률 업데이트
+      const newProgress = (nextIndex / (simulationData.path.length - 1)) * 100;
+      setProgress(newProgress);
 
-        console.log(`📍 가상 GPS 위치 업데이트: ${nextIndex + 1}/${simulationData.path.length} (${newProgress.toFixed(1)}%)`);
-        
-        return nextIndex;
-      });
-    }, simulationData.intervalTime * 1000);
+      console.log(`📍 가상 GPS 위치 업데이트: ${nextIndex + 1}/${simulationData.path.length} (${newProgress.toFixed(1)}%)`);
+      
+      // 다음 위치로 이동 (재귀적 setTimeout)
+      intervalRef.current = setTimeout(() => moveToNextPosition(nextIndex), simulationData.intervalTime * 1000);
+    };
+    
+    // 첫 번째 위치로 이동 시작
+    moveToNextPosition(-1);
   }, [simulationData, gpsActions]);
 
   // 시뮬레이션 중지
   const stopSimulation = useCallback(() => {
+    console.log('⏹️ 시뮬레이션 중지');
     setIsSimulating(false);
     if (intervalRef.current) {
-      clearInterval(intervalRef.current);
+      clearTimeout(intervalRef.current);
       intervalRef.current = null;
     }
   }, []);
@@ -116,7 +120,7 @@ export const GPSSimulator: React.FC<GPSSimulatorProps> = ({ onPositionUpdate }) 
   useEffect(() => {
     return () => {
       if (intervalRef.current) {
-        clearInterval(intervalRef.current);
+        clearTimeout(intervalRef.current);
       }
     };
   }, []);
