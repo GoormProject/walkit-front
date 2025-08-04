@@ -22,6 +22,21 @@ const parseTimeToMinutes = (timeString: string | number): number => {
   return 0;
 };
 
+// pace(분/km)를 시속(km/h)으로 변환
+const convertPaceToSpeed = (pace: string | number): number => {
+  if (typeof pace === 'string') {
+    pace = parseFloat(pace);
+  }
+  
+  if (typeof pace === 'number' && pace > 0) {
+    // 분/킬로미터 → 시속(km/h) 변환
+    // 1시간 = 60분이므로, 60 / pace = 시속
+    return 60 / pace;
+  }
+  
+  return 0;
+};
+
 export const WalkRecordsList: React.FC = () => {
   const {
     walkRecords,
@@ -86,7 +101,7 @@ export const WalkRecordsList: React.FC = () => {
                   <p className="text-sm text-gray-600">
                     거리: {record.totalDistance ? record.totalDistance.toFixed(3) : '0.000'}km | 
                     시간: {record.totalTime ? parseTimeToMinutes(record.totalTime) : 0}분 | 
-                    속도: {typeof record.pace === 'string' ? parseFloat(record.pace).toFixed(1) : typeof record.pace === 'number' ? record.pace.toFixed(1) : 'N/A'}분/km
+                    속도: {record.pace ? convertPaceToSpeed(record.pace).toFixed(1) : 'N/A'}km/h
                   </p>
                   <p className="text-xs text-gray-500">
                     {new Date(record.eventTime).toLocaleString()}
