@@ -8,9 +8,10 @@ import { handleGPSError } from '@/utils/gpsErrorHandler';
 interface GPSTrackerProps {
   map: kakao.maps.Map;
   onPositionUpdate?: (position: kakao.maps.LatLng) => void;
+  disabled?: boolean;
 }
 
-export const GPSTracker: React.FC<GPSTrackerProps> = ({ map, onPositionUpdate }) => {
+export const GPSTracker: React.FC<GPSTrackerProps> = ({ map, onPositionUpdate, disabled = false }) => {
   const [heading, setHeading] = useState(0);
   const lastPosition = useRef<kakao.maps.LatLng | null>(null);
   
@@ -47,6 +48,11 @@ export const GPSTracker: React.FC<GPSTrackerProps> = ({ map, onPositionUpdate })
   }, [currentPosition, onPositionUpdate]);
 
   useEffect(() => {
+    if (disabled) {
+      debugLog('⏸️ GPSTracker 비활성화됨');
+      return;
+    }
+    
     debugLog('🎯 GPSTracker 초기화 시작');
     debugLog('🌐 HTTPS 환경:', window.location.protocol === 'https:');
     debugLog('📱 Geolocation 지원:', !!navigator.geolocation);

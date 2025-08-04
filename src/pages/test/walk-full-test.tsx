@@ -107,6 +107,7 @@ const WalkFullTest: React.FC = () => {
           <GPSTracker
             map={map}
             onPositionUpdate={handlePositionUpdate}
+            disabled={showSimulator}
           />
         )}
 
