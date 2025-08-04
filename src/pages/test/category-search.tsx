@@ -37,7 +37,7 @@ const CategorySearchTest: React.FC = () => {
 
   // 카테고리 정의 (카카오맵 API 카테고리 코드)
   const categories: Category[] = [
-    { id: 'toilet', name: '화장실', code: 'SW8', color: '#4F46E5' },
+    { id: 'toilet', name: '화장실', code: '', color: '#4F46E5' }, // 화장실은 키워드 검색 사용
     { id: 'convenience', name: '편의점', code: 'CS2', color: '#059669' },
     { id: 'subway', name: '지하철역', code: 'SW8', color: '#7C3AED' }
   ];
@@ -304,14 +304,14 @@ const CategorySearchTest: React.FC = () => {
       }
     };
     initializeMap();
-  }, []); // getCurrentPosition, createMap 제거
+  }, [getCurrentPosition, createMap]);
 
   // 카테고리 변경 시 검색 실행
   useEffect(() => {
     if (isInitializedRef.current && selectedCategory) {
       searchPlaces();
     }
-  }, [selectedCategory]); // searchPlaces 제거
+  }, [selectedCategory, searchPlaces]);
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">

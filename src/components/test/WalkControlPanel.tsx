@@ -18,7 +18,7 @@ export const WalkControlPanel: React.FC<WalkControlPanelProps> = ({
     actions: walkActions,
   } = useWalkStore();
   
-  const { position, error: gpsError } = useGPSStore();
+  const { position, error } = useGPSStore();
 
   // 총 거리 계산
   const calculateTotalDistance = (positions: kakao.maps.LatLng[]): number => {
@@ -77,8 +77,13 @@ export const WalkControlPanel: React.FC<WalkControlPanelProps> = ({
 
   // 산책 기록 등록
   const handleRegisterWalk = async () => {
-    if (!currentWalk.walkId) {
-      toast.error('진행 중인 산책이 없습니다.');
+    if (!currentWalk.walkId || !currentWalk.eventId) {
+      toast.error('진행 중인 산책 정보가 완전하지 않습니다.');
+      return;
+    }
+    
+    if (pathPositions.length === 0) {
+      toast.error('경로 정보가 없습니다.');
       return;
     }
 
@@ -88,14 +93,14 @@ export const WalkControlPanel: React.FC<WalkControlPanelProps> = ({
       : 0;
 
     const walkData: WalkCreateRequest = {
-      walkId: currentWalk.walkId!,
+      walkId: currentWalk.walkId,
       walkTitle: `산책 기록 - ${new Date().toLocaleDateString()}`,
       totalDistance: Math.round(totalDistance),
       totalTime: totalTime,
       pace: totalTime > 0 ? totalDistance / totalTime : 0,
       path: pathPositions.map(pos => [pos.getLng(), pos.getLat()]),
-      startPoint: pathPositions.length > 0 ? [pathPositions[0].getLng(), pathPositions[0].getLat()] : [0, 0],
-      eventId: currentWalk.eventId!,
+      startPoint: [pathPositions[0].getLng(), pathPositions[0].getLat()],
+      eventId: currentWalk.eventId,
       eventType: 'END',
     };
 
@@ -115,7 +120,7 @@ export const WalkControlPanel: React.FC<WalkControlPanelProps> = ({
       <div className="grid grid-cols-3 gap-4 mb-4">
         {/* GPS 상태 */}
         <div className="flex items-center gap-1 px-2 py-1 bg-gray-50 rounded-lg text-xs">
-          {gpsError ? (
+          {error ? (
             <span className="text-red-500">❌ GPS 오류</span>
           ) : position ? (
             <span className="text-green-500">✅ GPS 연결됨</span>

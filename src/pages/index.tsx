@@ -6,6 +6,7 @@ import { GPSTracker } from '@/components/GPSTracker';
 import { useGPSStore } from '@/features/gps/gpsSlice';
 import { calculateDistance as calculateCoordinateDistance } from '@/utils/converter/pathConverter';
 import { isOAuthCallback } from '@/utils/oauth';
+import './index.css';
 
 interface Place {
   id: string;
@@ -50,7 +51,7 @@ const Home = () => {
 
   // 카테고리 정의
   const categories: Category[] = [
-    { id: 'toilet', name: '화장실', code: 'SW8', color: '#4F46E5' },
+    { id: 'toilet', name: '화장실', code: '', color: '#4F46E5' }, // 화장실은 키워드 검색 사용
     { id: 'convenience', name: '편의점', code: 'CS2', color: '#059669' },
     { id: 'subway', name: '지하철역', code: 'SW8', color: '#7C3AED' }
   ];
@@ -676,65 +677,7 @@ const Home = () => {
         )}
       </div>
       
-      {/* 장소 정보 오버레이 스타일 */}
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          .placeinfo_wrap {
-            position: absolute;
-            bottom: 28px;
-            left: -150px;
-            width: 300px;
-          }
-          .placeinfo {
-            position: relative;
-            width: 100%;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            border-bottom: 2px solid #ddd;
-            padding-bottom: 10px;
-            background: #fff;
-          }
-          .placeinfo:nth-of-type(1) {
-            border: 0;
-            box-shadow: 0px 1px 2px #888;
-          }
-          .placeinfo a {
-            color: #2c3e50;
-            text-decoration: none;
-          }
-          .placeinfo a:hover,
-          .placeinfo a:active {
-            color: #21f1bf;
-            text-decoration: underline;
-          }
-          .placeinfo .title {
-            display: block;
-            overflow: hidden;
-            margin: 14px 0 0 10px;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            font-size: 14px;
-            font-weight: 700;
-          }
-          .placeinfo .tel {
-            color: #0f7833;
-          }
-          .placeinfo .jibun {
-            color: #999;
-            font-size: 11px;
-            margin-top: 0;
-          }
-          .after {
-            content: '';
-            position: relative;
-            margin-left: -12px;
-            left: 50%;
-            width: 22px;
-            height: 12px;
-            background: url('https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/vertex_white.png');
-          }
-        `
-      }} />
+
     </div>
   );
 };

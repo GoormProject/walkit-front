@@ -24,7 +24,7 @@ const Header = ({ height = 'lg', className = '', overlay = false }: HeaderProps)
     <header
       className={`${
         overlay 
-          ? 'absolute top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-sm border-b border-gray-200/50' 
+          ? 'absolute top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-sm border-b border-gray-200/50' 
           : 'bg-white shadow-sm border-b border-gray-200'
       } ${heightClasses[height]} ${className}`}
     >
