@@ -970,17 +970,17 @@ const Home = () => {
         )}
 
         {/* 좌측 상단 - 메뉴 버튼 (사람 아이콘) */}
-        <div className="absolute top-4 left-4 z-10 pointer-events-none">
+        <div className="absolute top-4 left-4 z-10">
           <button
             onClick={() => navigate('/profile')}
-            className="p-3 rounded-full bg-white/90 shadow-lg hover:bg-white transition-all pointer-events-auto"
+            className="p-3 rounded-full bg-white/90 shadow-lg hover:bg-white transition-all"
           >
             <span className="material-icons text-gray-700">person</span>
           </button>
         </div>
 
         {/* 우측 하단 - GPS 버튼 */}
-        <div className="absolute bottom-4 right-4 z-10 pointer-events-none">
+        <div className="absolute bottom-4 right-4 z-10">
           <button
             onClick={() => {
               if (position && map.current) {
@@ -994,29 +994,29 @@ const Home = () => {
                 toast.error('GPS 위치를 가져올 수 없습니다.');
               }
             }}
-            className="p-3 rounded-full bg-white/90 shadow-lg hover:bg-white transition-all pointer-events-auto"
+            className="p-3 rounded-full bg-white/90 shadow-lg hover:bg-white transition-all"
           >
             <span className="material-icons text-gray-700">gps_fixed</span>
           </button>
         </div>
 
         {/* 지도 하단 중앙 - 바텀시트 열기 버튼 */}
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 pointer-events-none">
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10">
           <button
             onClick={() => setIsBottomSheetOpen(true)}
-            className="p-3 rounded-full bg-white/90 shadow-lg hover:bg-white transition-all pointer-events-auto"
+            className="p-3 rounded-full bg-white/90 shadow-lg hover:bg-white transition-all"
           >
             <span className="material-icons text-gray-700">keyboard_arrow_up</span>
           </button>
         </div>
 
         {/* 카테고리 버튼들 */}
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 flex gap-2 pointer-events-none category-buttons">
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 flex gap-2 category-buttons">
           {CATEGORIES.map((category) => (
             <button
               key={category.id}
               onClick={() => handleCategoryClick(category.id)}
-              className={`px-3 py-2 rounded-full text-sm font-medium transition-all shadow-lg pointer-events-auto ${
+              className={`px-3 py-2 rounded-full text-sm font-medium transition-all shadow-lg ${
                 selectedCategory === category.id
                   ? 'text-white'
                   : 'text-gray-700 bg-white/90 hover:bg-white'
@@ -1032,19 +1032,19 @@ const Home = () => {
         </div>
 
         {/* 우측 상단 - 산책 시작 버튼 */}
-        <div className="absolute top-4 right-4 z-10 pointer-events-none">
+        <div className="absolute top-4 right-4 z-10">
           {!isWalking ? (
             <button
               onClick={handleStartWalk}
               disabled={!!error}
-              className="px-4 py-2 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed pointer-events-auto font-medium"
+              className="px-4 py-2 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
             >
               Walk it!
             </button>
           ) : (
             <button
               onClick={handleEndWalk}
-              className="px-4 py-2 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition-all pointer-events-auto font-medium"
+              className="px-4 py-2 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition-all font-medium"
             >
               Stop
             </button>
@@ -1053,7 +1053,7 @@ const Home = () => {
 
         {/* 검색 결과 표시 */}
         {places.length > 0 && (
-          <div className="absolute top-16 left-4 right-4 z-10 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 max-h-60 overflow-y-auto pointer-events-auto search-results">
+          <div className="absolute top-16 left-4 right-4 z-10 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 max-h-60 overflow-y-auto search-results">
             <div className="p-3">
               <h3 className="text-sm font-semibold text-gray-800 mb-2">
                 검색 결과 ({places.length}개)
@@ -1081,9 +1081,9 @@ const Home = () => {
           </div>
         )}
 
-                {/* 검색 중 표시 */}
+        {/* 검색 중 표시 */}
         {isSearching && (
-          <div className="absolute top-16 left-4 right-4 z-10 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 p-4 pointer-events-none">
+          <div className="absolute top-16 left-4 right-4 z-10 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 p-4">
             <div className="flex items-center justify-center">
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500 mr-2"></div>
               <span className="text-sm text-gray-600">장소 검색 중...</span>
