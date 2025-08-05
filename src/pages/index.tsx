@@ -875,117 +875,17 @@ const Home = () => {
           </div>
         )}
 
-        {/* 바텀시트 */}
+                {/* 바텀시트 */}
         <BottomSheet
           isOpen={isBottomSheetOpen}
           onClose={() => setIsBottomSheetOpen(false)}
-          title="산책 컨트롤"
           defaultSnapPoint={40}
           className="safe-area-bottom"
         >
         <div className="space-y-6">
-          {/* GPS 상태 */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">GPS 상태</h3>
-            <div className="flex items-center gap-2">
-              {isLoading ? (
-                <div className="flex items-center gap-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
-                  <span className="text-sm text-blue-600">GPS 로딩중...</span>
-                </div>
-              ) : error ? (
-                <div className="flex items-center gap-2">
-                  <span className="text-red-500">❌</span>
-                  <span className="text-sm text-red-600">GPS 오류</span>
-                </div>
-              ) : position ? (
-                <div className="flex items-center gap-2">
-                  <span className="text-green-500">✅</span>
-                  <span className="text-sm text-green-600">GPS 연결됨</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-500">⏳</span>
-                  <span className="text-sm text-gray-600">GPS 대기중</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* 산책 정보 */}
-          {isWalking && (
-            <div className="bg-blue-50 rounded-lg p-4">
-              <h3 className="text-sm font-semibold text-blue-700 mb-3">산책 정보</h3>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-sm text-blue-600">총 거리:</span>
-                  <span className="text-sm font-medium text-blue-700">
-                    {calculateTotalDistance(pathPositions).toFixed(2)}km
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-blue-600">경로 포인트:</span>
-                  <span className="text-sm font-medium text-blue-700">
-                    {pathPositions.length}개
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 산책 컨트롤 버튼 */}
-          <div className="space-y-3">
-            {!isWalking ? (
-              <button
-                onClick={handleStartWalk}
-                disabled={!!error}
-                className="w-full py-4 bg-green-500 text-white rounded-lg shadow-lg hover:bg-green-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
-              >
-                🚶‍♂️ 산책 시작
-              </button>
-            ) : (
-              <button
-                onClick={handleEndWalk}
-                className="w-full py-4 bg-red-500 text-white rounded-lg shadow-lg hover:bg-red-600 transition-all font-medium"
-              >
-                🛑 산책 종료
-              </button>
-            )}
-          </div>
-
-          {/* 추가 기능들 */}
-          <div className="space-y-3">
-            <button
-              onClick={() => {
-                if (position && map.current) {
-                  const latLng = new window.kakao.maps.LatLng(
-                    position.getLat(),
-                    position.getLng()
-                  );
-                  (map.current as any).panTo(latLng);
-                  setIsBottomSheetOpen(false);
-                  toast.success('현재 위치로 이동했습니다!');
-                } else {
-                  toast.error('GPS 위치를 가져올 수 없습니다.');
-                }
-              }}
-              className="w-full py-3 bg-blue-500 text-white rounded-lg shadow-lg hover:bg-blue-600 transition-all font-medium"
-            >
-              📍 현재 위치로 이동
-            </button>
-            
-            <button
-              onClick={() => {
-                navigate('/friends');
-                setIsBottomSheetOpen(false);
-              }}
-              className="w-full py-3 bg-purple-500 text-white rounded-lg shadow-lg hover:bg-purple-600 transition-all font-medium"
-            >
-              👥 친구 목록
-            </button>
-          </div>
+          {/* 빈 콘텐츠 영역 */}
         </div>
-      </BottomSheet>
+        </BottomSheet>
       </div>
     </div>
   );
