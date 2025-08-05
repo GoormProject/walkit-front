@@ -253,60 +253,39 @@ const Home = () => {
         trail.coordinates.lng
       );
       
-      // 지도 이동
+      console.log('🗺️ 산책로 위치로 지도 이동:', {
+        trailName: trail.name,
+        coordinates: trail.coordinates,
+        latLng: latLng.toString()
+      });
+      
+      // 지도 이동 (부드러운 애니메이션과 함께)
       try {
-        console.log('지도 이동 시도:', {
-          mapExists: !!map.current,
-          coordinates: trail.coordinates,
-          latLng: latLng.toString(),
-          mapMethods: {
-            panTo: typeof (map.current as any)?.panTo,
-            setLevel: typeof (map.current as any)?.setLevel
-          }
-        });
-        
         if (map.current) {
-          // 지도 이동 전 현재 상태 확인
-          const currentCenter = (map.current as any).getCenter();
-          const currentLevel = (map.current as any).getLevel();
-          console.log('현재 지도 상태:', {
-            center: currentCenter.toString(),
-            level: currentLevel
-          });
+          // 적절한 줌 레벨로 설정 (산책로 상세보기용)
+          (map.current as any).setLevel(2);
           
-          // 지도 이동
+          // 부드러운 이동
           (map.current as any).panTo(latLng);
-          (map.current as any).setLevel(3);
           
-          // 이동 후 상태 확인
-          setTimeout(() => {
-            const newCenter = (map.current as any)?.getCenter();
-            const newLevel = (map.current as any)?.getLevel();
-            console.log('이동 후 지도 상태:', {
-              center: newCenter?.toString(),
-              level: newLevel
-            });
-          }, 100);
-          
-          console.log('지도 이동 성공');
-        } else {
-          console.error('지도 객체가 없습니다');
+          console.log('✅ 지도 이동 완료:', trail.name);
         }
       } catch (error) {
-        console.error('지도 이동 실패:', error);
+        console.error('❌ 지도 이동 실패:', error);
       }
       
-      // 마커 생성 및 추가
+      // 산책로 마커 생성 및 추가
       const marker = new window.kakao.maps.Marker({
         position: latLng,
         map: map.current,
       });
       
-      // 마커 정보창 추가
+      // 마커 정보창 추가 (더 예쁘게 스타일링)
       const infowindow = new (window.kakao.maps as any).InfoWindow({
-        content: `<div style="padding:10px;text-align:center;">
-          <h3 style="margin:0 0 5px 0;font-size:14px;font-weight:bold;">${trail.name}</h3>
-          <p style="margin:0;font-size:12px;color:#666;">${trail.description} ${trail.category}</p>
+        content: `<div style="padding:12px;text-align:center;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+          <h3 style="margin:0 0 8px 0;font-size:16px;font-weight:bold;color:#333;">${trail.name}</h3>
+          <p style="margin:0 0 4px 0;font-size:13px;color:#666;">${trail.description}</p>
+          <span style="display:inline-block;padding:2px 8px;background:#e3f2fd;color:#1976d2;border-radius:12px;font-size:11px;font-weight:500;">${trail.category}</span>
         </div>`
       });
       
@@ -315,12 +294,17 @@ const Home = () => {
         infowindow.open(map.current, marker);
       });
       
+      // 자동으로 정보창 표시 (산책로 상세보기 시)
+      setTimeout(() => {
+        infowindow.open(map.current, marker);
+      }, 500);
+      
       setTrailMarker(marker);
       
-      console.log('지도 이동 및 마커 추가:', {
+      console.log('🎯 산책로 마커 생성 완료:', {
+        name: trail.name,
         coordinates: trail.coordinates,
-        latLng: latLng,
-        mapLevel: map.current.getLevel()
+        mapLevel: (map.current as any).getLevel()
       });
     }
   };
@@ -331,10 +315,23 @@ const Home = () => {
     setSelectedTrail(null);
     setIsBottomSheetOpen(true);
     
-    // 마커 제거
+    // 산책로 마커 제거
     if (trailMarker) {
       trailMarker.setMap(null);
       setTrailMarker(null);
+      console.log('🗑️ 산책로 마커 제거 완료');
+    }
+    
+    // 지도를 기본 위치로 복원 (현재 위치 또는 서울 시청)
+    if (map.current) {
+      try {
+        const defaultLocation = position || new window.kakao.maps.LatLng(37.566535, 126.977969); // 서울 시청
+        (map.current as any).setLevel(4); // 기본 줌 레벨
+        (map.current as any).panTo(defaultLocation);
+        console.log('🗺️ 지도 기본 위치로 복원 완료');
+      } catch (error) {
+        console.error('❌ 지도 복원 실패:', error);
+      }
     }
   };
 
