@@ -348,9 +348,21 @@ const Home = () => {
       isMapReady
     });
     
-    if (selectedCategory && placesServiceRef.current && isPlacesServiceReady && map.current && isMapReady) {
+    // selectedCategory가 빈 문자열이거나 없으면 검색하지 않음
+    if (!selectedCategory || selectedCategory === '') {
+      console.log('⏭️ 카테고리가 선택되지 않음 - 검색 건너뜀');
+      return;
+    }
+    
+    if (placesServiceRef.current && isPlacesServiceReady && map.current && isMapReady) {
       console.log('🚀 검색 실행 - 모든 조건 충족');
       console.log('📍 현재 위치 상태:', { hasPosition: !!position, position });
+      
+      // 이미 검색 중이면 중복 실행 방지
+      if (isSearchingRef.current) {
+        console.log('⏳ 이미 검색 중 - 중복 실행 방지');
+        return;
+      }
       
       // searchPlaces 함수를 직접 호출하여 무한 렌더링 방지
       const category = categories.find(cat => cat.id === selectedCategory);
