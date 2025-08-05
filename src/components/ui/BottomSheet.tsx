@@ -37,8 +37,12 @@ const BottomSheet = ({
 
   // 터치/마우스 이벤트 처리
   const handleTouchStart = (e: React.TouchEvent | React.MouseEvent) => {
+    // 드래그 시작 시에만 preventDefault와 stopPropagation 호출
     e.preventDefault();
-    e.stopPropagation();
+    // 터치 이벤트의 경우에만 stopPropagation 호출 (스크롤 방지)
+    if ('touches' in e) {
+      e.stopPropagation();
+    }
     setIsDragging(true);
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     setStartY(clientY);
@@ -48,8 +52,12 @@ const BottomSheet = ({
   const handleTouchMove = (e: React.TouchEvent | React.MouseEvent) => {
     if (!isDragging) return;
 
+    // 드래그 중일 때만 preventDefault 호출
     e.preventDefault();
-    e.stopPropagation();
+    // 터치 이벤트의 경우에만 stopPropagation 호출 (스크롤 방지)
+    if ('touches' in e) {
+      e.stopPropagation();
+    }
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     setCurrentY(clientY);
   };
@@ -58,8 +66,12 @@ const BottomSheet = ({
     if (!isDragging) return;
 
     if (e) {
+      // 드래그 종료 시에만 preventDefault 호출
       e.preventDefault();
-      e.stopPropagation();
+      // 터치 이벤트의 경우에만 stopPropagation 호출
+      if ('touches' in e) {
+        e.stopPropagation();
+      }
     }
 
     setIsDragging(false);

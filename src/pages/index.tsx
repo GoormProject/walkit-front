@@ -8,6 +8,24 @@ import { calculateDistance as calculateCoordinateDistance } from '@/utils/conver
 import { isOAuthCallback } from '@/utils/oauth';
 import './index.css';
 
+// 개발 모드에서만 로그를 출력하는 래퍼 함수
+const logger = {
+  log: (...args: any[]) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(...args);
+    }
+  },
+  warn: (...args: any[]) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(...args);
+    }
+  },
+  error: (...args: any[]) => {
+    // 에러는 프로덕션에서도 로그 (중요한 에러이므로)
+    console.error(...args);
+  },
+};
+
 interface Place {
   id: string;
   place_name: string;
