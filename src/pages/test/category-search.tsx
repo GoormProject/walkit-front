@@ -27,6 +27,7 @@ const CategorySearchTest: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [places, setPlaces] = useState<Place[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [showResults, setShowResults] = useState(false); // 드롭다운 메뉴 표시 상태 추가
   
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
@@ -248,6 +249,7 @@ const CategorySearchTest: React.FC = () => {
       // 같은 카테고리 클릭 시 해제
       setSelectedCategory('');
       setPlaces([]);
+      setShowResults(false); // 드롭다운 메뉴 숨기기
       removeMarkers();
       lastSearchedCategoryRef.current = '';
       if (placeOverlayRef.current) {
@@ -256,6 +258,7 @@ const CategorySearchTest: React.FC = () => {
     } else {
       // 새로운 카테고리 선택
       setSelectedCategory(categoryId);
+      setShowResults(true); // 드롭다운 메뉴 표시
       // 즉시 검색 실행
       if (isInitializedRef.current) {
         searchPlaces(categoryId);
@@ -369,7 +372,7 @@ const CategorySearchTest: React.FC = () => {
           )}
 
           {/* 검색 결과 */}
-          {places.length > 0 && (
+          {showResults && places.length > 0 && (
             <div className="mb-4">
               <h3 className="text-lg font-medium mb-2">
                 검색 결과 ({places.length}개)
@@ -393,16 +396,16 @@ const CategorySearchTest: React.FC = () => {
               </div>
             </div>
           )}
-          {/* 화장실 안내 메시지 */}
-          {places.length === 0 && !isLoading && selectedCategory === 'toilet' && (
+          
+          {/* 검색 결과가 없을 때 메시지 */}
+          {showResults && places.length === 0 && !isLoading && selectedCategory === 'toilet' && (
             <div className="text-center text-gray-500 mt-4">
               주변에 화장실 검색 결과가 없습니다.<br/>
               카카오맵 API의 한계로 일부 화장실은 표시되지 않을 수 있습니다.
             </div>
           )}
 
-          {/* 지하철역 안내 메시지 */}
-          {places.length === 0 && !isLoading && selectedCategory === 'subway' && (
+          {showResults && places.length === 0 && !isLoading && selectedCategory === 'subway' && (
             <div className="text-center text-gray-500 mt-4">
               주변에 지하철역 검색 결과가 없습니다.<br/>
               카카오맵 API의 한계로 일부 역은 표시되지 않을 수 있습니다.
