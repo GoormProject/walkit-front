@@ -128,7 +128,7 @@ const CategorySearchTest: React.FC = () => {
     placeOverlayRef.current.setMap(mapRef.current);
   };
 
-  // 장소 검색 (단순화된 버전)
+  // 장소 검색 (무한루프 방지 강화)
   const searchPlaces = (categoryId: string) => {
     if (!categoryId || !placesServiceRef.current || isSearchingRef.current) {
       console.log('검색 조건 불충족:', { categoryId, hasService: !!placesServiceRef.current, isSearching: isSearchingRef.current });
@@ -160,20 +160,27 @@ const CategorySearchTest: React.FC = () => {
       return;
     }
 
+    // 검색 완료 후 상태 초기화 함수
+    const finishSearch = (success: boolean, data?: Place[]) => {
+      isSearchingRef.current = false;
+      setIsSearching(false);
+      
+      if (success && data && data.length > 0) {
+        setPlaces(data);
+        displayPlaces(data, category);
+        lastSearchedCategoryRef.current = categoryId;
+      } else {
+        setPlaces([]);
+      }
+    };
+
     // 화장실 키워드 검색
     if (category.id === 'toilet') {
       placesServiceRef.current.keywordSearch(
         '화장실',
         (data: Place[], status: any) => {
-          isSearchingRef.current = false;
-          setIsSearching(false);
-          if (status === window.kakao.maps.services.Status.OK && data.length > 0) {
-            setPlaces(data);
-            displayPlaces(data, category);
-            lastSearchedCategoryRef.current = categoryId;
-          } else {
-            setPlaces([]);
-          }
+          const success = status === window.kakao.maps.services.Status.OK && data.length > 0;
+          finishSearch(success, data);
         },
         { useMapBounds: false }
       );
@@ -185,15 +192,8 @@ const CategorySearchTest: React.FC = () => {
       placesServiceRef.current.keywordSearch(
         '지하철역',
         (data: Place[], status: any) => {
-          isSearchingRef.current = false;
-          setIsSearching(false);
-          if (status === window.kakao.maps.services.Status.OK && data.length > 0) {
-            setPlaces(data);
-            displayPlaces(data, category);
-            lastSearchedCategoryRef.current = categoryId;
-          } else {
-            setPlaces([]);
-          }
+          const success = status === window.kakao.maps.services.Status.OK && data.length > 0;
+          finishSearch(success, data);
         },
         { useMapBounds: false }
       );
@@ -204,15 +204,8 @@ const CategorySearchTest: React.FC = () => {
     placesServiceRef.current.categorySearch(
       category.code,
       (data: Place[], status: any) => {
-        isSearchingRef.current = false;
-        setIsSearching(false);
-        if (status === window.kakao.maps.services.Status.OK) {
-          setPlaces(data);
-          displayPlaces(data, category);
-          lastSearchedCategoryRef.current = categoryId;
-        } else {
-          setPlaces([]);
-        }
+        const success = status === window.kakao.maps.services.Status.OK;
+        finishSearch(success, data);
       },
       { useMapBounds: false }
     );
@@ -223,9 +216,15 @@ const CategorySearchTest: React.FC = () => {
     const map = createKakaoMap(position);
     mapRef.current = map;
 
-    // Places 서비스 초기화
+    // Places 서비스 초기화 (자동 재검색 방지)
     const placesService = new window.kakao.maps.services.Places(map);
     placesServiceRef.current = placesService;
+
+    // 지도 이벤트 리스너 제거로 자동 재검색 방지
+    window.kakao.maps.event.addListener(map, 'bounds_changed', () => {
+      // 자동 재검색 방지
+      console.log('지도 범위 변경 감지 - 자동 재검색 방지');
+    });
 
     // 커스텀 오버레이 생성
     const contentNode = document.createElement('div');
