@@ -912,28 +912,7 @@ const Home = () => {
         <Toaster position="top-center" richColors />
 
       {/* 지도 영역 */}
-      <div 
-        className="relative flex-1" 
-        style={{ border: '2px solid blue' }}
-        onClick={(e) => {
-          console.log('🔵 지도 영역 컨테이너 클릭됨!');
-          console.log('클릭된 요소:', e.target);
-        }}
-      >
-        {/* 지도 상호작용 테스트 오버레이 */}
-        <div 
-          className="absolute inset-0 bg-transparent" 
-          style={{ zIndex: 0 }}
-          onClick={(e) => {
-            console.log('🟢 테스트 오버레이 클릭됨!');
-            e.stopPropagation();
-          }}
-        >
-          <div className="absolute top-2 left-2 bg-yellow-300 p-2 text-xs">
-            지도 테스트 영역 - 여기를 클릭해보세요
-          </div>
-        </div>
-        
+      <div className="relative flex-1">
         <KakaoMap
           onMapLoad={mapInstance => {
             console.log('🗺️ 지도 로드 콜백 실행');

@@ -49,11 +49,14 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   const containerClass = getVariantStyles();
   const spinnerClass = `animate-spin rounded-full border-b-2 border-[var(--color-primary-600)] ${getSizeStyles()}`;
 
+  // show가 false면 아예 렌더링하지 않음 (이벤트 차단 방지)
+  if (!show) {
+    return null;
+  }
+
   if (variant === 'inline') {
     return (
-      <div
-        className={`${containerClass} transition-opacity duration-200 ${show ? 'opacity-100' : 'opacity-0'}`}
-      >
+      <div className={`${containerClass} transition-opacity duration-200 opacity-100`}>
         <div className="flex flex-col items-center">
           <div className={spinnerClass}></div>
           <div className="mt-2 text-sm text-gray-600 font-medium">
@@ -68,7 +71,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   return (
     <div
       id="loading"
-      className={`${containerClass} transition-opacity duration-200 ${show ? 'opacity-100' : 'opacity-0'}`}
+      className={`${containerClass} transition-opacity duration-200 opacity-100`}
     >
       <div className="bg-white rounded-lg p-6 flex flex-col items-center shadow-lg">
         <div className={`${spinnerClass} mb-4`}></div>

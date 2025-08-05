@@ -153,13 +153,7 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
                     style={{ 
             minHeight: '100%',
             position: 'relative',
-            zIndex: 1,
-            border: '3px solid red' // 디버깅용: 지도 영역 확인
-          }}
-          onClick={(e) => {
-            console.log('🗺️ 지도 컨테이너 클릭됨!');
-            console.log('클릭된 요소:', e.target);
-            console.log('실제 지도 요소:', e.currentTarget);
+            zIndex: 1
           }}
         >
           {mapRef.current && <GPSTracker map={mapRef.current} />}
