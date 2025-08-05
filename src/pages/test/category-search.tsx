@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { createMap as createKakaoMap, loadKakaoMapSDK } from '../../utils/kakaoMapApi';
 import './category-search.css';
 
@@ -27,23 +27,25 @@ const CategorySearchTest: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [places, setPlaces] = useState<Place[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [showResults, setShowResults] = useState(false); // 드롭다운 메뉴 표시 상태 추가
   
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
   const placeOverlayRef = useRef<any>(null);
   const placesServiceRef = useRef<any>(null);
   const isInitializedRef = useRef(false);
-  const isSearchingRef = useRef(false); // 검색 중 여부 ref 추가
+  const lastSearchedCategoryRef = useRef<string>('');
+  const isSearchingRef = useRef(false);
 
-  // 카테고리 정의 (카카오맵 API 카테고리 코드)
+  // 카테고리 정의
   const categories: Category[] = [
-    { id: 'toilet', name: '화장실', code: '', color: '#4F46E5' }, // 화장실은 키워드 검색 사용
+    { id: 'toilet', name: '화장실', code: '', color: '#4F46E5' },
     { id: 'convenience', name: '편의점', code: 'CS2', color: '#059669' },
     { id: 'subway', name: '지하철역', code: 'SW8', color: '#7C3AED' }
   ];
 
   // GPS 위치 가져오기
-  const getCurrentPosition = useCallback((): Promise<{ lat: number; lng: number }> => {
+  const getCurrentPosition = (): Promise<{ lat: number; lng: number }> => {
     return new Promise((resolve, reject) => {
       if (!navigator.geolocation) {
         reject(new Error('Geolocation이 지원되지 않습니다.'));
@@ -57,7 +59,6 @@ const CategorySearchTest: React.FC = () => {
         },
         (error) => {
           console.error('GPS 위치 가져오기 실패:', error);
-          // 기본 위치 (서울 시청)
           resolve({ lat: 37.5665, lng: 126.9780 });
         },
         {
@@ -67,20 +68,23 @@ const CategorySearchTest: React.FC = () => {
         }
       );
     });
-  }, []);
+  };
 
   // 마커 제거
-  const removeMarkers = useCallback(() => {
+  const removeMarkers = () => {
+    console.log('마커 제거 중...', markersRef.current.length);
     markersRef.current.forEach(marker => {
       marker.setMap(null);
     });
     markersRef.current = [];
-  }, []);
+  };
 
   // 장소 마커 표시
-  const displayPlaces = useCallback((places: Place[], category: Category) => {
+  const displayPlaces = (places: Place[], category: Category) => {
     if (!mapRef.current) return;
 
+    console.log(`${category.name} 마커 생성 중...`, places.length);
+    
     places.forEach((place, index) => {
       const marker = new window.kakao.maps.Marker({
         position: new window.kakao.maps.LatLng(parseFloat(place.y), parseFloat(place.x)),
@@ -94,140 +98,12 @@ const CategorySearchTest: React.FC = () => {
 
       markersRef.current.push(marker);
     });
-  }, []);
-
-  // 장소 검색
-  const searchPlaces = useCallback(() => {
-    if (!selectedCategory || !placesServiceRef.current || isSearchingRef.current) {
-      return;
-    }
-    isSearchingRef.current = true;
-    setIsSearching(true);
     
-    // 기존 마커 제거
-    removeMarkers();
-    
-    // 커스텀 오버레이 숨기기
-    if (placeOverlayRef.current) {
-      placeOverlayRef.current.setMap(null);
-    }
-
-    const category = categories.find(cat => cat.id === selectedCategory);
-    if (!category) {
-      isSearchingRef.current = false;
-      setIsSearching(false);
-      return;
-    }
-
-
-
-    // 화장실 키워드 검색 (카테고리 코드 없음)
-    if (category.id === 'toilet') {
-      const toiletKeywords = ['화장실', '공공화장실', 'toilet'];
-      const tryToiletSearch = (idx = 0) => {
-        if (idx >= toiletKeywords.length) {
-          setPlaces([]);
-          setIsSearching(false);
-          isSearchingRef.current = false;
-          return;
-        }
-        placesServiceRef.current.keywordSearch(
-          toiletKeywords[idx],
-          (data: Place[], status: any) => {
-            if (status === window.kakao.maps.services.Status.OK && data.length > 0) {
-              setPlaces(data);
-              displayPlaces(data, { ...category, name: toiletKeywords[idx] });
-              setIsSearching(false);
-              isSearchingRef.current = false;
-            } else {
-              tryToiletSearch(idx + 1);
-            }
-          },
-          { useMapBounds: true }
-        );
-      };
-      tryToiletSearch();
-      return;
-    }
-
-    // 지하철역 키워드 검색
-    if (category.id === 'subway') {
-      const subwayKeywords = ['지하철역', '지하철', '역'];
-      const trySubwaySearch = (idx = 0) => {
-        if (idx >= subwayKeywords.length) {
-          setPlaces([]);
-          setIsSearching(false);
-          isSearchingRef.current = false;
-          return;
-        }
-        placesServiceRef.current.keywordSearch(
-          subwayKeywords[idx],
-          (data: Place[], status: any) => {
-            if (status === window.kakao.maps.services.Status.OK && data.length > 0) {
-              setPlaces(data);
-              displayPlaces(data, { ...category, name: subwayKeywords[idx] });
-              setIsSearching(false);
-              isSearchingRef.current = false;
-            } else {
-              trySubwaySearch(idx + 1);
-            }
-          },
-          { useMapBounds: true }
-        );
-      };
-      trySubwaySearch();
-      return;
-    }
-
-    // 나머지 카테고리는 기존대로 categorySearch
-    placesServiceRef.current.categorySearch(
-      category.code,
-      (data: Place[], status: any) => {
-        isSearchingRef.current = false;
-        setIsSearching(false);
-        if (status === window.kakao.maps.services.Status.OK) {
-          setPlaces(data);
-          displayPlaces(data, category);
-        } else {
-          setPlaces([]);
-        }
-      },
-      { useMapBounds: true }
-    );
-  }, [selectedCategory, categories, removeMarkers, displayPlaces, setPlaces, setIsSearching]);
-
-  // 지도 생성
-    const createMap = useCallback((position: { lat: number; lng: number }) => {
-    const map = createKakaoMap(position);
-    mapRef.current = map;
-
-    // Places 서비스 초기화
-    const placesService = new window.kakao.maps.services.Places(map);
-    placesServiceRef.current = placesService;
-
-    // 커스텀 오버레이 생성
-    const contentNode = document.createElement('div');
-    contentNode.className = 'placeinfo_wrap';
-
-    const placeOverlay = new window.kakao.maps.CustomOverlay({
-      zIndex: 1,
-      content: contentNode
-    });
-    placeOverlayRef.current = placeOverlay;
-
-    // 지도 idle 이벤트 등록 (검색 중이면 무시)
-    window.kakao.maps.event.addListener(map, 'idle', () => {
-      if (selectedCategory && !isSearchingRef.current) {
-        searchPlaces();
-      }
-    });
-
-    setIsLoading(false);
-    isInitializedRef.current = true;
-  }, [selectedCategory, searchPlaces]);
+    console.log('마커 생성 완료:', markersRef.current.length);
+  };
 
   // 장소 정보 표시
-  const displayPlaceInfo = useCallback((place: Place) => {
+  const displayPlaceInfo = (place: Place) => {
     if (!placeOverlayRef.current || !mapRef.current) return;
 
     const content = `
@@ -250,23 +126,144 @@ const CategorySearchTest: React.FC = () => {
     
     placeOverlayRef.current.setPosition(new window.kakao.maps.LatLng(parseFloat(place.y), parseFloat(place.x)));
     placeOverlayRef.current.setMap(mapRef.current);
-  }, []);
+  };
+
+  // 장소 검색 (무한루프 방지 강화)
+  const searchPlaces = (categoryId: string) => {
+    if (!categoryId || !placesServiceRef.current || isSearchingRef.current) {
+      console.log('검색 조건 불충족:', { categoryId, hasService: !!placesServiceRef.current, isSearching: isSearchingRef.current });
+      return;
+    }
+
+    // 이미 같은 카테고리로 검색했다면 중복 실행 방지
+    if (lastSearchedCategoryRef.current === categoryId) {
+      console.log('이미 검색된 카테고리:', categoryId);
+      return;
+    }
+
+    console.log('검색 시작:', categoryId);
+    isSearchingRef.current = true;
+    setIsSearching(true);
+    
+    // 기존 마커 제거
+    removeMarkers();
+    
+    // 커스텀 오버레이 숨기기
+    if (placeOverlayRef.current) {
+      placeOverlayRef.current.setMap(null);
+    }
+
+    const category = categories.find(cat => cat.id === categoryId);
+    if (!category) {
+      isSearchingRef.current = false;
+      setIsSearching(false);
+      return;
+    }
+
+    // 검색 완료 후 상태 초기화 함수
+    const finishSearch = (success: boolean, data?: Place[]) => {
+      isSearchingRef.current = false;
+      setIsSearching(false);
+      
+      if (success && data && data.length > 0) {
+        setPlaces(data);
+        displayPlaces(data, category);
+        lastSearchedCategoryRef.current = categoryId;
+      } else {
+        setPlaces([]);
+      }
+    };
+
+    // 화장실 키워드 검색
+    if (category.id === 'toilet') {
+      placesServiceRef.current.keywordSearch(
+        '화장실',
+        (data: Place[], status: any) => {
+          const success = status === window.kakao.maps.services.Status.OK && data.length > 0;
+          finishSearch(success, data);
+        },
+        { useMapBounds: false }
+      );
+      return;
+    }
+
+    // 지하철역 키워드 검색
+    if (category.id === 'subway') {
+      placesServiceRef.current.keywordSearch(
+        '지하철역',
+        (data: Place[], status: any) => {
+          const success = status === window.kakao.maps.services.Status.OK && data.length > 0;
+          finishSearch(success, data);
+        },
+        { useMapBounds: false }
+      );
+      return;
+    }
+
+    // 편의점 카테고리 검색
+    placesServiceRef.current.categorySearch(
+      category.code,
+      (data: Place[], status: any) => {
+        const success = status === window.kakao.maps.services.Status.OK;
+        finishSearch(success, data);
+      },
+      { useMapBounds: false }
+    );
+  };
+
+  // 지도 생성
+  const createMap = (position: { lat: number; lng: number }) => {
+    const map = createKakaoMap(position);
+    mapRef.current = map;
+
+    // Places 서비스 초기화 (자동 재검색 방지)
+    const placesService = new window.kakao.maps.services.Places(map);
+    placesServiceRef.current = placesService;
+
+    // 지도 이벤트 리스너 제거로 자동 재검색 방지
+    window.kakao.maps.event.addListener(map, 'bounds_changed', () => {
+      // 자동 재검색 방지
+      console.log('지도 범위 변경 감지 - 자동 재검색 방지');
+    });
+
+    // 커스텀 오버레이 생성
+    const contentNode = document.createElement('div');
+    contentNode.className = 'placeinfo_wrap';
+
+    const placeOverlay = new window.kakao.maps.CustomOverlay({
+      zIndex: 1,
+      content: contentNode
+    });
+    placeOverlayRef.current = placeOverlay;
+
+    setIsLoading(false);
+    isInitializedRef.current = true;
+  };
 
   // 카테고리 선택
-  const handleCategoryClick = useCallback((categoryId: string) => {
+  const handleCategoryClick = (categoryId: string) => {
+    console.log('카테고리 클릭:', categoryId, '현재 선택:', selectedCategory);
+    
     if (selectedCategory === categoryId) {
       // 같은 카테고리 클릭 시 해제
       setSelectedCategory('');
       setPlaces([]);
+      setShowResults(false); // 드롭다운 메뉴 숨기기
       removeMarkers();
+      lastSearchedCategoryRef.current = '';
       if (placeOverlayRef.current) {
         placeOverlayRef.current.setMap(null);
       }
     } else {
       // 새로운 카테고리 선택
       setSelectedCategory(categoryId);
+      setShowResults(true); // 드롭다운 메뉴 표시
+      // 즉시 검색 실행
+      if (isInitializedRef.current) {
+        searchPlaces(categoryId);
+      }
     }
-  }, [selectedCategory, removeMarkers]);
+  };
 
   // 컴포넌트 마운트 시 초기화
   useEffect(() => {
@@ -304,14 +301,9 @@ const CategorySearchTest: React.FC = () => {
       }
     };
     initializeMap();
-  }, [getCurrentPosition, createMap]);
+  }, []);
 
-  // 카테고리 변경 시 검색 실행
-  useEffect(() => {
-    if (isInitializedRef.current && selectedCategory) {
-      searchPlaces();
-    }
-  }, [selectedCategory, searchPlaces]);
+  // useEffect 제거 - 카테고리 클릭 시에만 검색 실행
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
@@ -379,7 +371,7 @@ const CategorySearchTest: React.FC = () => {
           )}
 
           {/* 검색 결과 */}
-          {places.length > 0 && (
+          {showResults && places.length > 0 && (
             <div className="mb-4">
               <h3 className="text-lg font-medium mb-2">
                 검색 결과 ({places.length}개)
@@ -403,16 +395,16 @@ const CategorySearchTest: React.FC = () => {
               </div>
             </div>
           )}
-          {/* 화장실 안내 메시지 */}
-          {places.length === 0 && !isLoading && selectedCategory === 'toilet' && (
+          
+          {/* 검색 결과가 없을 때 메시지 */}
+          {showResults && places.length === 0 && !isLoading && selectedCategory === 'toilet' && (
             <div className="text-center text-gray-500 mt-4">
               주변에 화장실 검색 결과가 없습니다.<br/>
               카카오맵 API의 한계로 일부 화장실은 표시되지 않을 수 있습니다.
             </div>
           )}
 
-          {/* 지하철역 안내 메시지 */}
-          {places.length === 0 && !isLoading && selectedCategory === 'subway' && (
+          {showResults && places.length === 0 && !isLoading && selectedCategory === 'subway' && (
             <div className="text-center text-gray-500 mt-4">
               주변에 지하철역 검색 결과가 없습니다.<br/>
               카카오맵 API의 한계로 일부 역은 표시되지 않을 수 있습니다.

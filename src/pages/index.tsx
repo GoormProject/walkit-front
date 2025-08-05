@@ -26,6 +26,13 @@ interface Category {
   color: string;
 }
 
+// 카테고리 정의 (컴포넌트 외부로 이동하여 재생성 방지)
+const CATEGORIES: Category[] = [
+  { id: 'toilet', name: '화장실', code: '', color: '#4F46E5' }, // 화장실은 키워드 검색 사용
+  { id: 'convenience', name: '편의점', code: 'CS2', color: '#059669' },
+  { id: 'subway', name: '지하철역', code: 'SW8', color: '#7C3AED' }
+];
+
 const Home = () => {
   const [isWalking, setIsWalking] = useState(false);
   const [pathPositions, setPathPositions] = useState<kakao.maps.LatLng[]>([]);
@@ -40,6 +47,7 @@ const Home = () => {
   const placeOverlayRef = useRef<kakao.maps.CustomOverlay | null>(null);
   const placesServiceRef = useRef<kakao.maps.services.Places | null>(null);
   const isSearchingRef = useRef(false);
+  const selectedCategoryRef = useRef<string>(''); // 현재 카테고리 상태를 실시간으로 추적
   const { error, isLoading, position } = useGPSStore();
   const navigate = useNavigate();
 
@@ -49,12 +57,7 @@ const Home = () => {
     EXTENDED: 10000 // 10km
   } as const;
 
-  // 카테고리 정의
-  const categories: Category[] = [
-    { id: 'toilet', name: '화장실', code: '', color: '#4F46E5' }, // 화장실은 키워드 검색 사용
-    { id: 'convenience', name: '편의점', code: 'CS2', color: '#059669' },
-    { id: 'subway', name: '지하철역', code: 'SW8', color: '#7C3AED' }
-  ];
+  // 컴포넌트 내부에서 categories 정의 제거
 
   // OAuth 콜백 확인 (디버깅용)
   useEffect(() => {
@@ -92,6 +95,11 @@ const Home = () => {
       selectedCategory
     });
   }, [isMapReady, isPlacesServiceReady, selectedCategory]);
+
+  // selectedCategory 상태가 변경될 때마다 ref도 업데이트
+  useEffect(() => {
+    selectedCategoryRef.current = selectedCategory;
+  }, [selectedCategory]);
 
   // 산책 시작
   const handleStartWalk = () => {
@@ -156,8 +164,26 @@ const Home = () => {
       placesCount: places?.length, 
       category, 
       hasMap: !!map.current,
-      isMapReady 
+      isMapReady,
+      currentSelectedCategory: selectedCategory,
+      refSelectedCategory: selectedCategoryRef.current
     });
+    
+    // 카테고리가 해제된 상태에서는 마커를 생성하지 않음 (ref 사용)
+    if (!selectedCategoryRef.current || selectedCategoryRef.current === '') {
+      console.log('⏭️ 카테고리가 해제됨 - 마커 생성 건너뜀 (ref 확인)');
+      return;
+    }
+    
+    // 선택된 카테고리와 일치하지 않으면 마커를 생성하지 않음 (ref 사용)
+    if (selectedCategoryRef.current !== category.id) {
+      console.log('⏭️ 카테고리가 변경됨 - 마커 생성 건너뜀 (ref 확인)', {
+        refSelectedCategory: selectedCategoryRef.current,
+        categoryId: category.id
+      });
+      return;
+    }
+    
     if (!map.current || !isMapReady) {
       console.log('❌ 지도가 아직 준비되지 않음 - map.current:', !!map.current, 'isMapReady:', isMapReady);
       return;
@@ -242,7 +268,7 @@ const Home = () => {
         mapLevel: map.current?.getLevel()
       });
     }, 100);
-  }, [isMapReady, places]);
+  }, [isMapReady, selectedCategory]); // selectedCategory 의존성 추가
 
   // 장소 정보 표시
   const displayPlaceInfo = useCallback((place: Place) => {
@@ -294,7 +320,15 @@ const Home = () => {
             setIsSearching(false);
             isSearchingRef.current = false;
             if (status === window.kakao.maps.services.Status.OK && data?.length > 0) {
-              onSuccess(data, keywords[0]);
+              // 카테고리 상태 확인 후 마커 생성 (ref 사용)
+              if (selectedCategoryRef.current === category.id) {
+                onSuccess(data, keywords[0]);
+              } else {
+                console.log('⏭️ 카테고리가 변경됨 - 마커 생성 건너뜀 (확장 검색, ref 확인)', {
+                  refSelectedCategory: selectedCategoryRef.current,
+                  categoryId: category.id
+                });
+              }
             }
           },
           { 
@@ -320,7 +354,15 @@ const Home = () => {
           if (status === window.kakao.maps.services.Status.OK && data.length > 0) {
             console.log('✅ 검색 성공');
             setPlaces(data);
-            onSuccess(data, keywords[idx]);
+            // 카테고리 상태 확인 후 마커 생성 (ref 사용)
+            if (selectedCategoryRef.current === category.id) {
+              onSuccess(data, keywords[idx]);
+            } else {
+              console.log('⏭️ 카테고리가 변경됨 - 마커 생성 건너뜀 (일반 검색, ref 확인)', {
+                refSelectedCategory: selectedCategoryRef.current,
+                categoryId: category.id
+              });
+            }
             setIsSearching(false);
             isSearchingRef.current = false;
           } else {
@@ -336,7 +378,7 @@ const Home = () => {
     };
     
     trySearch();
-  }, []);
+  }, []); // selectedCategory 의존성 제거 - ref 사용으로 변경
 
   // 카테고리 변경 시 검색 실행 (GPS 위치 업데이트와 분리)
   useEffect(() => {
@@ -348,12 +390,24 @@ const Home = () => {
       isMapReady
     });
     
-    if (selectedCategory && placesServiceRef.current && isPlacesServiceReady && map.current && isMapReady) {
+    // selectedCategory가 빈 문자열이거나 없으면 검색하지 않음
+    if (!selectedCategory || selectedCategory === '') {
+      console.log('⏭️ 카테고리가 선택되지 않음 - 검색 건너뜀');
+      return;
+    }
+    
+    if (placesServiceRef.current && isPlacesServiceReady && map.current && isMapReady) {
       console.log('🚀 검색 실행 - 모든 조건 충족');
       console.log('📍 현재 위치 상태:', { hasPosition: !!position, position });
       
+      // 이미 검색 중이면 중복 실행 방지
+      if (isSearchingRef.current) {
+        console.log('⏳ 이미 검색 중 - 중복 실행 방지');
+        return;
+      }
+      
       // searchPlaces 함수를 직접 호출하여 무한 렌더링 방지
-      const category = categories.find(cat => cat.id === selectedCategory);
+      const category = CATEGORIES.find(cat => cat.id === selectedCategory);
       if (category) {
         isSearchingRef.current = true;
         setIsSearching(true);
@@ -445,7 +499,80 @@ const Home = () => {
     } else if (selectedCategory && !isPlacesServiceReady) {
       console.log('⏳ Places 서비스 대기 중...');
     }
-  }, [selectedCategory, isPlacesServiceReady, position, categories, displayPlaces, performKeywordSearch, isMapReady]); // 모든 의존성 포함
+  }, [selectedCategory, isPlacesServiceReady, isMapReady]); // position 의존성 제거 - GPS 위치 업데이트로 인한 무한 루프 방지
+
+  // GPS 위치가 크게 변경되었을 때만 선택적 재검색 (무한 루프 방지)
+  const lastSearchPositionRef = useRef<kakao.maps.LatLng | null>(null);
+  useEffect(() => {
+    if (!position || !selectedCategory || !map.current || isSearchingRef.current) {
+      return;
+    }
+    
+    // 이전 검색 위치와 현재 위치 비교
+    if (lastSearchPositionRef.current) {
+      const distance = calculateDistance(lastSearchPositionRef.current, position);
+      // 500m 이상 이동했을 때만 재검색 (무한 루프 방지)
+      if (distance < 0.5) { // 0.5km = 500m
+        return;
+      }
+    }
+    
+    console.log('📍 위치 크게 변경됨 - 재검색 실행:', {
+      selectedCategory,
+      newPosition: position,
+      previousPosition: lastSearchPositionRef.current
+    });
+    
+    // 검색 위치 업데이트
+    lastSearchPositionRef.current = position;
+    
+    // 카테고리가 선택된 상태에서만 재검색
+    const category = CATEGORIES.find(cat => cat.id === selectedCategory);
+    if (category && placesServiceRef.current && !isSearchingRef.current) {
+      isSearchingRef.current = true;
+      setIsSearching(true);
+      
+      if (category.id === 'toilet') {
+        const toiletKeywords = ['화장실', '공공화장실', 'toilet'];
+        performKeywordSearch(
+          toiletKeywords,
+          category,
+          position,
+          (data: Place[], keyword: string) => {
+            displayPlaces(data, { ...category, name: keyword });
+          }
+        );
+      } else if (category.id === 'subway') {
+        const subwayKeywords = ['지하철역', '지하철', '역'];
+        performKeywordSearch(
+          subwayKeywords,
+          category,
+          position,
+          (data: Place[], keyword: string) => {
+            displayPlaces(data, { ...category, name: keyword });
+          }
+        );
+      } else {
+        // 편의점 등 카테고리 검색
+        placesServiceRef.current.categorySearch(
+          category.code,
+          (data: Place[], status: any) => {
+            isSearchingRef.current = false;
+            setIsSearching(false);
+            if (status === window.kakao.maps.services.Status.OK) {
+              setPlaces(data);
+              displayPlaces(data, category);
+            }
+          },
+          { 
+            useMapBounds: true,
+            location: new window.kakao.maps.LatLng(position.getLat(), position.getLng()),
+            radius: 5000
+          }
+        );
+      }
+    }
+  }, [position]); // position만 의존성으로 두고, 내부에서 거리 기반 필터링
 
   // Places 서비스 준비 시 이전 선택된 카테고리 검색 실행
   useEffect(() => {
@@ -587,7 +714,7 @@ const Home = () => {
         
         {/* 카테고리 버튼들 */}
         <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 flex gap-2 pointer-events-none">
-          {categories.map((category) => (
+          {CATEGORIES.map((category) => (
             <button
               key={category.id}
               onClick={() => handleCategoryClick(category.id)}
