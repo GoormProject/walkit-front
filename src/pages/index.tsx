@@ -156,8 +156,25 @@ const Home = () => {
       placesCount: places?.length, 
       category, 
       hasMap: !!map.current,
-      isMapReady 
+      isMapReady,
+      currentSelectedCategory: selectedCategory
     });
+    
+    // 카테고리가 해제된 상태에서는 마커를 생성하지 않음
+    if (!selectedCategory || selectedCategory === '') {
+      console.log('⏭️ 카테고리가 해제됨 - 마커 생성 건너뜀');
+      return;
+    }
+    
+    // 선택된 카테고리와 일치하지 않으면 마커를 생성하지 않음
+    if (selectedCategory !== category.id) {
+      console.log('⏭️ 카테고리가 변경됨 - 마커 생성 건너뜀', {
+        selectedCategory,
+        categoryId: category.id
+      });
+      return;
+    }
+    
     if (!map.current || !isMapReady) {
       console.log('❌ 지도가 아직 준비되지 않음 - map.current:', !!map.current, 'isMapReady:', isMapReady);
       return;
@@ -242,7 +259,7 @@ const Home = () => {
         mapLevel: map.current?.getLevel()
       });
     }, 100);
-  }, [isMapReady]); // places 의존성 제거
+  }, [isMapReady, selectedCategory]); // selectedCategory 의존성 추가
 
   // 장소 정보 표시
   const displayPlaceInfo = useCallback((place: Place) => {
