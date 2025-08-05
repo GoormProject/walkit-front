@@ -128,16 +128,10 @@ const CategorySearchTest: React.FC = () => {
     placeOverlayRef.current.setMap(mapRef.current);
   }, []);
 
-  // 장소 검색 (무한루프 방지)
+  // 장소 검색 (토글 방식)
   const searchPlaces = useCallback((categoryId: string) => {
     if (!categoryId || !placesServiceRef.current || isSearchingRef.current) {
       console.log('검색 조건 불충족:', { categoryId, hasService: !!placesServiceRef.current, isSearching: isSearchingRef.current });
-      return;
-    }
-
-    // 이미 같은 카테고리로 검색했다면 중복 실행 방지
-    if (lastSearchedCategoryRef.current === categoryId) {
-      console.log('이미 검색된 카테고리:', categoryId);
       return;
     }
 
@@ -168,10 +162,11 @@ const CategorySearchTest: React.FC = () => {
           isSearchingRef.current = false;
           setIsSearching(false);
           if (status === window.kakao.maps.services.Status.OK && data.length > 0) {
+            console.log('화장실 검색 완료:', data.length);
             setPlaces(data);
             displayPlaces(data, category);
-            lastSearchedCategoryRef.current = categoryId;
           } else {
+            console.log('화장실 검색 결과 없음');
             setPlaces([]);
           }
         },
@@ -188,10 +183,11 @@ const CategorySearchTest: React.FC = () => {
           isSearchingRef.current = false;
           setIsSearching(false);
           if (status === window.kakao.maps.services.Status.OK && data.length > 0) {
+            console.log('지하철역 검색 완료:', data.length);
             setPlaces(data);
             displayPlaces(data, category);
-            lastSearchedCategoryRef.current = categoryId;
           } else {
+            console.log('지하철역 검색 결과 없음');
             setPlaces([]);
           }
         },
@@ -207,16 +203,17 @@ const CategorySearchTest: React.FC = () => {
         isSearchingRef.current = false;
         setIsSearching(false);
         if (status === window.kakao.maps.services.Status.OK) {
+          console.log('편의점 검색 완료:', data.length);
           setPlaces(data);
           displayPlaces(data, category);
-          lastSearchedCategoryRef.current = categoryId;
         } else {
+          console.log('편의점 검색 결과 없음');
           setPlaces([]);
         }
       },
       { useMapBounds: false }
     );
-  }, [categories, removeMarkers, displayPlaces]); // isSearching 의존성 제거
+  }, [categories, removeMarkers, displayPlaces]);
 
   // 지도 생성
   const createMap = useCallback((position: { lat: number; lng: number }) => {
@@ -241,12 +238,13 @@ const CategorySearchTest: React.FC = () => {
     isInitializedRef.current = true;
   }, []);
 
-  // 카테고리 선택
+  // 카테고리 선택 (토글 방식)
   const handleCategoryClick = useCallback((categoryId: string) => {
     console.log('카테고리 클릭:', categoryId, '현재 선택:', selectedCategory);
     
     if (selectedCategory === categoryId) {
-      // 같은 카테고리 클릭 시 해제
+      // 같은 카테고리 클릭 시 해제 (토글)
+      console.log('카테고리 해제:', categoryId);
       setSelectedCategory('');
       setPlaces([]);
       removeMarkers();
@@ -255,9 +253,21 @@ const CategorySearchTest: React.FC = () => {
         placeOverlayRef.current.setMap(null);
       }
     } else {
-      // 새로운 카테고리 선택
+      // 새로운 카테고리 선택 시 기존 검색 결과 제거 후 새로 검색
+      console.log('새 카테고리 선택:', categoryId);
+      
+      // 기존 검색 결과 제거
+      if (selectedCategory) {
+        setPlaces([]);
+        removeMarkers();
+        lastSearchedCategoryRef.current = '';
+        if (placeOverlayRef.current) {
+          placeOverlayRef.current.setMap(null);
+        }
+      }
+      
+      // 새로운 카테고리 선택 및 검색
       setSelectedCategory(categoryId);
-      // 즉시 검색 실행
       if (isInitializedRef.current) {
         searchPlaces(categoryId);
       }
@@ -340,25 +350,33 @@ const CategorySearchTest: React.FC = () => {
 
           {/* 카테고리 버튼 */}
           <div className="mb-4">
-            <h3 className="text-lg font-medium mb-3">카테고리 선택</h3>
+            <h3 className="text-lg font-medium mb-3">카테고리 선택 (클릭하여 토글)</h3>
             <div className="flex flex-wrap gap-2">
               {categories.map((category) => (
                 <button
                   key={category.id}
                   onClick={() => handleCategoryClick(category.id)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
                     selectedCategory === category.id
-                      ? 'text-white shadow-lg'
-                      : 'text-gray-700 bg-gray-100 hover:bg-gray-200'
+                      ? 'text-white shadow-lg transform scale-105'
+                      : 'text-gray-700 bg-gray-100 hover:bg-gray-200 hover:scale-105'
                   }`}
                   style={{
                     backgroundColor: selectedCategory === category.id ? category.color : undefined
                   }}
                 >
-                  {category.name}
+                  <span>{selectedCategory === category.id ? '✓' : '○'}</span>
+                  <span>{category.name}</span>
+                  {selectedCategory === category.id && (
+                    <span className="text-xs opacity-80">(다시 클릭하여 해제)</span>
+                  )}
                 </button>
               ))}
             </div>
+            <p className="text-sm text-gray-600 mt-2">
+              💡 <strong>사용법:</strong> 버튼을 클릭하면 근처 시설을 검색하고 마커를 표시합니다. 
+              다시 클릭하면 검색 결과와 마커가 모두 사라집니다.
+            </p>
           </div>
 
           {/* 검색 상태 */}
