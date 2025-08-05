@@ -497,7 +497,80 @@ const Home = () => {
     } else if (selectedCategory && !isPlacesServiceReady) {
       console.log('⏳ Places 서비스 대기 중...');
     }
-  }, [selectedCategory, isPlacesServiceReady, position, categories, performKeywordSearch, isMapReady]); // displayPlaces 의존성 제거
+  }, [selectedCategory, isPlacesServiceReady, categories, performKeywordSearch, isMapReady]); // position 의존성 제거 - GPS 위치 업데이트로 인한 무한 루프 방지
+
+  // GPS 위치가 크게 변경되었을 때만 선택적 재검색 (무한 루프 방지)
+  const lastSearchPositionRef = useRef<kakao.maps.LatLng | null>(null);
+  useEffect(() => {
+    if (!position || !selectedCategory || !map.current || isSearchingRef.current) {
+      return;
+    }
+    
+    // 이전 검색 위치와 현재 위치 비교
+    if (lastSearchPositionRef.current) {
+      const distance = calculateDistance(lastSearchPositionRef.current, position);
+      // 500m 이상 이동했을 때만 재검색 (무한 루프 방지)
+      if (distance < 0.5) { // 0.5km = 500m
+        return;
+      }
+    }
+    
+    console.log('📍 위치 크게 변경됨 - 재검색 실행:', {
+      selectedCategory,
+      newPosition: position,
+      previousPosition: lastSearchPositionRef.current
+    });
+    
+    // 검색 위치 업데이트
+    lastSearchPositionRef.current = position;
+    
+    // 카테고리가 선택된 상태에서만 재검색
+    const category = categories.find(cat => cat.id === selectedCategory);
+    if (category && placesServiceRef.current && !isSearchingRef.current) {
+      isSearchingRef.current = true;
+      setIsSearching(true);
+      
+      if (category.id === 'toilet') {
+        const toiletKeywords = ['화장실', '공공화장실', 'toilet'];
+        performKeywordSearch(
+          toiletKeywords,
+          category,
+          position,
+          (data: Place[], keyword: string) => {
+            displayPlaces(data, { ...category, name: keyword });
+          }
+        );
+      } else if (category.id === 'subway') {
+        const subwayKeywords = ['지하철역', '지하철', '역'];
+        performKeywordSearch(
+          subwayKeywords,
+          category,
+          position,
+          (data: Place[], keyword: string) => {
+            displayPlaces(data, { ...category, name: keyword });
+          }
+        );
+      } else {
+        // 편의점 등 카테고리 검색
+        placesServiceRef.current.categorySearch(
+          category.code,
+          (data: Place[], status: any) => {
+            isSearchingRef.current = false;
+            setIsSearching(false);
+            if (status === window.kakao.maps.services.Status.OK) {
+              setPlaces(data);
+              displayPlaces(data, category);
+            }
+          },
+          { 
+            useMapBounds: true,
+            location: new window.kakao.maps.LatLng(position.getLat(), position.getLng()),
+            radius: 5000
+          }
+        );
+      }
+    }
+  }, [position]); // position만 의존성으로 두고, 내부에서 거리 기반 필터링
 
   // Places 서비스 준비 시 이전 선택된 카테고리 검색 실행
   useEffect(() => {
