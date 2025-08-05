@@ -388,6 +388,41 @@ const ConverterTest: React.FC = () => {
                   courseStyle.strokeStyle === 'dashed' ? 'dashed' : 'solid',
               };
 
+              // 동적 색상을 위한 조건부 클래스
+              const getColorClass = (color: string) => {
+                switch (color) {
+                  case '#3b82f6':
+                    return 'bg-blue-500';
+                  case '#059669':
+                    return 'bg-emerald-600';
+                  case '#dc2626':
+                    return 'bg-red-600';
+                  case '#7c3aed':
+                    return 'bg-violet-600';
+                  case '#6b7280':
+                    return 'bg-gray-500';
+                  default:
+                    return 'bg-gray-400';
+                }
+              };
+
+              // 투명도를 위한 조건부 클래스
+              const getOpacityClass = (opacity: number) => {
+                if (opacity >= 0.9) return 'opacity-90';
+                if (opacity >= 0.8) return 'opacity-80';
+                if (opacity >= 0.7) return 'opacity-70';
+                if (opacity >= 0.6) return 'opacity-60';
+                if (opacity >= 0.5) return 'opacity-50';
+                return 'opacity-40';
+              };
+
+              // 점선 스타일을 위한 조건부 클래스
+              const getBorderClass = (isDashed: boolean) => {
+                return isDashed
+                  ? 'border-t-2 border-t-white border-dashed'
+                  : '';
+              };
+
               return (
                 <div
                   key={courseType}
@@ -395,13 +430,7 @@ const ConverterTest: React.FC = () => {
                 >
                   <div className="text-sm font-medium mb-2">{courseType}</div>
                   <div
-                    className="h-4 rounded mb-2"
-                    style={{
-                      backgroundColor: style.color,
-                      opacity: courseStyle.strokeOpacity,
-                      borderTop:
-                        style.style === 'dashed' ? '2px dashed white' : 'none',
-                    }}
+                    className={`h-4 rounded mb-2 ${getColorClass(style.color)} ${getOpacityClass(courseStyle.strokeOpacity)} ${getBorderClass(style.style === 'dashed')}`}
                   ></div>
                   <div className="text-xs text-gray-600">
                     {style.color}, {style.weight}px, {style.style}
