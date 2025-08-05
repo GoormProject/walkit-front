@@ -912,7 +912,20 @@ const Home = () => {
         <Toaster position="top-center" richColors />
 
       {/* 지도 영역 */}
-      <div className="relative flex-1">
+      <div 
+        className="relative flex-1"
+        style={{ zIndex: 0 }}
+        onClick={(e) => {
+          console.log('🗺️ 지도 영역 클릭됨:', {
+            target: e.target,
+            currentTarget: e.currentTarget,
+            className: (e.target as HTMLElement)?.className,
+            tagName: (e.target as HTMLElement)?.tagName,
+            clientX: e.clientX,
+            clientY: e.clientY
+          });
+        }}
+      >
         <KakaoMap
           onMapLoad={mapInstance => {
             console.log('🗺️ 지도 로드 콜백 실행');

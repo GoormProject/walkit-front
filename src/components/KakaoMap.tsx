@@ -170,7 +170,7 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
           style={{ 
             minHeight: '100%',
             position: 'relative',
-            zIndex: 1
+            zIndex: 9999
           }}
           onClick={(e) => {
             console.log('🗺️ 지도 컨테이너 클릭됨:', {
