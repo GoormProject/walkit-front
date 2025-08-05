@@ -8,15 +8,19 @@ import { getApiModeInfo } from '@/utils/backendApi';
 import { getCourseStyle } from '@/utils/converter';
 
 const TestPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'trail' | 'walk' | 'converter'>('trail');
-  
+  const [activeTab, setActiveTab] = useState<'trail' | 'walk' | 'converter'>(
+    'trail'
+  );
+
   // API 모드 정보
   const apiModeInfo = getApiModeInfo();
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6 text-white">🧪 개발 테스트 페이지</h1>
-      
+      <h1 className="text-3xl font-bold mb-6 text-white">
+        🧪 개발 테스트 페이지
+      </h1>
+
       {/* 빠른 테스트 링크 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <Link
@@ -41,7 +45,7 @@ const TestPage: React.FC = () => {
           to="/test/bottom-sheet"
           className="bg-orange-500 text-white p-4 rounded-lg text-center hover:bg-orange-600 transition-colors"
         >
-          📱 BottomSheet
+          📱 BottomSheet (Radix UI)
         </Link>
         <Link
           to="/test/simple-map"
@@ -56,13 +60,16 @@ const TestPage: React.FC = () => {
           🏪 장소 검색 테스트
         </Link>
       </div>
-      
+
       {/* API 모드 정보 */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-        <h2 className="text-lg font-semibold mb-2 text-white">🔧 API 모드 정보</h2>
+        <h2 className="text-lg font-semibold mb-2 text-white">
+          🔧 API 모드 정보
+        </h2>
         <div className="grid grid-cols-3 gap-4 text-sm text-white">
           <div>
-            <strong>모드:</strong> {apiModeInfo.isMock ? 'Mock API' : '실제 API'}
+            <strong>모드:</strong>{' '}
+            {apiModeInfo.isMock ? 'Mock API' : '실제 API'}
           </div>
           <div>
             <strong>환경:</strong> {apiModeInfo.environment}
@@ -123,8 +130,10 @@ const TrailApiTest: React.FC = () => {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-4 text-white">🗺️ 산책 경로 API 테스트</h2>
-      
+      <h2 className="text-xl font-semibold mb-4 text-white">
+        🗺️ 산책 경로 API 테스트
+      </h2>
+
       <div className="mb-4">
         <button
           onClick={refetch}
@@ -150,30 +159,52 @@ const TrailApiTest: React.FC = () => {
 
       {!isLoading && !error && (
         <div>
-          <h3 className="text-lg font-medium mb-3 text-white">수신된 경로 데이터 ({trailPaths.length}개)</h3>
+          <h3 className="text-lg font-medium mb-3 text-white">
+            수신된 경로 데이터 ({trailPaths.length}개)
+          </h3>
           <div className="space-y-4">
             {trailPaths.map((path, index) => (
-              <div key={path.id} className="border border-gray-600 rounded-lg p-4 bg-gray-700">
+              <div
+                key={path.id}
+                className="border border-gray-600 rounded-lg p-4 bg-gray-700"
+              >
                 <div className="flex justify-between items-start mb-2">
-                  <h4 className="font-medium text-lg text-white">{path.name}</h4>
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${
-                    path.courseType === 'easy' ? 'bg-green-800 text-green-200' :
-                    path.courseType === 'medium' ? 'bg-orange-800 text-orange-200' :
-                    path.courseType === 'hard' ? 'bg-red-800 text-red-200' :
-                    path.courseType === 'scenic' ? 'bg-blue-800 text-blue-200' :
-                    'bg-purple-800 text-purple-200'
-                  }`}>
+                  <h4 className="font-medium text-lg text-white">
+                    {path.name}
+                  </h4>
+                  <span
+                    className={`px-2 py-1 rounded text-xs font-medium ${
+                      path.courseType === 'easy'
+                        ? 'bg-green-800 text-green-200'
+                        : path.courseType === 'medium'
+                          ? 'bg-orange-800 text-orange-200'
+                          : path.courseType === 'hard'
+                            ? 'bg-red-800 text-red-200'
+                            : path.courseType === 'scenic'
+                              ? 'bg-blue-800 text-blue-200'
+                              : 'bg-purple-800 text-purple-200'
+                    }`}
+                  >
                     {path.courseType}
                   </span>
                 </div>
-                <p className="text-gray-300 text-sm mb-2">{path.properties.description}</p>
+                <p className="text-gray-300 text-sm mb-2">
+                  {path.properties.description}
+                </p>
                 <div className="grid grid-cols-3 gap-4 text-sm text-white">
-                  <div><strong>거리:</strong> {path.properties.distance}km</div>
-                  <div><strong>소요시간:</strong> {path.properties.duration}분</div>
-                  <div><strong>좌표 수:</strong> {path.coordinates.length}개</div>
+                  <div>
+                    <strong>거리:</strong> {path.properties.distance}km
+                  </div>
+                  <div>
+                    <strong>소요시간:</strong> {path.properties.duration}분
+                  </div>
+                  <div>
+                    <strong>좌표 수:</strong> {path.coordinates.length}개
+                  </div>
                 </div>
                 <div className="mt-2 text-xs text-gray-400">
-                  <strong>스타일:</strong> {path.style.strokeColor}, {path.style.strokeWeight}px, {path.style.strokeStyle}
+                  <strong>스타일:</strong> {path.style.strokeColor},{' '}
+                  {path.style.strokeWeight}px, {path.style.strokeStyle}
                 </div>
               </div>
             ))}
@@ -190,8 +221,10 @@ const WalkApiTest: React.FC = () => {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-4 text-white">📝 산책 기록 API 테스트</h2>
-      
+      <h2 className="text-xl font-semibold mb-4 text-white">
+        📝 산책 기록 API 테스트
+      </h2>
+
       <div className="mb-4">
         <button
           onClick={refetch}
@@ -217,27 +250,44 @@ const WalkApiTest: React.FC = () => {
 
       {!isLoading && !error && (
         <div>
-          <h3 className="text-lg font-medium mb-3">수신된 경로 데이터 ({walkPaths.length}개)</h3>
+          <h3 className="text-lg font-medium mb-3">
+            수신된 경로 데이터 ({walkPaths.length}개)
+          </h3>
           <div className="space-y-4">
-            {walkPaths.map((path) => (
-              <div key={path.pathId} className="border border-gray-200 rounded-lg p-4">
+            {walkPaths.map(path => (
+              <div
+                key={path.pathId}
+                className="border border-gray-200 rounded-lg p-4"
+              >
                 <div className="flex justify-between items-start mb-2">
                   <h4 className="font-medium text-lg">{path.name}</h4>
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${
-                    path.courseType === 'easy' ? 'bg-green-100 text-green-800' :
-                    path.courseType === 'medium' ? 'bg-orange-100 text-orange-800' :
-                    path.courseType === 'hard' ? 'bg-red-100 text-red-800' :
-                    path.courseType === 'scenic' ? 'bg-blue-100 text-blue-800' :
-                    'bg-purple-100 text-purple-800'
-                  }`}>
+                  <span
+                    className={`px-2 py-1 rounded text-xs font-medium ${
+                      path.courseType === 'easy'
+                        ? 'bg-green-100 text-green-800'
+                        : path.courseType === 'medium'
+                          ? 'bg-orange-100 text-orange-800'
+                          : path.courseType === 'hard'
+                            ? 'bg-red-100 text-red-800'
+                            : path.courseType === 'scenic'
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-purple-100 text-purple-800'
+                    }`}
+                  >
                     {path.courseType}
                   </span>
                 </div>
                 <p className="text-gray-600 text-sm mb-2">{path.description}</p>
                 <div className="grid grid-cols-3 gap-4 text-sm">
-                  <div><strong>거리:</strong> {path.distance}km</div>
-                  <div><strong>소요시간:</strong> {path.duration}분</div>
-                  <div><strong>난이도:</strong> {path.difficulty}</div>
+                  <div>
+                    <strong>거리:</strong> {path.distance}km
+                  </div>
+                  <div>
+                    <strong>소요시간:</strong> {path.duration}분
+                  </div>
+                  <div>
+                    <strong>난이도:</strong> {path.difficulty}
+                  </div>
                 </div>
                 <div className="mt-2 text-xs text-gray-500">
                   <strong>WKT:</strong> {path.path.substring(0, 50)}...
@@ -253,8 +303,12 @@ const WalkApiTest: React.FC = () => {
 
 // 변환 유틸리티 테스트 컴포넌트
 const ConverterTest: React.FC = () => {
-  const [wktInput, setWktInput] = useState('LINESTRING(126.9780 37.5665, 126.9790 37.5675, 126.9800 37.5685)');
-  const [parsedCoordinates, setParsedCoordinates] = useState<[number, number][]>([]);
+  const [wktInput, setWktInput] = useState(
+    'LINESTRING(126.9780 37.5665, 126.9790 37.5675, 126.9800 37.5685)'
+  );
+  const [parsedCoordinates, setParsedCoordinates] = useState<
+    [number, number][]
+  >([]);
   const [parseError, setParseError] = useState<string | null>(null);
 
   const testWktParsing = () => {
@@ -271,11 +325,13 @@ const ConverterTest: React.FC = () => {
   return (
     <div>
       <h2 className="text-xl font-semibold mb-4">🔄 변환 유틸리티 테스트</h2>
-      
+
       <div className="space-y-6">
         {/* WKT 파싱 테스트 */}
         <div>
-          <h3 className="text-lg font-medium mb-3">WKT LINESTRING 파싱 테스트</h3>
+          <h3 className="text-lg font-medium mb-3">
+            WKT LINESTRING 파싱 테스트
+          </h3>
           <div className="space-y-3">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -283,7 +339,7 @@ const ConverterTest: React.FC = () => {
               </label>
               <textarea
                 value={wktInput}
-                onChange={(e) => setWktInput(e.target.value)}
+                onChange={e => setWktInput(e.target.value)}
                 className="w-full h-20 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="LINESTRING(경도1 위도1, 경도2 위도2, ...)"
               />
@@ -294,20 +350,23 @@ const ConverterTest: React.FC = () => {
             >
               파싱 테스트
             </button>
-            
+
             {parseError && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
                 <strong>파싱 오류:</strong> {parseError}
               </div>
             )}
-            
+
             {parsedCoordinates.length > 0 && (
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <h4 className="font-medium text-green-800 mb-2">파싱 결과 ({parsedCoordinates.length}개 좌표)</h4>
+                <h4 className="font-medium text-green-800 mb-2">
+                  파싱 결과 ({parsedCoordinates.length}개 좌표)
+                </h4>
                 <div className="space-y-1">
                   {parsedCoordinates.map((coord, index) => (
                     <div key={index} className="text-sm text-green-700">
-                      Point {index + 1}: 경도 {coord[0].toFixed(6)}, 위도 {coord[1].toFixed(6)}
+                      Point {index + 1}: 경도 {coord[0].toFixed(6)}, 위도{' '}
+                      {coord[1].toFixed(6)}
                     </div>
                   ))}
                 </div>
@@ -316,28 +375,62 @@ const ConverterTest: React.FC = () => {
           </div>
         </div>
 
-                {/* 스타일 테스트 */}
+        {/* 스타일 테스트 */}
         <div>
           <h3 className="text-lg font-medium mb-3">코스별 스타일 테스트</h3>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            {['easy', 'medium', 'hard', 'scenic', 'default'].map((courseType) => {
+            {['easy', 'medium', 'hard', 'scenic', 'default'].map(courseType => {
               const courseStyle = getCourseStyle(courseType);
               const style = {
                 color: courseStyle.strokeColor,
                 weight: courseStyle.strokeWeight,
-                style: courseStyle.strokeStyle === 'dashed' ? 'dashed' : 'solid'
+                style:
+                  courseStyle.strokeStyle === 'dashed' ? 'dashed' : 'solid',
+              };
+
+              // 동적 색상을 위한 조건부 클래스
+              const getColorClass = (color: string) => {
+                switch (color) {
+                  case '#3b82f6':
+                    return 'bg-blue-500';
+                  case '#059669':
+                    return 'bg-emerald-600';
+                  case '#dc2626':
+                    return 'bg-red-600';
+                  case '#7c3aed':
+                    return 'bg-violet-600';
+                  case '#6b7280':
+                    return 'bg-gray-500';
+                  default:
+                    return 'bg-gray-400';
+                }
+              };
+
+              // 투명도를 위한 조건부 클래스
+              const getOpacityClass = (opacity: number) => {
+                if (opacity >= 0.9) return 'opacity-90';
+                if (opacity >= 0.8) return 'opacity-80';
+                if (opacity >= 0.7) return 'opacity-70';
+                if (opacity >= 0.6) return 'opacity-60';
+                if (opacity >= 0.5) return 'opacity-50';
+                return 'opacity-40';
+              };
+
+              // 점선 스타일을 위한 조건부 클래스
+              const getBorderClass = (isDashed: boolean) => {
+                return isDashed
+                  ? 'border-t-2 border-t-white border-dashed'
+                  : '';
               };
 
               return (
-                <div key={courseType} className="border border-gray-200 rounded-lg p-3 text-center">
+                <div
+                  key={courseType}
+                  className="border border-gray-200 rounded-lg p-3 text-center"
+                >
                   <div className="text-sm font-medium mb-2">{courseType}</div>
-                  <div 
-                    className="h-4 rounded mb-2"
-                    style={{
-                      backgroundColor: style.color,
-                      opacity: courseStyle.strokeOpacity,
-                      borderTop: style.style === 'dashed' ? '2px dashed white' : 'none'
-                    }}
+                  <div
+                    className={`h-4 rounded mb-2 ${getColorClass(style.color)} ${getOpacityClass(courseStyle.strokeOpacity)} ${getBorderClass(style.style === 'dashed')}`}
                   ></div>
                   <div className="text-xs text-gray-600">
                     {style.color}, {style.weight}px, {style.style}
@@ -352,4 +445,4 @@ const ConverterTest: React.FC = () => {
   );
 };
 
-export default TestPage; 
+export default TestPage;
