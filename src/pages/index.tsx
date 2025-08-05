@@ -907,7 +907,7 @@ const Home = () => {
   }, [pathPositions]);
 
   return (
-    <div className="app" style={{ padding: 0, textAlign: 'left', maxWidth: 'none' }}>
+    <div className="app">
       <div className="flex flex-col h-screen">
         <Toaster position="top-center" richColors />
 
