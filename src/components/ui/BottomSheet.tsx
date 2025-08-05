@@ -82,6 +82,31 @@ const BottomSheet = ({
     }
   };
 
+  // 전역 마우스 이벤트 핸들러 추가
+  React.useEffect(() => {
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (isDragging) {
+        setCurrentY(e.clientY);
+      }
+    };
+
+    const handleGlobalMouseUp = () => {
+      if (isDragging) {
+        handleTouchEnd();
+      }
+    };
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleGlobalMouseMove);
+      document.addEventListener('mouseup', handleGlobalMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleGlobalMouseMove);
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, [isDragging, currentY, startY, currentSnapPoint, onClose]);
+
   return (
     <Dialog.Root open={isOpen} onOpenChange={open => !open && onClose()}>
       <Dialog.Portal>
@@ -109,9 +134,6 @@ const BottomSheet = ({
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
             onMouseDown={handleTouchStart}
-            onMouseMove={handleTouchMove}
-            onMouseUp={handleTouchEnd}
-            onMouseLeave={handleTouchEnd}
           >
             <div className="w-12 h-1 bg-gray-300 rounded-full" />
           </div>
