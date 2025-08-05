@@ -77,10 +77,17 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
           level: 4,
         });
         
-        // 지도 상호작용 명시적 활성화
+        // 지도 상호작용 명시적 활성화 (공식 문서 방식)
         (mapInstance as any).setDraggable(true);
         (mapInstance as any).setZoomable(true);
         mapRef.current = mapInstance;
+
+        // 지도 상호작용 상태 확인
+        console.log('🗺️ 지도 상호작용 설정 완료:', {
+          draggable: (mapInstance as any).getDraggable(),
+          zoomable: (mapInstance as any).getZoomable(),
+          mapInstance: !!mapInstance,
+        });
 
         // 지도 인스턴스 콜백
         onMapLoad?.(mapInstance);

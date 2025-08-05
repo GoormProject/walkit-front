@@ -123,14 +123,14 @@ const BottomSheet = ({
     <Dialog.Root open={isOpen} onOpenChange={open => !open && onClose()}>
       {isOpen && (
         <>
-          <Dialog.Overlay
-            className={`absolute inset-0 z-40 ${
-              showBackdrop ? 'bg-black/50' : 'bg-transparent'
-            }`}
-          />
+          {showBackdrop && (
+            <Dialog.Overlay
+              className="absolute inset-0 z-40 bg-black/50 pointer-events-auto"
+            />
+          )}
           <Dialog.Content
             ref={sheetRef}
-            className={`absolute bottom-0 left-0 right-0 z-50 bg-white rounded-t-xl shadow-2xl ${className}`}
+            className={`absolute bottom-0 left-0 right-0 z-50 bg-white rounded-t-xl shadow-2xl pointer-events-auto ${className}`}
             style={{
               height: isDragging
                 ? `${Math.max(10, Math.min(95, currentSnapPoint - ((currentY - startY) / window.innerHeight) * 100))}dvh`
