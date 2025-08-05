@@ -5,7 +5,13 @@ import type {
   CreateWalkRecordRequest,
   CreateWalkRecordResponse,
   WalkPathDetailResponse,
-  WalkPathsResponse
+  WalkPathsResponse,
+  WalkStartApiResponse,
+  WalkEventApiResponse,
+  WalkCreateApiResponse,
+  WalkDeleteApiResponse,
+  WalkListResponse,
+  WalkCreateRequest
 } from '../types/walk';
 import { getTrailPaths as getMockTrailPaths } from './mockTrailApi';
 import { 

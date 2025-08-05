@@ -10,6 +10,23 @@
  * ---------------------------------------------------------------
  */
 
+export interface BaseResponseWalkEventResponse {
+  /** @format int32 */
+  httpStatus?: number;
+  message?: string;
+  data?: WalkEventResponse;
+}
+
+export interface WalkEventResponse {
+  /** @format int64 */
+  walkId?: number;
+  /** @format int64 */
+  eventId?: number;
+  eventType?: 'START' | 'PAUSE' | 'RESUME' | 'END';
+  /** @format date-time */
+  eventTime?: string;
+}
+
 export interface ProfileRequest {
   /**
    * @minLength 0
@@ -59,6 +76,54 @@ export interface BaseResponseLocationDto {
   data?: LocationDto;
 }
 
+export interface BaseResponseFriendRequestApprovedResponse {
+  /** @format int32 */
+  httpStatus?: number;
+  message?: string;
+  data?: FriendRequestApprovedResponse;
+}
+
+export interface FriendRequestApprovedResponse {
+  /** @format int64 */
+  friendId?: number;
+}
+
+export interface WalkRequest {
+  /** @format int64 */
+  walkId?: number;
+  /**
+   * @minLength 0
+   * @maxLength 100
+   */
+  walkTitle: string;
+  /** @format int32 */
+  totalTime: number;
+  /** @format double */
+  totalDistance: number;
+  /** @format double */
+  pace: number;
+  /** @minItems 1 */
+  path: number[][];
+  /** @minItems 1 */
+  startPoint: number[];
+  /** @format int64 */
+  eventId?: number;
+  eventType?: string;
+  routeUrl?: string;
+}
+
+export interface BaseResponseWalkCreateResponse {
+  /** @format int32 */
+  httpStatus?: number;
+  message?: string;
+  data?: WalkCreateResponse;
+}
+
+export interface WalkCreateResponse {
+  /** @format int64 */
+  walkId?: number;
+}
+
 export interface BaseResponseFriendRequestResponseDTO {
   /** @format int32 */
   httpStatus?: number;
@@ -79,6 +144,48 @@ export interface BaseResponseVoid {
   httpStatus?: number;
   message?: string;
   data?: any;
+}
+
+export interface BaseResponseListWalkListResponse {
+  /** @format int32 */
+  httpStatus?: number;
+  message?: string;
+  data?: WalkListResponse[];
+}
+
+export interface WalkListResponse {
+  /** @format int64 */
+  walkId?: number;
+  /** @format int64 */
+  trailId?: number;
+  /** @format int64 */
+  eventId?: number;
+  eventTime?: string;
+  /** @format int64 */
+  trailImageId?: number;
+  routeImageUrl?: string;
+  /** @format double */
+  totalDistance?: number;
+  totalTime?: string;
+  pace?: string;
+  title?: string;
+  isUploaded?: boolean;
+}
+
+export interface BaseResponseListFriendResponseDTO {
+  /** @format int32 */
+  httpStatus?: number;
+  message?: string;
+  data?: FriendResponseDTO[];
+}
+
+export interface FriendResponseDTO {
+  /** @format int64 */
+  friendId?: number;
+  nickname?: string;
+  profile?: string;
+  memberStatus?: 'OFFLINE' | 'ONLINE' | 'WALKING';
+  lastLocation?: LocationDto;
 }
 
 export interface BaseResponseListSentFriendResponse {
@@ -120,10 +227,33 @@ export interface CurrentUserDto {
   isProfileSet?: boolean;
 }
 
-export type QueryParamsType = Record<string | number, any>;
-export type ResponseFormat = keyof Omit<Body, 'body' | 'bodyUsed'>;
+export interface BaseResponseWalkDeleteResponse {
+  /** @format int32 */
+  httpStatus?: number;
+  message?: string;
+  data?: WalkDeleteResponse;
+}
 
-export interface FullRequestParams extends Omit<RequestInit, 'body'> {
+export interface WalkDeleteResponse {
+  /** @format int64 */
+  walkId?: number;
+  /** @format int64 */
+  memberId?: number;
+}
+
+import type {
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosResponse,
+  HeadersDefaults,
+  ResponseType,
+} from 'axios';
+import axios from 'axios';
+
+export type QueryParamsType = Record<string | number, any>;
+
+export interface FullRequestParams
+  extends Omit<AxiosRequestConfig, 'data' | 'params' | 'url' | 'responseType'> {
   /** set parameter to `true` for call `securityWorker` for this request */
   secure?: boolean;
   /** request path */
@@ -133,13 +263,9 @@ export interface FullRequestParams extends Omit<RequestInit, 'body'> {
   /** query params */
   query?: QueryParamsType;
   /** format of response (i.e. response.json() -> format: "json") */
-  format?: ResponseFormat;
+  format?: ResponseType;
   /** request body */
   body?: unknown;
-  /** base url */
-  baseUrl?: string;
-  /** request cancellation token */
-  cancelToken?: CancelToken;
 }
 
 export type RequestParams = Omit<
@@ -147,22 +273,14 @@ export type RequestParams = Omit<
   'body' | 'method' | 'query' | 'path'
 >;
 
-export interface ApiConfig<SecurityDataType = unknown> {
-  baseUrl?: string;
-  baseApiParams?: Omit<RequestParams, 'baseUrl' | 'cancelToken' | 'signal'>;
+export interface ApiConfig<SecurityDataType = unknown>
+  extends Omit<AxiosRequestConfig, 'data' | 'cancelToken'> {
   securityWorker?: (
     securityData: SecurityDataType | null
-  ) => Promise<RequestParams | void> | RequestParams | void;
-  customFetch?: typeof fetch;
+  ) => Promise<AxiosRequestConfig | void> | AxiosRequestConfig | void;
+  secure?: boolean;
+  format?: ResponseType;
 }
-
-export interface HttpResponse<D extends unknown, E extends unknown = unknown>
-  extends Response {
-  data: D;
-  error: E;
-}
-
-type CancelToken = Symbol | string | number;
 
 export enum ContentType {
   Json = 'application/json',
@@ -173,198 +291,127 @@ export enum ContentType {
 }
 
 export class HttpClient<SecurityDataType = unknown> {
-  public baseUrl: string = 'http://localhost:8080';
+  public instance: AxiosInstance;
   private securityData: SecurityDataType | null = null;
   private securityWorker?: ApiConfig<SecurityDataType>['securityWorker'];
-  private abortControllers = new Map<CancelToken, AbortController>();
-  private customFetch = (...fetchParams: Parameters<typeof fetch>) =>
-    fetch(...fetchParams);
+  private secure?: boolean;
+  private format?: ResponseType;
 
-  private baseApiParams: RequestParams = {
-    credentials: 'same-origin',
-    headers: {},
-    redirect: 'follow',
-    referrerPolicy: 'no-referrer',
-  };
-
-  constructor(apiConfig: ApiConfig<SecurityDataType> = {}) {
-    Object.assign(this, apiConfig);
+  constructor({
+    securityWorker,
+    secure,
+    format,
+    ...axiosConfig
+  }: ApiConfig<SecurityDataType> = {}) {
+    this.instance = axios.create({
+      ...axiosConfig,
+      baseURL: axiosConfig.baseURL || 'http://localhost:8080',
+    });
+    this.secure = secure;
+    this.format = format;
+    this.securityWorker = securityWorker;
   }
 
   public setSecurityData = (data: SecurityDataType | null) => {
     this.securityData = data;
   };
 
-  protected encodeQueryParam(key: string, value: any) {
-    const encodedKey = encodeURIComponent(key);
-    return `${encodedKey}=${encodeURIComponent(typeof value === 'number' ? value : `${value}`)}`;
-  }
-
-  protected addQueryParam(query: QueryParamsType, key: string) {
-    return this.encodeQueryParam(key, query[key]);
-  }
-
-  protected addArrayQueryParam(query: QueryParamsType, key: string) {
-    const value = query[key];
-    return value.map((v: any) => this.encodeQueryParam(key, v)).join('&');
-  }
-
-  protected toQueryString(rawQuery?: QueryParamsType): string {
-    const query = rawQuery || {};
-    const keys = Object.keys(query).filter(
-      key => 'undefined' !== typeof query[key]
-    );
-    return keys
-      .map(key =>
-        Array.isArray(query[key])
-          ? this.addArrayQueryParam(query, key)
-          : this.addQueryParam(query, key)
-      )
-      .join('&');
-  }
-
-  protected addQueryParams(rawQuery?: QueryParamsType): string {
-    const queryString = this.toQueryString(rawQuery);
-    return queryString ? `?${queryString}` : '';
-  }
-
-  private contentFormatters: Record<ContentType, (input: any) => any> = {
-    [ContentType.Json]: (input: any) =>
-      input !== null && (typeof input === 'object' || typeof input === 'string')
-        ? JSON.stringify(input)
-        : input,
-    [ContentType.JsonApi]: (input: any) =>
-      input !== null && (typeof input === 'object' || typeof input === 'string')
-        ? JSON.stringify(input)
-        : input,
-    [ContentType.Text]: (input: any) =>
-      input !== null && typeof input !== 'string'
-        ? JSON.stringify(input)
-        : input,
-    [ContentType.FormData]: (input: any) =>
-      Object.keys(input || {}).reduce((formData, key) => {
-        const property = input[key];
-        formData.append(
-          key,
-          property instanceof Blob
-            ? property
-            : typeof property === 'object' && property !== null
-              ? JSON.stringify(property)
-              : `${property}`
-        );
-        return formData;
-      }, new FormData()),
-    [ContentType.UrlEncoded]: (input: any) => this.toQueryString(input),
-  };
-
   protected mergeRequestParams(
-    params1: RequestParams,
-    params2?: RequestParams
-  ): RequestParams {
+    params1: AxiosRequestConfig,
+    params2?: AxiosRequestConfig
+  ): AxiosRequestConfig {
+    const method = params1.method || (params2 && params2.method);
+
     return {
-      ...this.baseApiParams,
+      ...this.instance.defaults,
       ...params1,
       ...(params2 || {}),
       headers: {
-        ...(this.baseApiParams.headers || {}),
+        ...((method &&
+          this.instance.defaults.headers[
+            method.toLowerCase() as keyof HeadersDefaults
+          ]) ||
+          {}),
         ...(params1.headers || {}),
         ...((params2 && params2.headers) || {}),
       },
     };
   }
 
-  protected createAbortSignal = (
-    cancelToken: CancelToken
-  ): AbortSignal | undefined => {
-    if (this.abortControllers.has(cancelToken)) {
-      const abortController = this.abortControllers.get(cancelToken);
-      if (abortController) {
-        return abortController.signal;
+  protected stringifyFormItem(formItem: unknown) {
+    if (typeof formItem === 'object' && formItem !== null) {
+      return JSON.stringify(formItem);
+    } else {
+      return `${formItem}`;
+    }
+  }
+
+  protected createFormData(input: Record<string, unknown>): FormData {
+    if (input instanceof FormData) {
+      return input;
+    }
+    return Object.keys(input || {}).reduce((formData, key) => {
+      const property = input[key];
+      const propertyContent: any[] =
+        property instanceof Array ? property : [property];
+
+      for (const formItem of propertyContent) {
+        const isFileType = formItem instanceof Blob || formItem instanceof File;
+        formData.append(
+          key,
+          isFileType ? formItem : this.stringifyFormItem(formItem)
+        );
       }
-      return void 0;
-    }
 
-    const abortController = new AbortController();
-    this.abortControllers.set(cancelToken, abortController);
-    return abortController.signal;
-  };
+      return formData;
+    }, new FormData());
+  }
 
-  public abortRequest = (cancelToken: CancelToken) => {
-    const abortController = this.abortControllers.get(cancelToken);
-
-    if (abortController) {
-      abortController.abort();
-      this.abortControllers.delete(cancelToken);
-    }
-  };
-
-  public request = async <T = any, E = any>({
-    body,
+  public request = async <T = any, _E = any>({
     secure,
     path,
     type,
     query,
     format,
-    baseUrl,
-    cancelToken,
+    body,
     ...params
-  }: FullRequestParams): Promise<HttpResponse<T, E>> => {
+  }: FullRequestParams): Promise<AxiosResponse<T>> => {
     const secureParams =
-      ((typeof secure === 'boolean' ? secure : this.baseApiParams.secure) &&
+      ((typeof secure === 'boolean' ? secure : this.secure) &&
         this.securityWorker &&
         (await this.securityWorker(this.securityData))) ||
       {};
     const requestParams = this.mergeRequestParams(params, secureParams);
-    const queryString = query && this.toQueryString(query);
-    const payloadFormatter = this.contentFormatters[type || ContentType.Json];
-    const responseFormat = format || requestParams.format;
+    const responseFormat = format || this.format || undefined;
 
-    return this.customFetch(
-      `${baseUrl || this.baseUrl || ''}${path}${queryString ? `?${queryString}` : ''}`,
-      {
-        ...requestParams,
-        headers: {
-          ...(requestParams.headers || {}),
-          ...(type && type !== ContentType.FormData
-            ? { 'Content-Type': type }
-            : {}),
-        },
-        signal:
-          (cancelToken
-            ? this.createAbortSignal(cancelToken)
-            : requestParams.signal) || null,
-        body:
-          typeof body === 'undefined' || body === null
-            ? null
-            : payloadFormatter(body),
-      }
-    ).then(async response => {
-      const r = response.clone() as HttpResponse<T, E>;
-      r.data = null as unknown as T;
-      r.error = null as unknown as E;
+    if (
+      type === ContentType.FormData &&
+      body &&
+      body !== null &&
+      typeof body === 'object'
+    ) {
+      body = this.createFormData(body as Record<string, unknown>);
+    }
 
-      const data = !responseFormat
-        ? r
-        : await response[responseFormat]()
-            .then(data => {
-              if (r.ok) {
-                r.data = data;
-              } else {
-                r.error = data;
-              }
-              return r;
-            })
-            .catch(e => {
-              r.error = e;
-              return r;
-            });
+    if (
+      type === ContentType.Text &&
+      body &&
+      body !== null &&
+      typeof body !== 'string'
+    ) {
+      body = JSON.stringify(body);
+    }
 
-      if (cancelToken) {
-        this.abortControllers.delete(cancelToken);
-      }
-
-      if (!response.ok) throw data;
-      return data;
+    return this.instance.request({
+      ...requestParams,
+      headers: {
+        ...(requestParams.headers || {}),
+        ...(type ? { 'Content-Type': type } : {}),
+      },
+      params: query,
+      responseType: responseFormat,
+      data: body,
+      url: path,
     });
   };
 }
@@ -381,6 +428,51 @@ export class Api<
   SecurityDataType extends unknown,
 > extends HttpClient<SecurityDataType> {
   api = {
+    /**
+     * @description 일시정지된 산책을 다시 시작합니다.
+     *
+     * @tags 산책 기록
+     * @name ResumeWalk
+     * @summary 산책 기록 재개
+     * @request PUT:/api/walks/{walkId}/resume
+     */
+    resumeWalk: (walkId: number, params: RequestParams = {}) =>
+      this.request<BaseResponseWalkEventResponse, any>({
+        path: `/api/walks/${walkId}/resume`,
+        method: 'PUT',
+        ...params,
+      }),
+
+    /**
+     * @description 진행 중인 산책을 일시정지합니다.
+     *
+     * @tags 산책 기록
+     * @name PauseWalk
+     * @summary 산책 기록 일시정지
+     * @request PUT:/api/walks/{walkId}/pause
+     */
+    pauseWalk: (walkId: number, params: RequestParams = {}) =>
+      this.request<BaseResponseWalkEventResponse, any>({
+        path: `/api/walks/${walkId}/pause`,
+        method: 'PUT',
+        ...params,
+      }),
+
+    /**
+     * @description 진행 중인 산책을 최종 종료합니다.
+     *
+     * @tags 산책 기록
+     * @name EndWalk
+     * @summary 산책 기록 종료
+     * @request PUT:/api/walks/{walkId}/end
+     */
+    endWalk: (walkId: number, params: RequestParams = {}) =>
+      this.request<BaseResponseWalkEventResponse, any>({
+        path: `/api/walks/${walkId}/end`,
+        method: 'PUT',
+        ...params,
+      }),
+
     /**
      * @description 이름과 닉네임, 프로필 이미지, 이메일을 조회합니다.
      *
@@ -449,12 +541,84 @@ export class Api<
       }),
 
     /**
+     * @description 친구 요청을 승인합니다.
+     *
+     * @tags 친구
+     * @name ApproveFriendRequest
+     * @summary 친구 요청 승인
+     * @request PUT:/api/friends/request/{friendRequestId}
+     * @secure
+     */
+    approveFriendRequest: (
+      friendRequestId: number,
+      params: RequestParams = {}
+    ) =>
+      this.request<BaseResponseFriendRequestApprovedResponse, any>({
+        path: `/api/friends/request/${friendRequestId}`,
+        method: 'PUT',
+        secure: true,
+        ...params,
+      }),
+
+    /**
+     * @description 친구 요청을 거절합니다.
+     *
+     * @tags 친구
+     * @name RejectFriendRequest
+     * @summary 친구 요청 거절
+     * @request DELETE:/api/friends/request/{friendRequestId}
+     * @secure
+     */
+    rejectFriendRequest: (
+      friendRequestId: number,
+      params: RequestParams = {}
+    ) =>
+      this.request<BaseResponseVoid, any>({
+        path: `/api/friends/request/${friendRequestId}`,
+        method: 'DELETE',
+        secure: true,
+        ...params,
+      }),
+
+    /**
+     * @description 새로운 산책 기록을 시작하고, 생성된 walkId와 eventId를 반환합니다.
+     *
+     * @tags 산책 기록
+     * @name StartWalk
+     * @summary 산책 기록 시작
+     * @request POST:/api/walks/start
+     */
+    startWalk: (params: RequestParams = {}) =>
+      this.request<BaseResponseWalkEventResponse, any>({
+        path: `/api/walks/start`,
+        method: 'POST',
+        ...params,
+      }),
+
+    /**
+     * @description 종료된 산책의 상세 정보(경로, 시간, 거리 등)를 저장합니다.
+     *
+     * @tags 산책 기록
+     * @name CreateWalk
+     * @summary 산책 기록 저장
+     * @request POST:/api/walks/new
+     */
+    createWalk: (data: WalkRequest, params: RequestParams = {}) =>
+      this.request<BaseResponseWalkCreateResponse, any>({
+        path: `/api/walks/new`,
+        method: 'POST',
+        body: data,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
      * @description 다른 사용자에게 친구 요청을 보냅니다.
      *
      * @tags 친구
      * @name SendFriendRequest
      * @summary 친구 요청 생성
-     * @request POST:/api/friends/requests
+     * @request POST:/api/friends/request
      * @secure
      */
     sendFriendRequest: (
@@ -464,7 +628,7 @@ export class Api<
       params: RequestParams = {}
     ) =>
       this.request<BaseResponseFriendRequestResponseDTO, any>({
-        path: `/api/friends/requests`,
+        path: `/api/friends/request`,
         method: 'POST',
         query: query,
         secure: true,
@@ -518,25 +682,53 @@ export class Api<
       }),
 
     /**
-     * @description 친구 요청을 승인합니다.
+     * @description 자신이 기록한 모든 산책 기록의 목록을 조회합니다.
+     *
+     * @tags 산책 기록
+     * @name GetWalkList
+     * @summary 산책 기록 목록 조회
+     * @request GET:/api/walks
+     */
+    getWalkList: (params: RequestParams = {}) =>
+      this.request<BaseResponseListWalkListResponse, any>({
+        path: `/api/walks`,
+        method: 'GET',
+        ...params,
+      }),
+
+    /**
+     * @description 현재 사용자의 친구 목록을 조회합니다.
      *
      * @tags 친구
-     * @name ApproveFriendRequest
-     * @summary 친구 요청 승인
-     * @request PATCH:/api/friends/requests/approve
+     * @name GetFriends
+     * @summary 친구 목록 조회
+     * @request GET:/api/friends
      * @secure
      */
-    approveFriendRequest: (
-      query: {
-        /** @format int64 */
-        friendRequestId: number;
-      },
+    getFriends: (params: RequestParams = {}) =>
+      this.request<BaseResponseListFriendResponseDTO, any>({
+        path: `/api/friends`,
+        method: 'GET',
+        secure: true,
+        ...params,
+      }),
+
+    /**
+     * @description 특정 상태(예: ONLINE)의 친구 목록을 조회합니다.
+     *
+     * @tags 친구
+     * @name GetFriendsByStatus
+     * @summary 상태별 친구 목록 조회
+     * @request GET:/api/friends/status/{status}
+     * @secure
+     */
+    getFriendsByStatus: (
+      status: 'OFFLINE' | 'ONLINE' | 'WALKING',
       params: RequestParams = {}
     ) =>
-      this.request<BaseResponseVoid, any>({
-        path: `/api/friends/requests/approve`,
-        method: 'PATCH',
-        query: query,
+      this.request<BaseResponseListFriendResponseDTO, any>({
+        path: `/api/friends/status/${status}`,
+        method: 'GET',
         secure: true,
         ...params,
       }),
@@ -547,12 +739,12 @@ export class Api<
      * @tags 친구
      * @name GetSentFriendRequests
      * @summary 친구 요청 발신 목록 조회
-     * @request GET:/api/friends/requests/sent
+     * @request GET:/api/friends/request/sent
      * @secure
      */
     getSentFriendRequests: (params: RequestParams = {}) =>
       this.request<BaseResponseListSentFriendResponse, any>({
-        path: `/api/friends/requests/sent`,
+        path: `/api/friends/request/sent`,
         method: 'GET',
         secure: true,
         ...params,
@@ -564,12 +756,12 @@ export class Api<
      * @tags 친구
      * @name GetReceivedFriendRequests
      * @summary 친구 요청 수신 목록 조회
-     * @request GET:/api/friends/requests/received
+     * @request GET:/api/friends/request/received
      * @secure
      */
     getReceivedFriendRequests: (params: RequestParams = {}) =>
       this.request<BaseResponseListReceivedFriendResponse, any>({
-        path: `/api/friends/requests/received`,
+        path: `/api/friends/request/received`,
         method: 'GET',
         secure: true,
         ...params,
@@ -588,6 +780,38 @@ export class Api<
       this.request<BaseResponseCurrentUserDto, any>({
         path: `/api/auth/me`,
         method: 'GET',
+        secure: true,
+        ...params,
+      }),
+
+    /**
+     * @description 특정 산책 기록을 삭제합니다.
+     *
+     * @tags 산책 기록
+     * @name DeleteWalk
+     * @summary 산책 기록 삭제
+     * @request DELETE:/api/walks/{walkId}
+     */
+    deleteWalk: (walkId: number, params: RequestParams = {}) =>
+      this.request<BaseResponseWalkDeleteResponse, any>({
+        path: `/api/walks/${walkId}`,
+        method: 'DELETE',
+        ...params,
+      }),
+
+    /**
+     * @description 친구 관계를 삭제합니다.
+     *
+     * @tags 친구
+     * @name DeleteFriend
+     * @summary 친구 삭제하기
+     * @request DELETE:/api/friends/{friendMemberId}
+     * @secure
+     */
+    deleteFriend: (friendMemberId: number, params: RequestParams = {}) =>
+      this.request<BaseResponseVoid, any>({
+        path: `/api/friends/${friendMemberId}`,
+        method: 'DELETE',
         secure: true,
         ...params,
       }),

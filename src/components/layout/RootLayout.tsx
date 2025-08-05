@@ -18,14 +18,19 @@ const RootLayout = () => {
   // Header를 숨길 페이지들
   const hideHeaderPaths = ['/']; // 이 배열 안의 URL 에서는 Header 가 숨겨짐
   const shouldShowHeader = !hideHeaderPaths.includes(location.pathname);
+  
+  // 오버레이 헤더를 사용할 페이지들 (현재 비활성화)
+  const overlayHeaderPaths: string[] = [];
+  const shouldUseOverlayHeader = overlayHeaderPaths.includes(location.pathname);
 
   return (
     <ToastProvider ref={toastRef}>
       <div className="app">
-        {shouldShowHeader && <Header />}
+        {shouldShowHeader && !shouldUseOverlayHeader && <Header />}
         <main>
           <Outlet />
         </main>
+        {shouldUseOverlayHeader && <Header overlay={true} />}
         <Footer />
       </div>
     </ToastProvider>

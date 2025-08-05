@@ -11,7 +11,7 @@ export const handleGPSError = (error: GeolocationPositionError): string => {
     case GPSErrorCode.PERMISSION_DENIED:
       return '위치 권한이 거부되었습니다.';
     case GPSErrorCode.POSITION_UNAVAILABLE:
-      return '위치 정보를 사용할 수 없습니다.';
+      return '위치 정보를 사용할 수 없습니다. HTTPS 환경에서 실행하거나 GPS를 활성화해주세요.';
     case GPSErrorCode.TIMEOUT:
       return '위치 요청 시간이 초과되었습니다.';
     default:
@@ -36,7 +36,7 @@ export const getGPSErrorInfo = (error: GeolocationPositionError): GPSErrorInfo =
     case GPSErrorCode.POSITION_UNAVAILABLE:
       return {
         message: 'GPS 신호를 찾을 수 없습니다',
-        guideText: '실외에서 다시 시도해주세요'
+        guideText: 'HTTPS 환경에서 실행하거나 실외에서 다시 시도해주세요'
       };
     case GPSErrorCode.TIMEOUT:
       return {
