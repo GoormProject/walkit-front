@@ -17,6 +17,8 @@ export { default as FooterBackButton } from '@/components/ui/FooterBackButton';
 export { default as TallyButton } from '@/components/ui/TallyButton';
 export { default as HomeButton } from '@/components/ui/HomeButton';
 export { default as BottomSheet } from '@/components/ui/BottomSheet';
+export { default as BottomSheetOpenButton } from '@/components/ui/BottomSheetOpenButton';
+export { default as BottomSheetContent } from '@/components/ui/BottomSheetContent';
 
 // shadcn/ui Dialog
 export {

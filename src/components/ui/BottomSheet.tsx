@@ -9,7 +9,7 @@ interface BottomSheetProps {
   title?: string;
   className?: string;
   showBackdrop?: boolean;
-  snapPoints?: number[]; // 0-100 사이의 퍼센트 값
+  // snapPoints?: number[]; // 0-100 사이의 퍼센트 값 (현재 사용하지 않음)
   defaultSnapPoint?: number;
 }
 
@@ -20,7 +20,6 @@ const BottomSheet = ({
   title,
   className = '',
   showBackdrop = true,
-  snapPoints = [25, 50, 75],
   defaultSnapPoint = 50,
 }: BottomSheetProps) => {
   const [currentSnapPoint, setCurrentSnapPoint] = useState(defaultSnapPoint);
@@ -29,8 +28,17 @@ const BottomSheet = ({
   const [currentY, setCurrentY] = useState(0);
   const sheetRef = useRef<HTMLDivElement>(null);
 
+  // isOpen이 true로 변경될 때 currentSnapPoint를 defaultSnapPoint로 초기화
+  React.useEffect(() => {
+    if (isOpen) {
+      setCurrentSnapPoint(defaultSnapPoint);
+    }
+  }, [isOpen, defaultSnapPoint]);
+
   // 터치/마우스 이벤트 처리
   const handleTouchStart = (e: React.TouchEvent | React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     setIsDragging(true);
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     setStartY(clientY);
@@ -40,31 +48,37 @@ const BottomSheet = ({
   const handleTouchMove = (e: React.TouchEvent | React.MouseEvent) => {
     if (!isDragging) return;
 
+    e.preventDefault();
+    e.stopPropagation();
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     setCurrentY(clientY);
   };
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = (e?: React.TouchEvent | React.MouseEvent) => {
     if (!isDragging) return;
 
-    setIsDragging(false);
-    const deltaY = startY - currentY;
-    const threshold = 50;
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
 
-    if (deltaY > threshold) {
-      // 위로 스와이프 - 다음 스냅 포인트
-      const currentIndex = snapPoints.indexOf(currentSnapPoint);
-      const nextIndex = Math.min(currentIndex + 1, snapPoints.length - 1);
-      setCurrentSnapPoint(snapPoints[nextIndex]);
-    } else if (deltaY < -threshold) {
-      // 아래로 스와이프 - 이전 스냅 포인트 또는 닫기
-      const currentIndex = snapPoints.indexOf(currentSnapPoint);
-      if (currentIndex === 0) {
-        onClose();
-      } else {
-        const prevIndex = Math.max(currentIndex - 1, 0);
-        setCurrentSnapPoint(snapPoints[prevIndex]);
-      }
+    setIsDragging(false);
+
+    // 드래그한 위치에서 바로 멈추도록 계산
+    const draggedHeight = Math.max(
+      10,
+      Math.min(
+        95,
+        currentSnapPoint - ((currentY - startY) / window.innerHeight) * 100
+      )
+    );
+
+    // 최소 높이(10%) 이하로 드래그하면 완전히 닫기
+    if (draggedHeight <= 10) {
+      onClose();
+    } else {
+      // 드래그한 위치에서 바로 멈춤
+      setCurrentSnapPoint(draggedHeight);
     }
   };
 
@@ -78,25 +92,27 @@ const BottomSheet = ({
         />
         <Dialog.Content
           ref={sheetRef}
-          className={`fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-xl shadow-2xl w-full max-h-screen transition-transform duration-300 ease-out ${className}`}
+          className={`fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-xl shadow-2xl w-full ${className}`}
           style={{
-            height: `${currentSnapPoint}vh`,
-            transform: isDragging
-              ? `translateY(${currentY - startY}px)`
-              : 'translateY(0)',
+            height: isDragging
+              ? `${Math.max(10, Math.min(95, currentSnapPoint - ((currentY - startY) / window.innerHeight) * 100))}dvh`
+              : `${currentSnapPoint}dvh`,
+            transition: isDragging ? 'none' : 'height 0.3s ease-out',
           }}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onMouseDown={handleTouchStart}
-          onMouseMove={handleTouchMove}
-          onMouseUp={handleTouchEnd}
-          onMouseLeave={handleTouchEnd}
           onEscapeKeyDown={onClose}
           onInteractOutside={showBackdrop ? () => onClose() : undefined}
         >
           {/* 핸들 */}
-          <div className="flex justify-center pt-3 pb-2">
+          <div
+            className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onMouseDown={handleTouchStart}
+            onMouseMove={handleTouchMove}
+            onMouseUp={handleTouchEnd}
+            onMouseLeave={handleTouchEnd}
+          >
             <div className="w-12 h-1 bg-gray-300 rounded-full" />
           </div>
 
