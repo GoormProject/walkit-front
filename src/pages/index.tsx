@@ -26,6 +26,13 @@ interface Category {
   color: string;
 }
 
+// 카테고리 정의 (컴포넌트 외부로 이동하여 재생성 방지)
+const CATEGORIES: Category[] = [
+  { id: 'toilet', name: '화장실', code: '', color: '#4F46E5' }, // 화장실은 키워드 검색 사용
+  { id: 'convenience', name: '편의점', code: 'CS2', color: '#059669' },
+  { id: 'subway', name: '지하철역', code: 'SW8', color: '#7C3AED' }
+];
+
 const Home = () => {
   const [isWalking, setIsWalking] = useState(false);
   const [pathPositions, setPathPositions] = useState<kakao.maps.LatLng[]>([]);
@@ -50,12 +57,7 @@ const Home = () => {
     EXTENDED: 10000 // 10km
   } as const;
 
-  // 카테고리 정의
-  const categories: Category[] = [
-    { id: 'toilet', name: '화장실', code: '', color: '#4F46E5' }, // 화장실은 키워드 검색 사용
-    { id: 'convenience', name: '편의점', code: 'CS2', color: '#059669' },
-    { id: 'subway', name: '지하철역', code: 'SW8', color: '#7C3AED' }
-  ];
+  // 컴포넌트 내부에서 categories 정의 제거
 
   // OAuth 콜백 확인 (디버깅용)
   useEffect(() => {
@@ -405,7 +407,7 @@ const Home = () => {
       }
       
       // searchPlaces 함수를 직접 호출하여 무한 렌더링 방지
-      const category = categories.find(cat => cat.id === selectedCategory);
+      const category = CATEGORIES.find(cat => cat.id === selectedCategory);
       if (category) {
         isSearchingRef.current = true;
         setIsSearching(true);
@@ -497,7 +499,7 @@ const Home = () => {
     } else if (selectedCategory && !isPlacesServiceReady) {
       console.log('⏳ Places 서비스 대기 중...');
     }
-  }, [selectedCategory, isPlacesServiceReady, categories, performKeywordSearch, isMapReady]); // position 의존성 제거 - GPS 위치 업데이트로 인한 무한 루프 방지
+  }, [selectedCategory, isPlacesServiceReady, isMapReady]); // position 의존성 제거 - GPS 위치 업데이트로 인한 무한 루프 방지
 
   // GPS 위치가 크게 변경되었을 때만 선택적 재검색 (무한 루프 방지)
   const lastSearchPositionRef = useRef<kakao.maps.LatLng | null>(null);
@@ -525,7 +527,7 @@ const Home = () => {
     lastSearchPositionRef.current = position;
     
     // 카테고리가 선택된 상태에서만 재검색
-    const category = categories.find(cat => cat.id === selectedCategory);
+    const category = CATEGORIES.find(cat => cat.id === selectedCategory);
     if (category && placesServiceRef.current && !isSearchingRef.current) {
       isSearchingRef.current = true;
       setIsSearching(true);
@@ -712,7 +714,7 @@ const Home = () => {
         
         {/* 카테고리 버튼들 */}
         <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 flex gap-2 pointer-events-none">
-          {categories.map((category) => (
+          {CATEGORIES.map((category) => (
             <button
               key={category.id}
               onClick={() => handleCategoryClick(category.id)}
