@@ -6,6 +6,7 @@ import { GPSTracker } from '@/components/GPSTracker';
 import { useGPSStore } from '@/features/gps/gpsSlice';
 import { calculateDistance as calculateCoordinateDistance } from '@/utils/converter/pathConverter';
 import { isOAuthCallback } from '@/utils/oauth';
+import BottomSheet from '@/components/ui/BottomSheet';
 import './index.css';
 
 // 개발 모드에서만 로그를 출력하는 래퍼 함수
@@ -59,6 +60,7 @@ const Home = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [isPlacesServiceReady, setIsPlacesServiceReady] = useState(false);
   const [isMapReady, setIsMapReady] = useState(false);
+  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const map = useRef<kakao.maps.Map | null>(null);
   const polyline = useRef<kakao.maps.Polyline | null>(null);
   const markersRef = useRef<kakao.maps.Marker[]>([]);
@@ -123,6 +125,7 @@ const Home = () => {
   const handleStartWalk = () => {
     setIsWalking(true);
     setPathPositions([]);
+    setIsBottomSheetOpen(false); // 바텀시트 닫기
     toast.success('산책을 시작합니다!', {
       description: 'GPS 신호가 안정적인 실외에서 이용해주세요.',
     });
@@ -131,6 +134,7 @@ const Home = () => {
   // 산책 종료
   const handleEndWalk = () => {
     setIsWalking(false);
+    setIsBottomSheetOpen(false); // 바텀시트 닫기
     // TODO: 산책 기록 저장 로직 추가
     toast.success('산책이 종료되었습니다!', {
       description: `총 거리: ${calculateTotalDistance(pathPositions).toFixed(2)}km`,
@@ -780,8 +784,18 @@ const Home = () => {
           </button>
         </div>
 
+        {/* 지도 하단 중앙 - 바텀시트 열기 버튼 */}
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 pointer-events-none">
+          <button
+            onClick={() => setIsBottomSheetOpen(true)}
+            className="p-3 rounded-full bg-white/90 shadow-lg hover:bg-white transition-all pointer-events-auto"
+          >
+            <span className="material-icons text-gray-700">keyboard_arrow_up</span>
+          </button>
+        </div>
+
         {/* 카테고리 버튼들 */}
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 flex gap-2 pointer-events-none">
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 flex gap-2 pointer-events-none category-buttons">
           {CATEGORIES.map((category) => (
             <button
               key={category.id}
@@ -801,42 +815,29 @@ const Home = () => {
           ))}
         </div>
 
-        {/* 우측 상단 - GPS 상태 및 산책 버튼 */}
-        <div className="absolute top-4 right-4 z-10 flex items-center gap-2 pointer-events-none">
-          {/* GPS 상태 표시 */}
-          <div className="flex items-center gap-1 px-2 py-1 bg-white/90 rounded-full shadow-lg text-xs pointer-events-auto">
-            {isLoading ? (
-              <span className="text-blue-500">📍 GPS 로딩중...</span>
-            ) : error ? (
-              <span className="text-red-500">❌ GPS 오류</span>
-            ) : position ? (
-              <span className="text-green-500">✅ GPS 연결됨</span>
-            ) : (
-              <span className="text-gray-500">⏳ GPS 대기중</span>
-            )}
-          </div>
-
+        {/* 우측 상단 - 산책 시작 버튼 */}
+        <div className="absolute top-4 right-4 z-10 pointer-events-none">
           {!isWalking ? (
             <button
               onClick={handleStartWalk}
               disabled={!!error}
-              className="px-4 py-2 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed pointer-events-auto"
+              className="px-4 py-2 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed pointer-events-auto font-medium"
             >
-              산책 시작
+              Walk it!
             </button>
           ) : (
             <button
               onClick={handleEndWalk}
-              className="px-4 py-2 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition-all pointer-events-auto"
+              className="px-4 py-2 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition-all pointer-events-auto font-medium"
             >
-              산책 종료
+              Stop
             </button>
           )}
         </div>
 
         {/* 검색 결과 표시 */}
         {places.length > 0 && (
-          <div className="absolute top-16 left-4 right-4 z-10 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 max-h-60 overflow-y-auto pointer-events-auto">
+          <div className="absolute top-16 left-4 right-4 z-10 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 max-h-60 overflow-y-auto pointer-events-auto search-results">
             <div className="p-3">
               <h3 className="text-sm font-semibold text-gray-800 mb-2">
                 검색 결과 ({places.length}개)
@@ -873,6 +874,118 @@ const Home = () => {
             </div>
           </div>
         )}
+
+        {/* 바텀시트 */}
+        <BottomSheet
+          isOpen={isBottomSheetOpen}
+          onClose={() => setIsBottomSheetOpen(false)}
+          title="산책 컨트롤"
+          defaultSnapPoint={40}
+          className="safe-area-bottom"
+        >
+        <div className="space-y-6">
+          {/* GPS 상태 */}
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">GPS 상태</h3>
+            <div className="flex items-center gap-2">
+              {isLoading ? (
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                  <span className="text-sm text-blue-600">GPS 로딩중...</span>
+                </div>
+              ) : error ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-red-500">❌</span>
+                  <span className="text-sm text-red-600">GPS 오류</span>
+                </div>
+              ) : position ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-green-500">✅</span>
+                  <span className="text-sm text-green-600">GPS 연결됨</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-500">⏳</span>
+                  <span className="text-sm text-gray-600">GPS 대기중</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* 산책 정보 */}
+          {isWalking && (
+            <div className="bg-blue-50 rounded-lg p-4">
+              <h3 className="text-sm font-semibold text-blue-700 mb-3">산책 정보</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-sm text-blue-600">총 거리:</span>
+                  <span className="text-sm font-medium text-blue-700">
+                    {calculateTotalDistance(pathPositions).toFixed(2)}km
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-blue-600">경로 포인트:</span>
+                  <span className="text-sm font-medium text-blue-700">
+                    {pathPositions.length}개
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 산책 컨트롤 버튼 */}
+          <div className="space-y-3">
+            {!isWalking ? (
+              <button
+                onClick={handleStartWalk}
+                disabled={!!error}
+                className="w-full py-4 bg-green-500 text-white rounded-lg shadow-lg hover:bg-green-600 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
+              >
+                🚶‍♂️ 산책 시작
+              </button>
+            ) : (
+              <button
+                onClick={handleEndWalk}
+                className="w-full py-4 bg-red-500 text-white rounded-lg shadow-lg hover:bg-red-600 transition-all font-medium"
+              >
+                🛑 산책 종료
+              </button>
+            )}
+          </div>
+
+          {/* 추가 기능들 */}
+          <div className="space-y-3">
+            <button
+              onClick={() => {
+                if (position && map.current) {
+                  const latLng = new window.kakao.maps.LatLng(
+                    position.getLat(),
+                    position.getLng()
+                  );
+                  (map.current as any).panTo(latLng);
+                  setIsBottomSheetOpen(false);
+                  toast.success('현재 위치로 이동했습니다!');
+                } else {
+                  toast.error('GPS 위치를 가져올 수 없습니다.');
+                }
+              }}
+              className="w-full py-3 bg-blue-500 text-white rounded-lg shadow-lg hover:bg-blue-600 transition-all font-medium"
+            >
+              📍 현재 위치로 이동
+            </button>
+            
+            <button
+              onClick={() => {
+                navigate('/friends');
+                setIsBottomSheetOpen(false);
+              }}
+              className="w-full py-3 bg-purple-500 text-white rounded-lg shadow-lg hover:bg-purple-600 transition-all font-medium"
+            >
+              👥 친구 목록
+            </button>
+          </div>
+        </div>
+      </BottomSheet>
       </div>
     </div>
   );
