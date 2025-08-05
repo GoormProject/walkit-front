@@ -242,7 +242,7 @@ const Home = () => {
         mapLevel: map.current?.getLevel()
       });
     }, 100);
-  }, [isMapReady, places]);
+  }, [isMapReady]); // places 의존성 제거
 
   // 장소 정보 표시
   const displayPlaceInfo = useCallback((place: Place) => {
@@ -445,7 +445,7 @@ const Home = () => {
     } else if (selectedCategory && !isPlacesServiceReady) {
       console.log('⏳ Places 서비스 대기 중...');
     }
-  }, [selectedCategory, isPlacesServiceReady, position, categories, displayPlaces, performKeywordSearch, isMapReady]); // 모든 의존성 포함
+  }, [selectedCategory, isPlacesServiceReady, position, categories, performKeywordSearch, isMapReady]); // displayPlaces 의존성 제거
 
   // Places 서비스 준비 시 이전 선택된 카테고리 검색 실행
   useEffect(() => {
