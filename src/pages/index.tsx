@@ -311,7 +311,12 @@ const Home = () => {
             setIsSearching(false);
             isSearchingRef.current = false;
             if (status === window.kakao.maps.services.Status.OK && data?.length > 0) {
-              onSuccess(data, keywords[0]);
+              // 카테고리 상태 확인 후 마커 생성
+              if (selectedCategory === category.id) {
+                onSuccess(data, keywords[0]);
+              } else {
+                console.log('⏭️ 카테고리가 변경됨 - 마커 생성 건너뜀 (확장 검색)');
+              }
             }
           },
           { 
@@ -337,7 +342,12 @@ const Home = () => {
           if (status === window.kakao.maps.services.Status.OK && data.length > 0) {
             console.log('✅ 검색 성공');
             setPlaces(data);
-            onSuccess(data, keywords[idx]);
+            // 카테고리 상태 확인 후 마커 생성
+            if (selectedCategory === category.id) {
+              onSuccess(data, keywords[idx]);
+            } else {
+              console.log('⏭️ 카테고리가 변경됨 - 마커 생성 건너뜀 (일반 검색)');
+            }
             setIsSearching(false);
             isSearchingRef.current = false;
           } else {
@@ -353,7 +363,7 @@ const Home = () => {
     };
     
     trySearch();
-  }, []);
+  }, [selectedCategory]); // selectedCategory 의존성 추가
 
   // 카테고리 변경 시 검색 실행 (GPS 위치 업데이트와 분리)
   useEffect(() => {
