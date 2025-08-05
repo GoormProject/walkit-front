@@ -89,27 +89,10 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
           mapInstance: !!mapInstance,
         });
 
-        // 지도 이벤트 리스너 테스트 (지도 상호작용 확인용)
-        window.kakao.maps.event.addListener(mapInstance, 'click', function(mouseEvent: any) {
-          const latlng = mouseEvent.latLng;
-          console.log('🗺️ 지도 클릭됨:', {
-            lat: latlng.getLat(),
-            lng: latlng.getLng(),
-            timestamp: new Date().toISOString()
-          });
-        });
-
-        window.kakao.maps.event.addListener(mapInstance, 'dragstart', function() {
-          console.log('🗺️ 지도 드래그 시작');
-        });
-
-        window.kakao.maps.event.addListener(mapInstance, 'dragend', function() {
-          console.log('🗺️ 지도 드래그 종료');
-        });
-
-        window.kakao.maps.event.addListener(mapInstance, 'zoom_changed', function() {
-          console.log('🗺️ 지도 줌 변경됨:', (mapInstance as any).getLevel());
-        });
+        // 지도 이벤트 리스너 (필요시 추가)
+        // window.kakao.maps.event.addListener(mapInstance, 'click', function(mouseEvent: any) {
+        //   console.log('지도 클릭됨:', mouseEvent.latLng);
+        // });
 
         // 지도 인스턴스 콜백
         onMapLoad?.(mapInstance);
@@ -170,31 +153,9 @@ export const KakaoMap: React.FC<KakaoMapProps> = ({
           style={{ 
             minHeight: '100%',
             position: 'relative',
-            zIndex: 9999
+            zIndex: 1
           }}
-          onClick={(e) => {
-            console.log('🗺️ 지도 컨테이너 클릭됨:', {
-              target: e.target,
-              currentTarget: e.currentTarget,
-              clientX: e.clientX,
-              clientY: e.clientY,
-              timestamp: new Date().toISOString()
-            });
-          }}
-          onMouseDown={(e) => {
-            console.log('🗺️ 지도 컨테이너 마우스 다운:', {
-              button: e.button,
-              clientX: e.clientX,
-              clientY: e.clientY
-            });
-          }}
-          onWheel={(e) => {
-            console.log('🗺️ 지도 컨테이너 휠 이벤트:', {
-              deltaY: e.deltaY,
-              clientX: e.clientX,
-              clientY: e.clientY
-            });
-          }}
+
         >
           {mapRef.current && <GPSTracker map={mapRef.current} />}
         </div>

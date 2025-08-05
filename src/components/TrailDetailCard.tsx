@@ -14,7 +14,7 @@ const TrailDetailCard: React.FC<TrailDetailCardProps> = ({
   error
 }) => {
   return (
-    <div className="absolute bottom-4 left-4 right-4 z-20">
+    <div className="absolute bottom-4 left-4 right-4 z-40 pointer-events-auto">
       <div className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
         {/* 헤더 */}
         <div className="flex items-center justify-between p-4 border-b border-gray-100">

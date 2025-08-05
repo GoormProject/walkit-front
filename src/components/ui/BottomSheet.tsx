@@ -125,12 +125,12 @@ const BottomSheet = ({
         <>
           {showBackdrop && (
             <Dialog.Overlay
-              className="absolute inset-0 z-40 bg-black/50 pointer-events-auto"
+              className="absolute inset-0 z-50 bg-black/50 pointer-events-auto"
             />
           )}
           <Dialog.Content
             ref={sheetRef}
-            className={`absolute bottom-0 left-0 right-0 z-50 bg-white rounded-t-xl shadow-2xl pointer-events-auto ${className}`}
+            className={`absolute bottom-0 left-0 right-0 z-60 bg-white rounded-t-xl shadow-2xl pointer-events-auto ${className}`}
             style={{
               height: isDragging
                 ? `${Math.max(10, Math.min(95, currentSnapPoint - ((currentY - startY) / window.innerHeight) * 100))}dvh`
