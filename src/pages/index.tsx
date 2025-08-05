@@ -10,17 +10,17 @@ import './index.css';
 
 // 개발 모드에서만 로그를 출력하는 래퍼 함수
 const logger = {
-  log: (...args: any[]) => {
-    if (process.env.NODE_ENV === 'development') {
+  log: (...args: unknown[]) => {
+    if (import.meta.env.DEV) {
       console.log(...args);
     }
   },
-  warn: (...args: any[]) => {
-    if (process.env.NODE_ENV === 'development') {
+  warn: (...args: unknown[]) => {
+    if (import.meta.env.DEV) {
       console.warn(...args);
     }
   },
-  error: (...args: any[]) => {
+  error: (...args: unknown[]) => {
     // 에러는 프로덕션에서도 로그 (중요한 에러이므로)
     console.error(...args);
   },
@@ -48,7 +48,7 @@ interface Category {
 const CATEGORIES: Category[] = [
   { id: 'toilet', name: '화장실', code: '', color: '#4F46E5' }, // 화장실은 키워드 검색 사용
   { id: 'convenience', name: '편의점', code: 'CS2', color: '#059669' },
-  { id: 'subway', name: '지하철역', code: 'SW8', color: '#7C3AED' }
+  { id: 'subway', name: '지하철역', code: 'SW8', color: '#7C3AED' },
 ];
 
 const Home = () => {
@@ -71,8 +71,8 @@ const Home = () => {
 
   // 검색 반경 상수
   const SEARCH_RADIUS = {
-    INITIAL: 5000,  // 5km
-    EXTENDED: 10000 // 10km
+    INITIAL: 5000, // 5km
+    EXTENDED: 10000, // 10km
   } as const;
 
   // 컴포넌트 내부에서 categories 정의 제거
@@ -177,116 +177,140 @@ const Home = () => {
   }, []);
 
   // 장소 마커 표시 (기존 마커 제거 후 새로 생성)
-  const displayPlaces = useCallback((places: Place[], category: Category) => {
-    console.log('🎯 displayPlaces 호출됨:', { 
-      placesCount: places?.length, 
-      category, 
-      hasMap: !!map.current,
-      isMapReady,
-      currentSelectedCategory: selectedCategory,
-      refSelectedCategory: selectedCategoryRef.current
-    });
-    
-    // 카테고리가 해제된 상태에서는 마커를 생성하지 않음 (ref 사용)
-    if (!selectedCategoryRef.current || selectedCategoryRef.current === '') {
-      console.log('⏭️ 카테고리가 해제됨 - 마커 생성 건너뜀 (ref 확인)');
-      return;
-    }
-    
-    // 선택된 카테고리와 일치하지 않으면 마커를 생성하지 않음 (ref 사용)
-    if (selectedCategoryRef.current !== category.id) {
-      console.log('⏭️ 카테고리가 변경됨 - 마커 생성 건너뜀 (ref 확인)', {
+  const displayPlaces = useCallback(
+    (places: Place[], category: Category) => {
+      console.log('🎯 displayPlaces 호출됨:', {
+        placesCount: places?.length,
+        category,
+        hasMap: !!map.current,
+        isMapReady,
+        currentSelectedCategory: selectedCategory,
         refSelectedCategory: selectedCategoryRef.current,
-        categoryId: category.id
       });
-      return;
-    }
-    
-    if (!map.current || !isMapReady) {
-      console.log('❌ 지도가 아직 준비되지 않음 - map.current:', !!map.current, 'isMapReady:', isMapReady);
-      return;
-    }
 
-    // 지도 상태 추가 확인
-    try {
-      const mapLevel = map.current.getLevel();
-      console.log('🗺️ 지도 상태 확인:', { mapLevel, isMapReady });
-    } catch (error) {
-      console.error('❌ 지도 상태 확인 실패:', error);
-      return;
-    }
-
-    // 기존 검색 마커 제거
-    removeMarkers();
-
-    console.log('📍 새로운 마커 생성:', places.length, '개');
-
-    places.forEach((place, index) => {
-      console.log('📍 마커 생성 중:', index + 1, '/', places.length, place.place_name);
-
-      try {
-        const lat = parseFloat(place.y);
-        const lng = parseFloat(place.x);
-
-        if (isNaN(lat) || isNaN(lng)) {
-          console.warn('⚠️ 잘못된 좌표:', place.place_name, 'lat:', place.y, 'lng:', place.x);
-          return;
-        }
-
-        const marker = new window.kakao.maps.Marker({
-          position: new window.kakao.maps.LatLng(lat, lng),
-          map: map.current!,
-        });
-
-        // 마커의 z-index를 설정 (타입 캐스팅 사용)
-        (marker as any).setZIndex(2);
-
-        // 마커 클릭 이벤트
-        window.kakao.maps.event.addListener(marker, 'click', () => {
-          displayPlaceInfo(place);
-        });
-
-        markersRef.current.push(marker);
-        console.log('✅ 마커 생성 성공:', place.place_name, '좌표:', { lat, lng });
-      } catch (error) {
-        console.error('❌ 마커 생성 실패:', place.place_name, error);
+      // 카테고리가 해제된 상태에서는 마커를 생성하지 않음 (ref 사용)
+      if (!selectedCategoryRef.current || selectedCategoryRef.current === '') {
+        console.log('⏭️ 카테고리가 해제됨 - 마커 생성 건너뜀 (ref 확인)');
+        return;
       }
-    });
 
-    console.log('✅ 마커 생성 완료:', markersRef.current.length, '개');
+      // 선택된 카테고리와 일치하지 않으면 마커를 생성하지 않음 (ref 사용)
+      if (selectedCategoryRef.current !== category.id) {
+        console.log('⏭️ 카테고리가 변경됨 - 마커 생성 건너뜀 (ref 확인)', {
+          refSelectedCategory: selectedCategoryRef.current,
+          categoryId: category.id,
+        });
+        return;
+      }
 
-    // 검색 결과로 지도 중심 이동 및 범위 조정
-    if (places.length > 0 && map.current) {
+      if (!map.current || !isMapReady) {
+        console.log(
+          '❌ 지도가 아직 준비되지 않음 - map.current:',
+          !!map.current,
+          'isMapReady:',
+          isMapReady
+        );
+        return;
+      }
+
+      // 지도 상태 추가 확인
       try {
-        const bounds = new window.kakao.maps.LatLngBounds();
-        places.forEach(place => {
+        const mapLevel = map.current.getLevel();
+        console.log('🗺️ 지도 상태 확인:', { mapLevel, isMapReady });
+      } catch (error) {
+        console.error('❌ 지도 상태 확인 실패:', error);
+        return;
+      }
+
+      // 기존 검색 마커 제거
+      removeMarkers();
+
+      console.log('📍 새로운 마커 생성:', places.length, '개');
+
+      places.forEach((place, index) => {
+        console.log(
+          '📍 마커 생성 중:',
+          index + 1,
+          '/',
+          places.length,
+          place.place_name
+        );
+
+        try {
           const lat = parseFloat(place.y);
           const lng = parseFloat(place.x);
-          if (!isNaN(lat) && !isNaN(lng)) {
-            bounds.extend(new window.kakao.maps.LatLng(lat, lng));
+
+          if (isNaN(lat) || isNaN(lng)) {
+            console.warn(
+              '⚠️ 잘못된 좌표:',
+              place.place_name,
+              'lat:',
+              place.y,
+              'lng:',
+              place.x
+            );
+            return;
           }
-        });
 
-        // 검색 결과가 모두 포함되도록 지도 범위 조정
-        map.current.setBounds(bounds);
+          const marker = new window.kakao.maps.Marker({
+            position: new window.kakao.maps.LatLng(lat, lng),
+            map: map.current!,
+          });
 
-        console.log('🗺️ 지도 범위 조정 완료:', {
-          placesCount: places.length,
-          bounds: bounds,
-        });
-      } catch (error) {
-        console.error('❌ 지도 범위 조정 실패:', error);
-      }
-    }
+          // 마커의 z-index를 설정 (타입 캐스팅 사용)
+          (marker as any).setZIndex(2);
 
-    // 마커가 지도에 제대로 표시되는지 확인
-    setTimeout(() => {
-      console.log('🔍 마커 표시 상태 확인:', {
-        markersCount: markersRef.current.length,
-        mapLevel: map.current?.getLevel(),
+          // 마커 클릭 이벤트
+          window.kakao.maps.event.addListener(marker, 'click', () => {
+            displayPlaceInfo(place);
+          });
+
+          markersRef.current.push(marker);
+          console.log('✅ 마커 생성 성공:', place.place_name, '좌표:', {
+            lat,
+            lng,
+          });
+        } catch (error) {
+          console.error('❌ 마커 생성 실패:', place.place_name, error);
+        }
       });
-    }, 100);
-  }, [isMapReady, selectedCategory]); // selectedCategory 의존성 추가
+
+      console.log('✅ 마커 생성 완료:', markersRef.current.length, '개');
+
+      // 검색 결과로 지도 중심 이동 및 범위 조정
+      if (places.length > 0 && map.current) {
+        try {
+          const bounds = new window.kakao.maps.LatLngBounds();
+          places.forEach(place => {
+            const lat = parseFloat(place.y);
+            const lng = parseFloat(place.x);
+            if (!isNaN(lat) && !isNaN(lng)) {
+              bounds.extend(new window.kakao.maps.LatLng(lat, lng));
+            }
+          });
+
+          // 검색 결과가 모두 포함되도록 지도 범위 조정
+          map.current.setBounds(bounds);
+
+          console.log('🗺️ 지도 범위 조정 완료:', {
+            placesCount: places.length,
+            bounds: bounds,
+          });
+        } catch (error) {
+          console.error('❌ 지도 범위 조정 실패:', error);
+        }
+      }
+
+      // 마커가 지도에 제대로 표시되는지 확인
+      setTimeout(() => {
+        console.log('🔍 마커 표시 상태 확인:', {
+          markersCount: markersRef.current.length,
+          mapLevel: map.current?.getLevel(),
+        });
+      }, 100);
+    },
+    [isMapReady, selectedCategory]
+  ); // selectedCategory 의존성 추가
 
   // 장소 정보 표시
   const displayPlaceInfo = useCallback((place: Place) => {
@@ -318,88 +342,120 @@ const Home = () => {
   }, []);
 
   // 공통 키워드 검색 함수
-  const performKeywordSearch = useCallback((
-    keywords: string[],
-    category: Category,
-    searchLocation: kakao.maps.LatLng | null,
-    onSuccess: (data: Place[], keyword: string) => void
-  ) => {
-    const trySearch = (idx = 0) => {
-      if (idx >= keywords.length) {
-        // 확장 검색
+  const performKeywordSearch = useCallback(
+    (
+      keywords: string[],
+      category: Category,
+      searchLocation: kakao.maps.LatLng | null,
+      onSuccess: (data: Place[], keyword: string) => void
+    ) => {
+      const trySearch = (idx = 0) => {
+        if (idx >= keywords.length) {
+          // 확장 검색
+          if (!placesServiceRef.current) {
+            console.error('❌ Places 서비스가 초기화되지 않았습니다.');
+            setIsSearching(false);
+            isSearchingRef.current = false;
+            return;
+          }
+          placesServiceRef.current.keywordSearch(
+            keywords[0],
+            (data: Place[], status: any) => {
+              console.log('🔍 넓은 범위 검색 결과:', {
+                status,
+                count: data?.length,
+              });
+              setPlaces(data || []);
+              setIsSearching(false);
+              isSearchingRef.current = false;
+              if (
+                status === window.kakao.maps.services.Status.OK &&
+                data?.length > 0
+              ) {
+                // 카테고리 상태 확인 후 마커 생성 (ref 사용)
+                if (selectedCategoryRef.current === category.id) {
+                  onSuccess(data, keywords[0]);
+                } else {
+                  console.log(
+                    '⏭️ 카테고리가 변경됨 - 마커 생성 건너뜀 (확장 검색, ref 확인)',
+                    {
+                      refSelectedCategory: selectedCategoryRef.current,
+                      categoryId: category.id,
+                    }
+                  );
+                }
+              }
+            },
+            {
+              useMapBounds: false,
+              location: searchLocation
+                ? new window.kakao.maps.LatLng(
+                    searchLocation.getLat(),
+                    searchLocation.getLng()
+                  )
+                : undefined,
+              radius: SEARCH_RADIUS.EXTENDED,
+            }
+          );
+          return;
+        }
+
         if (!placesServiceRef.current) {
           console.error('❌ Places 서비스가 초기화되지 않았습니다.');
           setIsSearching(false);
           isSearchingRef.current = false;
           return;
         }
+
         placesServiceRef.current.keywordSearch(
-          keywords[0],
+          keywords[idx],
           (data: Place[], status: any) => {
-            console.log('🔍 넓은 범위 검색 결과:', { status, count: data?.length });
-            setPlaces(data || []);
-            setIsSearching(false);
-            isSearchingRef.current = false;
-            if (status === window.kakao.maps.services.Status.OK && data?.length > 0) {
+            console.log('🔍 검색 결과:', {
+              keyword: keywords[idx],
+              status,
+              count: data?.length,
+            });
+            if (
+              status === window.kakao.maps.services.Status.OK &&
+              data.length > 0
+            ) {
+              console.log('✅ 검색 성공');
+              setPlaces(data);
               // 카테고리 상태 확인 후 마커 생성 (ref 사용)
               if (selectedCategoryRef.current === category.id) {
-                onSuccess(data, keywords[0]);
+                onSuccess(data, keywords[idx]);
               } else {
-                console.log('⏭️ 카테고리가 변경됨 - 마커 생성 건너뜀 (확장 검색, ref 확인)', {
-                  refSelectedCategory: selectedCategoryRef.current,
-                  categoryId: category.id
-                });
+                console.log(
+                  '⏭️ 카테고리가 변경됨 - 마커 생성 건너뜀 (일반 검색, ref 확인)',
+                  {
+                    refSelectedCategory: selectedCategoryRef.current,
+                    categoryId: category.id,
+                  }
+                );
               }
+              setIsSearching(false);
+              isSearchingRef.current = false;
+            } else {
+              trySearch(idx + 1);
             }
           },
-          { 
-            useMapBounds: false,
-            location: searchLocation ? new window.kakao.maps.LatLng(searchLocation.getLat(), searchLocation.getLng()) : undefined,
-            radius: SEARCH_RADIUS.EXTENDED
+          {
+            useMapBounds: true,
+            location: searchLocation
+              ? new window.kakao.maps.LatLng(
+                  searchLocation.getLat(),
+                  searchLocation.getLng()
+                )
+              : undefined,
+            radius: SEARCH_RADIUS.INITIAL,
           }
         );
-        return;
-      }
-      
-      if (!placesServiceRef.current) {
-        console.error('❌ Places 서비스가 초기화되지 않았습니다.');
-        setIsSearching(false);
-        isSearchingRef.current = false;
-        return;
-      }
-      
-      placesServiceRef.current.keywordSearch(
-        keywords[idx],
-        (data: Place[], status: any) => {
-          console.log('🔍 검색 결과:', { keyword: keywords[idx], status, count: data?.length });
-          if (status === window.kakao.maps.services.Status.OK && data.length > 0) {
-            console.log('✅ 검색 성공');
-            setPlaces(data);
-            // 카테고리 상태 확인 후 마커 생성 (ref 사용)
-            if (selectedCategoryRef.current === category.id) {
-              onSuccess(data, keywords[idx]);
-            } else {
-              console.log('⏭️ 카테고리가 변경됨 - 마커 생성 건너뜀 (일반 검색, ref 확인)', {
-                refSelectedCategory: selectedCategoryRef.current,
-                categoryId: category.id
-              });
-            }
-            setIsSearching(false);
-            isSearchingRef.current = false;
-          } else {
-            trySearch(idx + 1);
-          }
-        },
-        { 
-          useMapBounds: true,
-          location: searchLocation ? new window.kakao.maps.LatLng(searchLocation.getLat(), searchLocation.getLng()) : undefined,
-          radius: SEARCH_RADIUS.INITIAL
-        }
-      );
-    };
-    
-    trySearch();
-  }, []); // selectedCategory 의존성 제거 - ref 사용으로 변경
+      };
+
+      trySearch();
+    },
+    []
+  ); // selectedCategory 의존성 제거 - ref 사용으로 변경
 
   // 카테고리 변경 시 검색 실행 (GPS 위치 업데이트와 분리)
   useEffect(() => {
@@ -410,23 +466,28 @@ const Home = () => {
       hasMap: !!map.current,
       isMapReady,
     });
-    
+
     // selectedCategory가 빈 문자열이거나 없으면 검색하지 않음
     if (!selectedCategory || selectedCategory === '') {
       console.log('⏭️ 카테고리가 선택되지 않음 - 검색 건너뜀');
       return;
     }
-    
-    if (placesServiceRef.current && isPlacesServiceReady && map.current && isMapReady) {
+
+    if (
+      placesServiceRef.current &&
+      isPlacesServiceReady &&
+      map.current &&
+      isMapReady
+    ) {
       console.log('🚀 검색 실행 - 모든 조건 충족');
       console.log('📍 현재 위치 상태:', { hasPosition: !!position, position });
-      
+
       // 이미 검색 중이면 중복 실행 방지
       if (isSearchingRef.current) {
         console.log('⏳ 이미 검색 중 - 중복 실행 방지');
         return;
       }
-      
+
       // searchPlaces 함수를 직접 호출하여 무한 렌더링 방지
       const category = CATEGORIES.find(cat => cat.id === selectedCategory);
       if (category) {
@@ -487,7 +548,10 @@ const Home = () => {
               setPlaces(data);
               displayPlaces(data, category);
             } else {
-              console.log('❌ 편의점 검색 실패, 더 넓은 범위로 재시도:', status);
+              console.log(
+                '❌ 편의점 검색 실패, 더 넓은 범위로 재시도:',
+                status
+              );
               // 대안: 더 넓은 범위로 검색
               if (!placesServiceRef.current) {
                 console.error('❌ Places 서비스가 초기화되지 않았습니다.');
@@ -545,34 +609,43 @@ const Home = () => {
   // GPS 위치가 크게 변경되었을 때만 선택적 재검색 (무한 루프 방지)
   const lastSearchPositionRef = useRef<kakao.maps.LatLng | null>(null);
   useEffect(() => {
-    if (!position || !selectedCategory || !map.current || isSearchingRef.current) {
+    if (
+      !position ||
+      !selectedCategory ||
+      !map.current ||
+      isSearchingRef.current
+    ) {
       return;
     }
-    
+
     // 이전 검색 위치와 현재 위치 비교
     if (lastSearchPositionRef.current) {
-      const distance = calculateDistance(lastSearchPositionRef.current, position);
+      const distance = calculateDistance(
+        lastSearchPositionRef.current,
+        position
+      );
       // 500m 이상 이동했을 때만 재검색 (무한 루프 방지)
-      if (distance < 0.5) { // 0.5km = 500m
+      if (distance < 0.5) {
+        // 0.5km = 500m
         return;
       }
     }
-    
+
     console.log('📍 위치 크게 변경됨 - 재검색 실행:', {
       selectedCategory,
       newPosition: position,
-      previousPosition: lastSearchPositionRef.current
+      previousPosition: lastSearchPositionRef.current,
     });
-    
+
     // 검색 위치 업데이트
     lastSearchPositionRef.current = position;
-    
+
     // 카테고리가 선택된 상태에서만 재검색
     const category = CATEGORIES.find(cat => cat.id === selectedCategory);
     if (category && placesServiceRef.current && !isSearchingRef.current) {
       isSearchingRef.current = true;
       setIsSearching(true);
-      
+
       if (category.id === 'toilet') {
         const toiletKeywords = ['화장실', '공공화장실', 'toilet'];
         performKeywordSearch(
@@ -605,10 +678,13 @@ const Home = () => {
               displayPlaces(data, category);
             }
           },
-          { 
+          {
             useMapBounds: true,
-            location: new window.kakao.maps.LatLng(position.getLat(), position.getLng()),
-            radius: 5000
+            location: new window.kakao.maps.LatLng(
+              position.getLat(),
+              position.getLng()
+            ),
+            radius: 5000,
           }
         );
       }
@@ -782,7 +858,7 @@ const Home = () => {
 
         {/* 카테고리 버튼들 */}
         <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 flex gap-2 pointer-events-none">
-          {CATEGORIES.map((category) => (
+          {CATEGORIES.map(category => (
             <button
               key={category.id}
               onClick={() => handleCategoryClick(category.id)}
