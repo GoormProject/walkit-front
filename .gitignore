@@ -2,6 +2,7 @@
 
 .cursor/
 docs/
+docs/*
 .env
 env/
 .env.*

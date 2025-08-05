@@ -11,7 +11,7 @@ import swaggerGuard from './eslint-plugin-swagger-guard.js';
 
 export default [
   {
-    ignores: ['dist/**'],
+    ignores: ['dist/**', 'docs/**'],
   },
   ...tseslint.configs.recommended,
   js.configs.recommended,

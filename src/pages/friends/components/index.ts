@@ -1,0 +1,9 @@
+export { TotalFriendsSection } from './TotalFriendsSection';
+export { SearchBarSection } from './SearchBarSection';
+export { OfflineFriendsSection } from './OfflineFriendsSection';
+export { FriendDetailsSection } from './FriendDetailsSection';
+export { OnlineFriendsSection } from './OnlineFriendsSection';
+export { FriendRequestsSection } from './FriendRequestsSection';
+export { FriendStatusSection } from './FriendStatusSection';
+export { FriendsListSection } from './FriendsListSection';
+export { UserProfileSection } from './UserProfileSection';
