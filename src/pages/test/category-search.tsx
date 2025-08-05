@@ -33,11 +33,11 @@ const CategorySearchTest: React.FC = () => {
   const placeOverlayRef = useRef<any>(null);
   const placesServiceRef = useRef<any>(null);
   const isInitializedRef = useRef(false);
-  const isSearchingRef = useRef(false); // 검색 중 여부 ref 추가
+  const isSearchingRef = useRef(false);
 
   // 카테고리 정의 (카카오맵 API 카테고리 코드)
   const categories: Category[] = [
-    { id: 'toilet', name: '화장실', code: '', color: '#4F46E5' }, // 화장실은 키워드 검색 사용
+    { id: 'toilet', name: '화장실', code: '', color: '#4F46E5' },
     { id: 'convenience', name: '편의점', code: 'CS2', color: '#059669' },
     { id: 'subway', name: '지하철역', code: 'SW8', color: '#7C3AED' }
   ];
@@ -96,11 +96,38 @@ const CategorySearchTest: React.FC = () => {
     });
   }, []);
 
+  // 장소 정보 표시
+  const displayPlaceInfo = useCallback((place: Place) => {
+    if (!placeOverlayRef.current || !mapRef.current) return;
+
+    const content = `
+      <div class="placeinfo">
+        <a class="title" href="${place.place_url}" target="_blank" title="${place.place_name}">
+          ${place.place_name}
+        </a>
+        ${place.road_address_name 
+          ? `<span title="${place.road_address_name}">${place.road_address_name}</span>
+             <span class="jibun" title="${place.address_name}">(지번: ${place.address_name})</span>`
+          : `<span title="${place.address_name}">${place.address_name}</span>`
+        }
+        ${place.phone ? `<span class="tel">${place.phone}</span>` : ''}
+      </div>
+      <div class="after"></div>
+    `;
+
+    const contentNode = placeOverlayRef.current.getContent();
+    contentNode.innerHTML = content;
+    
+    placeOverlayRef.current.setPosition(new window.kakao.maps.LatLng(parseFloat(place.y), parseFloat(place.x)));
+    placeOverlayRef.current.setMap(mapRef.current);
+  }, []);
+
   // 장소 검색
   const searchPlaces = useCallback(() => {
     if (!selectedCategory || !placesServiceRef.current || isSearchingRef.current) {
       return;
     }
+    
     isSearchingRef.current = true;
     setIsSearching(true);
     
@@ -118,8 +145,6 @@ const CategorySearchTest: React.FC = () => {
       setIsSearching(false);
       return;
     }
-
-
 
     // 화장실 키워드 검색 (카테고리 코드 없음)
     if (category.id === 'toilet') {
@@ -143,7 +168,7 @@ const CategorySearchTest: React.FC = () => {
               tryToiletSearch(idx + 1);
             }
           },
-          { useMapBounds: true }
+          { useMapBounds: false }
         );
       };
       tryToiletSearch();
@@ -172,7 +197,7 @@ const CategorySearchTest: React.FC = () => {
               trySubwaySearch(idx + 1);
             }
           },
-          { useMapBounds: true }
+          { useMapBounds: false }
         );
       };
       trySubwaySearch();
@@ -192,12 +217,12 @@ const CategorySearchTest: React.FC = () => {
           setPlaces([]);
         }
       },
-      { useMapBounds: true }
+      { useMapBounds: false }
     );
-  }, [selectedCategory, categories, removeMarkers, displayPlaces, setPlaces, setIsSearching]);
+  }, [selectedCategory, categories, removeMarkers, displayPlaces]);
 
   // 지도 생성
-    const createMap = useCallback((position: { lat: number; lng: number }) => {
+  const createMap = useCallback((position: { lat: number; lng: number }) => {
     const map = createKakaoMap(position);
     mapRef.current = map;
 
@@ -215,41 +240,8 @@ const CategorySearchTest: React.FC = () => {
     });
     placeOverlayRef.current = placeOverlay;
 
-    // 지도 idle 이벤트 등록 (검색 중이면 무시)
-    window.kakao.maps.event.addListener(map, 'idle', () => {
-      if (selectedCategory && !isSearchingRef.current) {
-        searchPlaces();
-      }
-    });
-
     setIsLoading(false);
     isInitializedRef.current = true;
-  }, [selectedCategory, searchPlaces]);
-
-  // 장소 정보 표시
-  const displayPlaceInfo = useCallback((place: Place) => {
-    if (!placeOverlayRef.current || !mapRef.current) return;
-
-    const content = `
-      <div class="placeinfo">
-        <a class="title" href="${place.place_url}" target="_blank" title="${place.place_name}">
-          ${place.place_name}
-        </a>
-        ${place.road_address_name 
-          ? `<span title="${place.road_address_name}">${place.road_address_name}</span>
-             <span class="jibun" title="${place.address_name}">(지번: ${place.address_name})</span>`
-          : `<span title="${place.address_name}">${place.address_name}</span>`
-        }
-        ${place.phone ? `<span class="tel">${place.phone}</span>` : ''}
-      </div>
-      <div class="after"></div>
-    `;
-
-    const contentNode = placeOverlayRef.current.getContent();
-    contentNode.innerHTML = content;
-    
-    placeOverlayRef.current.setPosition(new window.kakao.maps.LatLng(parseFloat(place.y), parseFloat(place.x)));
-    placeOverlayRef.current.setMap(mapRef.current);
   }, []);
 
   // 카테고리 선택
@@ -308,10 +300,10 @@ const CategorySearchTest: React.FC = () => {
 
   // 카테고리 변경 시 검색 실행
   useEffect(() => {
-    if (isInitializedRef.current && selectedCategory) {
+    if (isInitializedRef.current && selectedCategory && !isSearchingRef.current) {
       searchPlaces();
     }
-  }, [selectedCategory, searchPlaces]);
+  }, [selectedCategory]); // searchPlaces 의존성 제거로 무한루프 방지
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
