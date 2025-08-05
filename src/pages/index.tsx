@@ -280,25 +280,6 @@ const Home = () => {
         map: map.current,
       });
       
-      // 마커 정보창 추가 (더 예쁘게 스타일링)
-      const infowindow = new (window.kakao.maps as any).InfoWindow({
-        content: `<div style="padding:12px;text-align:center;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
-          <h3 style="margin:0 0 8px 0;font-size:16px;font-weight:bold;color:#333;">${trail.name}</h3>
-          <p style="margin:0 0 4px 0;font-size:13px;color:#666;">${trail.description}</p>
-          <span style="display:inline-block;padding:2px 8px;background:#e3f2fd;color:#1976d2;border-radius:12px;font-size:11px;font-weight:500;">${trail.category}</span>
-        </div>`
-      });
-      
-      // 마커 클릭 시 정보창 표시
-      window.kakao.maps.event.addListener(marker, 'click', () => {
-        infowindow.open(map.current, marker);
-      });
-      
-      // 자동으로 정보창 표시 (산책로 상세보기 시)
-      setTimeout(() => {
-        infowindow.open(map.current, marker);
-      }, 500);
-      
       setTrailMarker(marker);
       
       console.log('🎯 산책로 마커 생성 완료:', {
