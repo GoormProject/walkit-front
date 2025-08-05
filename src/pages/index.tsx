@@ -40,6 +40,7 @@ const Home = () => {
   const placeOverlayRef = useRef<kakao.maps.CustomOverlay | null>(null);
   const placesServiceRef = useRef<kakao.maps.services.Places | null>(null);
   const isSearchingRef = useRef(false);
+  const selectedCategoryRef = useRef<string>(''); // 현재 카테고리 상태를 실시간으로 추적
   const { error, isLoading, position } = useGPSStore();
   const navigate = useNavigate();
 
@@ -92,6 +93,11 @@ const Home = () => {
       selectedCategory
     });
   }, [isMapReady, isPlacesServiceReady, selectedCategory]);
+
+  // selectedCategory 상태가 변경될 때마다 ref도 업데이트
+  useEffect(() => {
+    selectedCategoryRef.current = selectedCategory;
+  }, [selectedCategory]);
 
   // 산책 시작
   const handleStartWalk = () => {
@@ -157,19 +163,20 @@ const Home = () => {
       category, 
       hasMap: !!map.current,
       isMapReady,
-      currentSelectedCategory: selectedCategory
+      currentSelectedCategory: selectedCategory,
+      refSelectedCategory: selectedCategoryRef.current
     });
     
-    // 카테고리가 해제된 상태에서는 마커를 생성하지 않음
-    if (!selectedCategory || selectedCategory === '') {
-      console.log('⏭️ 카테고리가 해제됨 - 마커 생성 건너뜀');
+    // 카테고리가 해제된 상태에서는 마커를 생성하지 않음 (ref 사용)
+    if (!selectedCategoryRef.current || selectedCategoryRef.current === '') {
+      console.log('⏭️ 카테고리가 해제됨 - 마커 생성 건너뜀 (ref 확인)');
       return;
     }
     
-    // 선택된 카테고리와 일치하지 않으면 마커를 생성하지 않음
-    if (selectedCategory !== category.id) {
-      console.log('⏭️ 카테고리가 변경됨 - 마커 생성 건너뜀', {
-        selectedCategory,
+    // 선택된 카테고리와 일치하지 않으면 마커를 생성하지 않음 (ref 사용)
+    if (selectedCategoryRef.current !== category.id) {
+      console.log('⏭️ 카테고리가 변경됨 - 마커 생성 건너뜀 (ref 확인)', {
+        refSelectedCategory: selectedCategoryRef.current,
         categoryId: category.id
       });
       return;
@@ -311,11 +318,14 @@ const Home = () => {
             setIsSearching(false);
             isSearchingRef.current = false;
             if (status === window.kakao.maps.services.Status.OK && data?.length > 0) {
-              // 카테고리 상태 확인 후 마커 생성
-              if (selectedCategory === category.id) {
+              // 카테고리 상태 확인 후 마커 생성 (ref 사용)
+              if (selectedCategoryRef.current === category.id) {
                 onSuccess(data, keywords[0]);
               } else {
-                console.log('⏭️ 카테고리가 변경됨 - 마커 생성 건너뜀 (확장 검색)');
+                console.log('⏭️ 카테고리가 변경됨 - 마커 생성 건너뜀 (확장 검색, ref 확인)', {
+                  refSelectedCategory: selectedCategoryRef.current,
+                  categoryId: category.id
+                });
               }
             }
           },
@@ -342,11 +352,14 @@ const Home = () => {
           if (status === window.kakao.maps.services.Status.OK && data.length > 0) {
             console.log('✅ 검색 성공');
             setPlaces(data);
-            // 카테고리 상태 확인 후 마커 생성
-            if (selectedCategory === category.id) {
+            // 카테고리 상태 확인 후 마커 생성 (ref 사용)
+            if (selectedCategoryRef.current === category.id) {
               onSuccess(data, keywords[idx]);
             } else {
-              console.log('⏭️ 카테고리가 변경됨 - 마커 생성 건너뜀 (일반 검색)');
+              console.log('⏭️ 카테고리가 변경됨 - 마커 생성 건너뜀 (일반 검색, ref 확인)', {
+                refSelectedCategory: selectedCategoryRef.current,
+                categoryId: category.id
+              });
             }
             setIsSearching(false);
             isSearchingRef.current = false;
@@ -363,7 +376,7 @@ const Home = () => {
     };
     
     trySearch();
-  }, [selectedCategory]); // selectedCategory 의존성 추가
+  }, []); // selectedCategory 의존성 제거 - ref 사용으로 변경
 
   // 카테고리 변경 시 검색 실행 (GPS 위치 업데이트와 분리)
   useEffect(() => {
