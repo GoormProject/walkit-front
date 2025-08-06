@@ -1,5 +1,3 @@
-import Button from '@/components/ui/Button';
-import { ChevronLeft } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { FriendPagesTab } from '@/components/ui/friends/FriendPagesTab';
 import { OfflineFriendsViewOnly } from '@/components/ui/friends/viewonly/OfflineFriendsViewOnly';
@@ -49,12 +47,9 @@ const FriendsScreen = (): React.ReactNode => {
         </div>
       </div> */}
 
-      {/* Header */}
+      {/* Page-Header */}
       <div className="w-full h-[8.9dvh] flex items-center px-5 border-b border-[#dfe3e7]">
-        <Button variant="ghost" className="w-[30px] h-[30px] p-0 mr-[35px]">
-          <ChevronLeft className="w-[21px] h-5" />
-        </Button>
-        <div className="flex-1 text-center [font-family:'Roboto-SemiBold',Helvetica] font-semibold text-black text-lg tracking-[0] leading-[normal]">
+        <div className="flex-1 text-center [font-family:'Roboto-SemiBold',Helvetica] font-semibold text-black text-4xl tracking-[0] leading-[normal]">
           친구 관리
         </div>
       </div>
