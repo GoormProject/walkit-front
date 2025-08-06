@@ -57,7 +57,7 @@ const TrailDetailCard: React.FC<TrailDetailCardProps> = ({
     };
 
     fetchTrailDetail();
-  }, [trail.id]);
+  }, [trail.id, onTrailPathUpdate]);
 
   return (
     <div className="absolute bottom-4 left-4 right-4 z-40 pointer-events-auto">
