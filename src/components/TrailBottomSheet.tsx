@@ -173,20 +173,22 @@ const TrailBottomSheet: React.FC<TrailBottomSheetProps> = ({
               ) : (
                 <>
                   <div className="bg-blue-500 rounded-lg p-4 text-white">
-                    <div className="flex justify-between items-start">
-                      <div className="space-y-2 text-left">
-                        <h3 className="text-lg font-semibold">{weatherInfo.city}</h3>
-                        <div className="text-3xl font-bold">{weatherInfo.temperature}°C</div>
-                        <div className="text-sm space-y-1">
-                          <div>습도: {weatherInfo.humidity}%</div>
-                          <div>풍속: {weatherInfo.windSpeed}m/s</div>
+                    {weatherInfo && (
+                      <div className="flex justify-between items-start">
+                          <div className="space-y-2 text-left">
+                            <h3 className="text-lg font-semibold">{weatherInfo.city}</h3>
+                            <div className="text-3xl font-bold">{weatherInfo.temperature}°C</div>
+                            <div className="text-sm space-y-1">
+                              <div>습도: {weatherInfo.humidity}%</div>
+                              <div>풍속: {weatherInfo.windSpeed}m/s</div>
+                            </div>
+                          </div>
+                        <div className="text-right space-y-2">
+                          <div className="text-4xl">{weatherInfo.icon}</div>
+                          <div className="text-sm">{weatherInfo.condition}</div>
                         </div>
                       </div>
-                      <div className="text-right space-y-2">
-                        <div className="text-4xl">{weatherInfo.icon}</div>
-                        <div className="text-sm">{weatherInfo.condition}</div>
-                      </div>
-                    </div>
+                    )}
                   </div>
                   <div className="mt-4 text-center text-gray-500 text-sm">
                     <div className="text-left font-semibold text-black mb-2">날씨 예보</div>
