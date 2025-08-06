@@ -351,7 +351,7 @@ const getMockTrailById = async (trailId: number): Promise<TrailDetailResponse> =
     message: '단건 조회 성공',
     data: {
       title: '남산 둘레길',
-      description: '남산 둘레기를 돌아보는 초급 코스입니다.',
+      description: '남산 둘레길을 돌아보는 초급 코스입니다.',
       location: '서울 중구 남산공원',
       length: 3.8,
       routeImageUrl: 'https://example.com/images/namsan-trail.png',
