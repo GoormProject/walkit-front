@@ -1,12 +1,16 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from '@/components/ui/friends/Avatar';
+import { Badge } from '@/components/ui/friends/Badge';
+import Button from '@/components/ui/Button';
 import { MoreVertical } from 'lucide-react';
 import React from 'react';
 
-export const FriendsListSection = (): JSX.Element => {
+export const FriendsListSection = (): React.ReactNode => {
   return (
-    <div className="w-full h-[63px] bg-white border-b border-gray-200 relative">
+    <div className="w-full h-[7.8dvh] bg-white border-b border-gray-200 relative">
       <div className="flex items-center justify-between px-4 py-2 h-full">
         <div className="flex items-center gap-3">
           <div className="relative">

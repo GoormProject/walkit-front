@@ -1,7 +1,7 @@
 import React from 'react';
 import FriendsScreen from './FriendsScreen';
 
-const TempFriendsPage = (): JSX.Element => {
+const TempFriendsPage = (): React.ReactNode => {
   return <FriendsScreen />;
 };
 

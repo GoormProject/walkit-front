@@ -96,11 +96,20 @@ export interface WalkRequest {
    * @maxLength 100
    */
   walkTitle: string;
-  /** @format int32 */
+  /**
+   * @format int32
+   * @min 0
+   */
   totalTime: number;
-  /** @format double */
+  /**
+   * @format double
+   * @min 0
+   */
   totalDistance: number;
-  /** @format double */
+  /**
+   * @format double
+   * @min 0
+   */
   pace: number;
   /** @minItems 1 */
   path: number[][];
@@ -124,6 +133,56 @@ export interface WalkCreateResponse {
   walkId?: number;
 }
 
+export interface GeoPoint {
+  /** @format double */
+  longitude?: number;
+  /** @format double */
+  latitude?: number;
+}
+
+export interface TrailCreateRequest {
+  /** @format int64 */
+  walkId: number;
+  /**
+   * @minLength 1
+   * @maxLength 100
+   */
+  title?: string;
+  /**
+   * @minLength 1
+   * @maxLength 100
+   */
+  description?: string;
+  /**
+   * @minLength 1
+   * @maxLength 100
+   */
+  location?: string;
+  /** @format double */
+  length: number;
+  routeImageUrl?: string;
+  geoPoint: GeoPoint;
+  path: GeoPoint[];
+  isUploaded: boolean;
+}
+
+export interface BaseResponseTrailCreateResponse {
+  /** @format int32 */
+  httpStatus?: number;
+  message?: string;
+  data?: TrailCreateResponse;
+}
+
+export interface TrailCreateResponse {
+  /** @format int64 */
+  walkId?: number;
+  /** @format int64 */
+  trailId?: number;
+  /** @format date-time */
+  createdAt?: string;
+  isUploaded?: boolean;
+}
+
 export interface BaseResponseFriendRequestResponseDTO {
   /** @format int32 */
   httpStatus?: number;
@@ -144,6 +203,45 @@ export interface BaseResponseVoid {
   httpStatus?: number;
   message?: string;
   data?: any;
+}
+
+export interface BaseResponseWeatherForecastResponseDto {
+  /** @format int32 */
+  httpStatus?: number;
+  message?: string;
+  data?: WeatherForecastResponseDto;
+}
+
+export interface WeatherDto {
+  /** @format double */
+  temperature?: number;
+  weather?: string;
+  /** @format int32 */
+  humidity?: number;
+  /** @format double */
+  windSpeed?: number;
+  /** @format int32 */
+  clouds?: number;
+}
+
+export interface WeatherForecastResponseDto {
+  adminAreaName?: string;
+  current?: WeatherDto;
+  after3hours?: WeatherDto;
+  tomorrow?: WeatherDto;
+  dayAfterTomorrow?: WeatherDto;
+  threeDaysLater?: WeatherDto;
+}
+
+export interface BaseResponseClothResponse {
+  /** @format int32 */
+  httpStatus?: number;
+  message?: string;
+  data?: ClothResponse;
+}
+
+export interface ClothResponse {
+  recommendations?: any[];
 }
 
 export interface BaseResponseListWalkListResponse {
@@ -172,11 +270,102 @@ export interface WalkListResponse {
   isUploaded?: boolean;
 }
 
-export interface BaseResponseListFriendResponseDTO {
+export interface BaseResponsePageTrailListResponse {
   /** @format int32 */
   httpStatus?: number;
   message?: string;
-  data?: FriendResponseDTO[];
+  data?: PageTrailListResponse;
+}
+
+export interface PageTrailListResponse {
+  /** @format int64 */
+  totalElements?: number;
+  /** @format int32 */
+  totalPages?: number;
+  first?: boolean;
+  last?: boolean;
+  /** @format int32 */
+  size?: number;
+  content?: TrailListResponse[];
+  /** @format int32 */
+  number?: number;
+  sort?: SortObject;
+  /** @format int32 */
+  numberOfElements?: number;
+  pageable?: PageableObject;
+  empty?: boolean;
+}
+
+export interface PageableObject {
+  /** @format int64 */
+  offset?: number;
+  sort?: SortObject;
+  paged?: boolean;
+  /** @format int32 */
+  pageNumber?: number;
+  /** @format int32 */
+  pageSize?: number;
+  unpaged?: boolean;
+}
+
+export interface SortObject {
+  empty?: boolean;
+  sorted?: boolean;
+  unsorted?: boolean;
+}
+
+export interface TrailListResponse {
+  /** @format int64 */
+  trailId?: number;
+  title?: string;
+  location?: string;
+  /** @format double */
+  length?: number;
+  routeImageUrl?: string;
+  /** @format int32 */
+  reviewCount?: number;
+  /** @format double */
+  rating?: number;
+}
+
+export interface BaseResponseTrailDetailResponse {
+  /** @format int32 */
+  httpStatus?: number;
+  message?: string;
+  data?: TrailDetailResponse;
+}
+
+export interface TrailDetailResponse {
+  title?: string;
+  description?: string;
+  location?: string;
+  /** @format double */
+  length?: number;
+  routeImageUrl?: string;
+  /** @format int32 */
+  reviewCount?: number;
+  /** @format double */
+  rating?: number;
+  startPoint?: number[];
+  path?: number[][];
+}
+
+export interface BaseResponseFriendListResponseDTO {
+  /** @format int32 */
+  httpStatus?: number;
+  message?: string;
+  data?: FriendListResponseDTO;
+}
+
+export interface FriendListResponseDTO {
+  /** @format int32 */
+  total?: number;
+  /** @format int32 */
+  online?: number;
+  /** @format int32 */
+  offline?: number;
+  onlineFriends?: FriendResponseDTO[];
+  offlineFriends?: FriendResponseDTO[];
 }
 
 export interface FriendResponseDTO {
@@ -185,7 +374,13 @@ export interface FriendResponseDTO {
   nickname?: string;
   profile?: string;
   memberStatus?: 'OFFLINE' | 'ONLINE' | 'WALKING';
-  lastLocation?: LocationDto;
+}
+
+export interface BaseResponseListFriendResponseDTO {
+  /** @format int32 */
+  httpStatus?: number;
+  message?: string;
+  data?: FriendResponseDTO[];
 }
 
 export interface BaseResponseListSentFriendResponse {
@@ -211,6 +406,23 @@ export interface ReceivedFriendResponse {
   senderNickname?: string;
   profile?: string;
   requestStatus?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+}
+
+export interface BaseResponseListFriendLocationResponseDTO {
+  /** @format int32 */
+  httpStatus?: number;
+  message?: string;
+  data?: FriendLocationResponseDTO[];
+}
+
+export interface FriendLocationResponseDTO {
+  /** @format int64 */
+  friendId?: number;
+  /** @format int64 */
+  memberId?: number;
+  nickname?: string;
+  profile?: string;
+  location?: LocationDto;
 }
 
 export interface BaseResponseCurrentUserDto {
@@ -504,7 +716,7 @@ export class Api<
       data: {
         data: ProfileRequest;
         /** @format binary */
-        profileImage: File;
+        profileImage?: File;
       },
       params: RequestParams = {}
     ) =>
@@ -613,6 +825,23 @@ export class Api<
       }),
 
     /**
+     * @description 새로운 산책로를 등록합니다.
+     *
+     * @tags 산책로
+     * @name CreateTrail
+     * @summary 산책로 생성
+     * @request POST:/api/trails/new
+     */
+    createTrail: (data: TrailCreateRequest, params: RequestParams = {}) =>
+      this.request<BaseResponseTrailCreateResponse, any>({
+        path: `/api/trails/new`,
+        method: 'POST',
+        body: data,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
      * @description 다른 사용자에게 친구 요청을 보냅니다.
      *
      * @tags 친구
@@ -682,6 +911,48 @@ export class Api<
       }),
 
     /**
+     * @description 내 주변의 날씨 예보를 조회합니다.
+     *
+     * @tags 날씨
+     * @name GetWeatherByCurrentLocation
+     * @summary 주변 날씨 조회
+     * @request GET:/api/weather
+     */
+    getWeatherByCurrentLocation: (
+      query: {
+        location: LocationDto;
+      },
+      params: RequestParams = {}
+    ) =>
+      this.request<BaseResponseWeatherForecastResponseDto, any>({
+        path: `/api/weather`,
+        method: 'GET',
+        query: query,
+        ...params,
+      }),
+
+    /**
+     * @description 내 주변에 추천하는 옷차림을 조회합니다.
+     *
+     * @tags 날씨
+     * @name GetClothRecommendations
+     * @summary 맞춤 옷차림 조회
+     * @request GET:/api/weather/clothing
+     */
+    getClothRecommendations: (
+      query: {
+        location: LocationDto;
+      },
+      params: RequestParams = {}
+    ) =>
+      this.request<BaseResponseClothResponse, any>({
+        path: `/api/weather/clothing`,
+        method: 'GET',
+        query: query,
+        ...params,
+      }),
+
+    /**
      * @description 자신이 기록한 모든 산책 기록의 목록을 조회합니다.
      *
      * @tags 산책 기록
@@ -697,6 +968,46 @@ export class Api<
       }),
 
     /**
+     * @description 페이징 처리된 산책로 목록을 조회합니다.
+     *
+     * @tags 산책로
+     * @name GetTrailList
+     * @summary 산책로 목록 조회
+     * @request GET:/api/trails
+     */
+    getTrailList: (
+      query?: {
+        /**
+         * @format int32
+         * @default 0
+         */
+        page?: number;
+      },
+      params: RequestParams = {}
+    ) =>
+      this.request<BaseResponsePageTrailListResponse, any>({
+        path: `/api/trails`,
+        method: 'GET',
+        query: query,
+        ...params,
+      }),
+
+    /**
+     * @description 특정 산책로의 상세 정보를 조회합니다.
+     *
+     * @tags 산책로
+     * @name GetTrailDetail
+     * @summary 산책로 상세 조회
+     * @request GET:/api/trails/{trailId}
+     */
+    getTrailDetail: (trailId: number, params: RequestParams = {}) =>
+      this.request<BaseResponseTrailDetailResponse, any>({
+        path: `/api/trails/${trailId}`,
+        method: 'GET',
+        ...params,
+      }),
+
+    /**
      * @description 현재 사용자의 친구 목록을 조회합니다.
      *
      * @tags 친구
@@ -706,7 +1017,7 @@ export class Api<
      * @secure
      */
     getFriends: (params: RequestParams = {}) =>
-      this.request<BaseResponseListFriendResponseDTO, any>({
+      this.request<BaseResponseFriendListResponseDTO, any>({
         path: `/api/friends`,
         method: 'GET',
         secure: true,
@@ -762,6 +1073,23 @@ export class Api<
     getReceivedFriendRequests: (params: RequestParams = {}) =>
       this.request<BaseResponseListReceivedFriendResponse, any>({
         path: `/api/friends/request/received`,
+        method: 'GET',
+        secure: true,
+        ...params,
+      }),
+
+    /**
+     * @description 친구들의 위치 정보를 조회합니다.
+     *
+     * @tags 친구
+     * @name GetFriendLocations
+     * @summary 친구 위치 조회
+     * @request GET:/api/friends/location
+     * @secure
+     */
+    getFriendLocations: (params: RequestParams = {}) =>
+      this.request<BaseResponseListFriendLocationResponseDTO, any>({
+        path: `/api/friends/location`,
         method: 'GET',
         secure: true,
         ...params,
