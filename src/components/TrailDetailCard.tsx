@@ -21,6 +21,7 @@ const TrailDetailCard: React.FC<TrailDetailCardProps> = ({
           <button
             onClick={onBack}
             className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
+            aria-label="트레일 목록으로 돌아가기"
           >
             <span className="material-icons text-xl">arrow_back</span>
           </button>

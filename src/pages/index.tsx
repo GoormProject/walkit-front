@@ -8,6 +8,7 @@ import { calculateDistance as calculateCoordinateDistance } from '@/utils/conver
 import { isOAuthCallback } from '@/utils/oauth';
 import TrailBottomSheet from '@/components/TrailBottomSheet';
 import TrailDetailCard from '@/components/TrailDetailCard';
+import type { Trail } from '@/types/trail';
 import './index.css';
 import '@/styles/rootlayout.css';
 
@@ -64,9 +65,9 @@ const Home = () => {
   const [isMapReady, setIsMapReady] = useState(false);
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'trails' | 'weather'>('trails');
-  const [nearbyTrails, setNearbyTrails] = useState<any[]>([]);
+  const [nearbyTrails, setNearbyTrails] = useState<Trail[]>([]);
   const [sortOption, setSortOption] = useState('distance');
-  const [selectedTrail, setSelectedTrail] = useState<any>(null);
+  const [selectedTrail, setSelectedTrail] = useState<Trail | null>(null);
   const [showTrailDetail, setShowTrailDetail] = useState(false);
   const [trailMarker, setTrailMarker] = useState<kakao.maps.Marker | null>(null);
   const map = useRef<kakao.maps.Map | null>(null);
@@ -89,22 +90,22 @@ const Home = () => {
 
   // OAuth 콜백 확인 (디버깅용)
   useEffect(() => {
-    console.log('🏠 홈 페이지 로드됨');
-    console.log('📍 현재 URL:', window.location.href);
-    console.log('🔍 URL 파라미터:', window.location.search);
-    console.log('🔄 OAuth 콜백 여부:', isOAuthCallback());
-    console.log('🌐 HTTPS 환경:', window.location.protocol === 'https:');
-    console.log('📱 Geolocation 지원:', !!navigator.geolocation);
+    logger.log('🏠 홈 페이지 로드됨');
+    logger.log('📍 현재 URL:', window.location.href);
+    logger.log('🔍 URL 파라미터:', window.location.search);
+    logger.log('🔄 OAuth 콜백 여부:', isOAuthCallback());
+    logger.log('🌐 HTTPS 환경:', window.location.protocol === 'https:');
+    logger.log('📱 Geolocation 지원:', !!navigator.geolocation);
 
     if (isOAuthCallback()) {
-      console.log('⚠️ 홈 페이지에서 OAuth 콜백 감지됨!');
-      console.log('🚨 OAuth 콜백이 홈 페이지로 리다이렉트되었습니다.');
+      logger.log('⚠️ 홈 페이지에서 OAuth 콜백 감지됨!');
+      logger.log('🚨 OAuth 콜백이 홈 페이지로 리다이렉트되었습니다.');
     }
   }, []);
 
   // GPS 상태 모니터링
   useEffect(() => {
-    console.log('📡 GPS 상태 변경:', {
+    logger.log('📡 GPS 상태 변경:', {
       isLoading,
       hasError: !!error,
       hasPosition: !!position,
@@ -115,7 +116,7 @@ const Home = () => {
 
   // 지도 및 서비스 상태 모니터링
   useEffect(() => {
-    console.log('🗺️ 지도 상태 변경:', {
+    logger.log('🗺️ 지도 상태 변경:', {
       hasMap: !!map.current,
       isMapReady,
       hasPlacesService: !!placesServiceRef.current,
@@ -236,7 +237,7 @@ const Home = () => {
   }, [sortOption, fetchNearbyTrails]);
 
   // 산책로 카드 클릭 핸들러
-  const handleTrailCardClick = (trail: any) => {
+  const handleTrailCardClick = (trail: Trail) => {
     setSelectedTrail(trail);
     setShowTrailDetail(true);
     setIsBottomSheetOpen(false); // 바텀시트 닫기
@@ -253,7 +254,7 @@ const Home = () => {
         trail.coordinates.lng
       );
       
-      console.log('🗺️ 산책로 위치로 지도 이동:', {
+      logger.log('🗺️ 산책로 위치로 지도 이동:', {
         trailName: trail.name,
         coordinates: trail.coordinates,
         latLng: latLng.toString()
@@ -263,15 +264,15 @@ const Home = () => {
       try {
         if (map.current) {
           // 적절한 줌 레벨로 설정 (산책로 상세보기용)
-          (map.current as any).setLevel(2);
+          map.current.setLevel(2);
           
           // 부드러운 이동
-          (map.current as any).panTo(latLng);
+          map.current.panTo(latLng);
           
-          console.log('✅ 지도 이동 완료:', trail.name);
+          logger.log('✅ 지도 이동 완료:', trail.name);
         }
       } catch (error) {
-        console.error('❌ 지도 이동 실패:', error);
+        logger.error('❌ 지도 이동 실패:', error);
       }
       
       // 산책로 마커 생성 및 추가
@@ -282,10 +283,10 @@ const Home = () => {
       
       setTrailMarker(marker);
       
-      console.log('🎯 산책로 마커 생성 완료:', {
+      logger.log('🎯 산책로 마커 생성 완료:', {
         name: trail.name,
         coordinates: trail.coordinates,
-        mapLevel: (map.current as any).getLevel()
+        mapLevel: map.current.getLevel()
       });
     }
   };
@@ -300,18 +301,18 @@ const Home = () => {
     if (trailMarker) {
       trailMarker.setMap(null);
       setTrailMarker(null);
-      console.log('🗑️ 산책로 마커 제거 완료');
+      logger.log('🗑️ 산책로 마커 제거 완료');
     }
     
     // 지도를 기본 위치로 복원 (현재 위치 또는 서울 시청)
     if (map.current) {
       try {
         const defaultLocation = position || new window.kakao.maps.LatLng(37.566535, 126.977969); // 서울 시청
-        (map.current as any).setLevel(4); // 기본 줌 레벨
-        (map.current as any).panTo(defaultLocation);
-        console.log('🗺️ 지도 기본 위치로 복원 완료');
+        map.current.setLevel(4); // 기본 줌 레벨
+        map.current.panTo(defaultLocation);
+        logger.log('🗺️ 지도 기본 위치로 복원 완료');
       } catch (error) {
-        console.error('❌ 지도 복원 실패:', error);
+        logger.error('❌ 지도 복원 실패:', error);
       }
     }
   };
@@ -347,13 +348,13 @@ const Home = () => {
 
   // 검색 마커 제거 (현재 위치 마커는 유지)
   const removeMarkers = useCallback(() => {
-    console.log('🗑️ 검색 마커 제거:', markersRef.current.length, '개');
+    logger.log('🗑️ 검색 마커 제거:', markersRef.current.length, '개');
     markersRef.current.forEach((marker, index) => {
-      console.log(`🗑️ 마커 ${index + 1} 제거`);
+      logger.log(`🗑️ 마커 ${index + 1} 제거`);
       try {
         marker.setMap(null);
       } catch (error) {
-        console.error(`마커 ${index + 1} 제거 실패:`, error);
+        logger.error(`마커 ${index + 1} 제거 실패:`, error);
       }
     });
     markersRef.current = [];
@@ -363,14 +364,14 @@ const Home = () => {
       try {
         placeOverlayRef.current.setMap(null);
       } catch (error) {
-        console.error('장소 오버레이 제거 실패:', error);
+        logger.error('장소 오버레이 제거 실패:', error);
       }
     }
   }, []);
 
   // 장소 마커 표시 (기존 마커 제거 후 새로 생성)
   const displayPlaces = useCallback((places: Place[], category: Category) => {
-    console.log('🎯 displayPlaces 호출됨:', { 
+    logger.log('🎯 displayPlaces 호출됨:', { 
       placesCount: places?.length, 
       category, 
       hasMap: !!map.current,
@@ -381,13 +382,13 @@ const Home = () => {
     
     // 카테고리가 해제된 상태에서는 마커를 생성하지 않음 (ref 사용)
     if (!selectedCategoryRef.current || selectedCategoryRef.current === '') {
-      console.log('⏭️ 카테고리가 해제됨 - 마커 생성 건너뜀 (ref 확인)');
+      logger.log('⏭️ 카테고리가 해제됨 - 마커 생성 건너뜀 (ref 확인)');
       return;
     }
     
     // 선택된 카테고리와 일치하지 않으면 마커를 생성하지 않음 (ref 사용)
     if (selectedCategoryRef.current !== category.id) {
-      console.log('⏭️ 카테고리가 변경됨 - 마커 생성 건너뜀 (ref 확인)', {
+      logger.log('⏭️ 카테고리가 변경됨 - 마커 생성 건너뜀 (ref 확인)', {
         refSelectedCategory: selectedCategoryRef.current,
         categoryId: category.id
       });
@@ -395,33 +396,33 @@ const Home = () => {
     }
     
     if (!map.current || !isMapReady) {
-      console.log('❌ 지도가 아직 준비되지 않음 - map.current:', !!map.current, 'isMapReady:', isMapReady);
+      logger.log('❌ 지도가 아직 준비되지 않음 - map.current:', !!map.current, 'isMapReady:', isMapReady);
       return;
     }
 
     // 지도 상태 추가 확인
     try {
       const mapLevel = map.current.getLevel();
-      console.log('🗺️ 지도 상태 확인:', { mapLevel, isMapReady });
+      logger.log('🗺️ 지도 상태 확인:', { mapLevel, isMapReady });
     } catch (error) {
-      console.error('❌ 지도 상태 확인 실패:', error);
+      logger.error('❌ 지도 상태 확인 실패:', error);
       return;
     }
 
     // 기존 검색 마커 제거
     removeMarkers();
 
-    console.log('📍 새로운 마커 생성:', places.length, '개');
+    logger.log('📍 새로운 마커 생성:', places.length, '개');
 
     places.forEach((place, index) => {
-      console.log('📍 마커 생성 중:', index + 1, '/', places.length, place.place_name);
+      logger.log('📍 마커 생성 중:', index + 1, '/', places.length, place.place_name);
 
       try {
         const lat = parseFloat(place.y);
         const lng = parseFloat(place.x);
 
         if (isNaN(lat) || isNaN(lng)) {
-          console.warn('⚠️ 잘못된 좌표:', place.place_name, 'lat:', place.y, 'lng:', place.x);
+          logger.warn('⚠️ 잘못된 좌표:', place.place_name, 'lat:', place.y, 'lng:', place.x);
           return;
         }
 
@@ -439,13 +440,13 @@ const Home = () => {
         });
 
         markersRef.current.push(marker);
-        console.log('✅ 마커 생성 성공:', place.place_name, '좌표:', { lat, lng });
+        logger.log('✅ 마커 생성 성공:', place.place_name, '좌표:', { lat, lng });
       } catch (error) {
-        console.error('❌ 마커 생성 실패:', place.place_name, error);
+        logger.error('❌ 마커 생성 실패:', place.place_name, error);
       }
     });
 
-    console.log('✅ 마커 생성 완료:', markersRef.current.length, '개');
+    logger.log('✅ 마커 생성 완료:', markersRef.current.length, '개');
 
     // 검색 결과로 지도 중심 이동 및 범위 조정
     if (places.length > 0 && map.current) {
@@ -462,18 +463,18 @@ const Home = () => {
         // 검색 결과가 모두 포함되도록 지도 범위 조정
         map.current.setBounds(bounds);
 
-        console.log('🗺️ 지도 범위 조정 완료:', {
+        logger.log('🗺️ 지도 범위 조정 완료:', {
           placesCount: places.length,
           bounds: bounds,
         });
       } catch (error) {
-        console.error('❌ 지도 범위 조정 실패:', error);
+        logger.error('❌ 지도 범위 조정 실패:', error);
       }
     }
 
     // 마커가 지도에 제대로 표시되는지 확인
     setTimeout(() => {
-      console.log('🔍 마커 표시 상태 확인:', {
+      logger.log('🔍 마커 표시 상태 확인:', {
         markersCount: markersRef.current.length,
         mapLevel: map.current?.getLevel(),
       });

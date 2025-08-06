@@ -1,15 +1,16 @@
 import React from 'react';
 import BottomSheet from './ui/BottomSheet';
+import type { Trail } from '../types/trail';
 
 interface TrailBottomSheetProps {
   isOpen: boolean;
   onClose: () => void;
   activeTab: 'trails' | 'weather';
   setActiveTab: (tab: 'trails' | 'weather') => void;
-  nearbyTrails: any[];
+  nearbyTrails: Trail[];
   sortOption: string;
   setSortOption: (option: string) => void;
-  onTrailCardClick: (trail: any) => void;
+  onTrailCardClick: (trail: Trail) => void;
 }
 
 const TrailBottomSheet: React.FC<TrailBottomSheetProps> = ({
