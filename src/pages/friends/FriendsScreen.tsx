@@ -57,10 +57,48 @@ const FriendsScreen = (): React.ReactNode => {
       setIsLoading(true);
       setError(null);
 
-      const response = await api.api.getFriends();
+      let friendRequestsCount = 0;
 
-      if (response.data.data) {
-        const friendData: FriendListResponseDTO = response.data.data;
+      // 친구 요청 수 가져오기 (개별 처리)
+      try {
+        const friendRequestsResponse =
+          await api.api.getReceivedFriendRequests();
+        if (friendRequestsResponse.data.data) {
+          friendRequestsCount = friendRequestsResponse.data.data.length || 0;
+          if (import.meta.env.DEV) {
+            console.log('✅ [BACKEND] 받은 친구 요청 수:', friendRequestsCount);
+            console.log(
+              '✅ [BACKEND] 받은 친구 요청 데이터:',
+              friendRequestsResponse.data.data
+            );
+          }
+        } else {
+          // data가 없는 경우도 에러로 처리
+          if (import.meta.env.DEV) {
+            console.log(
+              '🔧 [DEV] 백엔드 응답에 data가 없어서 임시 데이터 사용: friendRequests = -1'
+            );
+          }
+          friendRequestsCount = -1;
+        }
+      } catch (friendRequestsError) {
+        console.error(
+          '❌ 친구 요청 데이터 가져오기 실패:',
+          friendRequestsError
+        );
+        if (import.meta.env.DEV) {
+          console.log(
+            '🔧 [DEV] 백엔드 요청 실패로 임시 데이터 사용: friendRequests = -1'
+          );
+        }
+        friendRequestsCount = -1;
+      }
+
+      // 친구 목록 가져오기
+      const friendsResponse = await api.api.getFriends();
+
+      if (friendsResponse.data.data) {
+        const friendData: FriendListResponseDTO = friendsResponse.data.data;
 
         // 백엔드에서 받아온 실제 친구 데이터를 변환
         const actualOnlineFriends =
@@ -98,7 +136,7 @@ const FriendsScreen = (): React.ReactNode => {
           total: friendData.total || 0,
           online: friendData.online || 0,
           offline: friendData.offline || 0,
-          friendRequests: 0, // TODO: 친구 요청 수는 별도 API로 가져와야 함
+          friendRequests: friendRequestsCount,
           onlineFriends: actualOnlineFriends,
           offlineFriends: actualOfflineFriends,
         });
