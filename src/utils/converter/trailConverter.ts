@@ -257,11 +257,12 @@ export const convertTrailResponseToTrail = (trailResponse: TrailResponse): Trail
     name: trailResponse.name,
     rating: trailResponse.rating,
     reviewCount: trailResponse.reviewCount,
-    description: trailResponse.location, // location을 description으로 사용
+    description: '', // 기본 설명 (API에서 description 필드가 없음)
     category: '산책로', // 기본 카테고리
     distance: trailResponse.length,
     image: undefined, // API에서 이미지 정보가 없으므로 undefined
     coordinates: undefined, // API에서 좌표 정보가 없으므로 undefined
+    location: trailResponse.location, // location 필드로 올바르게 매핑
   };
 };
 
