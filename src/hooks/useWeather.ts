@@ -11,15 +11,7 @@ export interface WeatherInfo {
 }
 
 export const useWeather = () => {
-  const [weatherInfo, setWeatherInfo] = useState<WeatherInfo>({
-    city: '고양시',
-    clouds: 0,
-    temperature: 29,
-    humidity: 74,
-    condition: '대체로 맑음',
-    windSpeed: 3.5,
-    icon: '☀️',
-  });
+  const [weatherInfo, setWeatherInfo] = useState<WeatherInfo | null>(null);
   const [threeHourLater, setThreeHourLater] = useState<WeatherInfo | null>(null);
   const [tomorrow, setTomorrow] = useState<WeatherInfo | null>(null);
   const [dayAfterTomorrow, setDayAfterTomorrow] = useState<WeatherInfo | null>(null);
@@ -38,7 +30,9 @@ export const useWeather = () => {
         if (!res.ok) throw new Error('API 응답 오류');
 
         const result = await res.json();
-        console.log('📦 날씨 정보:', result);
+        if (import.meta.env.DEV) {
+          console.log('📦 날씨 정보:', result);
+        }
         const data = result.data;
 
         setWeatherInfo(extractWeatherInfo(data, 'current'));

@@ -19,7 +19,9 @@ export const useClothing = () => {
         if (!res.ok) throw new Error('API 응답 오류');
 
         const result = await res.json();
-        console.log('🧥 옷차림 추천:', result);
+        if (import.meta.env.DEV) {
+          console.log('🧥 옷차림 추천:', result);
+        }
 
         setRecommendations(result.data?.recommendations || []);
       } catch (err) {

@@ -16,15 +16,6 @@ interface TrailBottomSheetProps {
   onTrailCardClick: (trail: Trail) => void;
 }
 
-interface WeatherInfo {
-  city: string;
-  temperature: number;
-  precipitation: number;
-  humidity: number;
-  condition: string;
-  icon: string;
-}
-
 const TrailBottomSheet: React.FC<TrailBottomSheetProps> = ({
   isOpen,
   onClose,
@@ -198,36 +189,34 @@ const TrailBottomSheet: React.FC<TrailBottomSheetProps> = ({
                     </div>
                   </div>
                   <div className="mt-4 text-center text-gray-500 text-sm">
-                    <div className="mt-4 text-center text-gray-500 text-sm">
-                      <div className="text-left font-semibold text-black mb-2">날씨 예보</div>
+                    <div className="text-left font-semibold text-black mb-2">날씨 예보</div>
 
-                      <div className="flex space-x-3 overflow-x-auto pb-2">
-                        {[ 
-                          { label: '현재', data: weatherInfo },
-                          { label: '3시간 뒤', data: threeHourLater },
-                          { label: '내일', data: tomorrow },
-                          { label: '모레', data: dayAfterTomorrow },
-                          { label: '3일 뒤', data: threeDaysLater },
-                        ].map(
-                          (forecast, idx) =>
-                            forecast.data && (
-                              <div
-                                key={idx}
-                                className="min-w-[100px] bg-white rounded-lg shadow p-2 text-black text-center"
-                              >
-                                <div className="text-xs font-medium">{forecast.label}</div>
-                                <div className="text-xl font-bold mt-1">{forecast.data.temperature}°C</div>
-                                <div className="text-2xl mt-1">{forecast.data.icon}</div>
-                                <div className="text-xs mt-2 space-y-1">
-                                  {getCloudDescription(forecast.data.clouds) && (
-                                    <div>☁️ {getCloudDescription(forecast.data.clouds)}</div>
-                                  )}
-                                  <div>💧 {forecast.data.humidity}%</div>
-                                </div>
+                    <div className="flex space-x-3 overflow-x-auto pb-2">
+                      {[ 
+                        { label: '현재', data: weatherInfo },
+                        { label: '3시간 뒤', data: threeHourLater },
+                        { label: '내일', data: tomorrow },
+                        { label: '모레', data: dayAfterTomorrow },
+                        { label: '3일 뒤', data: threeDaysLater },
+                      ].map(
+                        (forecast, idx) =>
+                          forecast.data && (
+                            <div
+                              key={idx}
+                              className="min-w-[100px] bg-white rounded-lg shadow p-2 text-black text-center"
+                            >
+                              <div className="text-xs font-medium">{forecast.label}</div>
+                              <div className="text-xl font-bold mt-1">{forecast.data.temperature}°C</div>
+                              <div className="text-2xl mt-1">{forecast.data.icon}</div>
+                              <div className="text-xs mt-2 space-y-1">
+                                {getCloudDescription(forecast.data.clouds) && (
+                                  <div>☁️ {getCloudDescription(forecast.data.clouds)}</div>
+                                )}
+                                <div>💧 {forecast.data.humidity}%</div>
                               </div>
-                            )
-                        )}
-                      </div>
+                            </div>
+                          )
+                      )}
                     </div>
                   </div>
                 </>
