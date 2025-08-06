@@ -91,7 +91,11 @@ const TrailDetailCard: React.FC<TrailDetailCardProps> = ({
                 <div className="flex-1">
                   {/* 평점 */}
                   <div className="flex items-center mb-2">
-                    <span className="text-yellow-400 text-sm">★★★★☆</span>
+                    <span className="text-yellow-400 text-sm">
+                      {'★'.repeat(Math.floor(detailedTrail.rating))}
+                      {detailedTrail.rating % 1 >= 0.5 ? '☆' : ''}
+                      {'☆'.repeat(5 - Math.ceil(detailedTrail.rating))}
+                    </span>
                     <span className="text-sm text-gray-600 ml-1">
                       {detailedTrail.rating} ({detailedTrail.reviewCount})
                     </span>
