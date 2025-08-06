@@ -127,7 +127,7 @@ const TrailDetailCard: React.FC<TrailDetailCardProps> = ({
                 {/* 오른쪽 이미지 */}
                 <div className="w-20 h-20 bg-gray-200 rounded-lg flex-shrink-0">
                   <img
-                    src={detailedTrail.routeImageUrl || detailedTrail.image || '/public/test_picture/test_for_success.jpg'}
+                    src={detailedTrail.routeImageUrl || detailedTrail.image || '/test_picture/test_for_success.jpg'}
                     alt={detailedTrail.name}
                     className="w-full h-full object-cover rounded-lg"
                   />
