@@ -3,29 +3,31 @@ import { FriendCard } from '@/components/ui/friends/card/FriendCard';
 
 interface OfflineFriendPagesProps {
   offlineFriends: number;
+  actualOfflineFriends?: Array<{
+    id: number;
+    name: string;
+    status: string;
+    isOnline: boolean;
+  }>;
 }
 
 export const OfflineFriendPages = ({
   offlineFriends,
+  actualOfflineFriends = [],
 }: OfflineFriendPagesProps): React.ReactNode => {
-  // 임시 오프라인 친구 데이터 (DEV 환경에서만 사용)
-  const offlineFriendsList = import.meta.env.DEV
-    ? [
-        { id: 1, name: '정수진', status: '오프라인', isOnline: false },
-        { id: 2, name: '최동욱', status: '오프라인', isOnline: false },
-        { id: 3, name: '한미영', status: '오프라인', isOnline: false },
-      ]
-    : [];
+  // 실제 친구 데이터만 사용 (더미 데이터 제거)
+  const offlineFriendsList = actualOfflineFriends;
 
   // DEV 환경에서만 로그 출력
   if (import.meta.env.DEV) {
-    console.log(
-      '🔧 [DEV] 오프라인 친구 페이지 - 임시 데이터 사용:',
-      offlineFriendsList
-    );
-    console.log(
-      '🔧 [DEV] 실제 백엔드 API 연결 시 이 부분을 실제 데이터로 교체하세요.'
-    );
+    if (actualOfflineFriends.length > 0) {
+      console.log(
+        '✅ [BACKEND] 오프라인 친구 페이지 - 백엔드 데이터 사용:',
+        offlineFriendsList
+      );
+    } else {
+      console.log('🔧 [EMPTY] 오프라인 친구 페이지 - 데이터 없음');
+    }
   }
 
   return (
@@ -38,9 +40,15 @@ export const OfflineFriendPages = ({
       </div>
 
       {/* 오프라인 친구 목록 */}
-      {offlineFriendsList.map(friend => (
-        <FriendCard key={friend.id} friend={friend} />
-      ))}
+      {offlineFriendsList.length > 0 ? (
+        offlineFriendsList.map(friend => (
+          <FriendCard key={friend.id} friend={friend} />
+        ))
+      ) : (
+        <div className="px-4 py-8 text-center text-gray-500">
+          오프라인 친구가 없습니다.
+        </div>
+      )}
     </div>
   );
 };

@@ -1,6 +1,6 @@
 export { TotalFriendsViewOnly } from './viewonly/TotalFriendsViewOnly';
 export { OnlineFriendsViewOnly } from './viewonly/OnlineFriendsViewOnly';
-export { OfflineFriendsViewOnly } from './viewonly/OfflineFriendsViewOnly';
+export { FriendRequestButton } from './viewonly/FriendRequestButton';
 export { FriendPagesTab } from './FriendPagesTab';
 export { FriendRequestsSection } from './FriendRequestsSection';
 export { FriendStatusSection } from './FriendStatusSection';

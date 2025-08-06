@@ -1,14 +1,19 @@
 import React from 'react';
 
-interface OfflineFriendsViewOnlyProps {
+interface FriendRequestButtonProps {
   friendRequests: number;
+  onClick?: () => void;
 }
 
-export const OfflineFriendsViewOnly = ({
+export const FriendRequestButton = ({
   friendRequests,
-}: OfflineFriendsViewOnlyProps): React.ReactNode => {
+  onClick,
+}: FriendRequestButtonProps): React.ReactNode => {
   return (
-    <div className="w-[14dvh] h-[8dvh] bg-[#fed7aa87] rounded-[5px] overflow-hidden">
+    <button
+      onClick={onClick}
+      className="w-[14dvh] h-[8dvh] bg-[#fed7aa87] rounded-[5px] overflow-hidden hover:bg-[#fed7aa] transition-colors cursor-pointer"
+    >
       <div className="flex flex-col items-center justify-center h-full p-0">
         <div className="text-orange-500 [font-family:'Roboto-SemiBold',Helvetica] font-semibold text-3xl tracking-[0] leading-[normal]">
           {friendRequests}
@@ -17,6 +22,6 @@ export const OfflineFriendsViewOnly = ({
           친구 요청
         </div>
       </div>
-    </div>
+    </button>
   );
 };

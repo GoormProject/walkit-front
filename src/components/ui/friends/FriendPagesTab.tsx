@@ -13,12 +13,26 @@ interface FriendPagesTabProps {
   totalFriends: number;
   onlineFriends: number;
   offlineFriends: number;
+  actualOnlineFriends?: Array<{
+    id: number;
+    name: string;
+    status: string;
+    isOnline: boolean;
+  }>;
+  actualOfflineFriends?: Array<{
+    id: number;
+    name: string;
+    status: string;
+    isOnline: boolean;
+  }>;
 }
 
 export const FriendPagesTab = ({
   totalFriends,
   onlineFriends,
   offlineFriends,
+  actualOnlineFriends = [],
+  actualOfflineFriends = [],
 }: FriendPagesTabProps): React.ReactNode => {
   const [activeTab, setActiveTab] = useState('all');
 
@@ -66,11 +80,17 @@ export const FriendPagesTab = ({
         </TabsContent>
 
         <TabsContent value="online" className="mt-0">
-          <OnlineFriendPages onlineFriends={onlineFriends} />
+          <OnlineFriendPages
+            onlineFriends={onlineFriends}
+            actualOnlineFriends={actualOnlineFriends}
+          />
         </TabsContent>
 
         <TabsContent value="offline" className="mt-0">
-          <OfflineFriendPages offlineFriends={offlineFriends} />
+          <OfflineFriendPages
+            offlineFriends={offlineFriends}
+            actualOfflineFriends={actualOfflineFriends}
+          />
         </TabsContent>
       </Tabs>
     </div>

@@ -27,6 +27,39 @@ export interface WalkEventResponse {
   eventTime?: string;
 }
 
+export interface ReviewUpdateRequest {
+  /**
+   * @minLength 0
+   * @maxLength 2000
+   */
+  content: string;
+  /**
+   * @format int32
+   * @min 1
+   * @max 5
+   */
+  rating: number;
+}
+
+export interface BaseResponseReviewResponse {
+  /** @format int32 */
+  httpStatus?: number;
+  message?: string;
+  data?: ReviewResponse;
+}
+
+export interface ReviewResponse {
+  /** @format int64 */
+  reviewId?: number;
+  content?: string;
+  /** @format int32 */
+  rating?: number;
+  /** @format int64 */
+  trailId?: number;
+  /** @format date-time */
+  createdAt?: string;
+}
+
 export interface ProfileRequest {
   /**
    * @minLength 0
@@ -131,6 +164,22 @@ export interface BaseResponseWalkCreateResponse {
 export interface WalkCreateResponse {
   /** @format int64 */
   walkId?: number;
+}
+
+export interface ReviewRequest {
+  /**
+   * @minLength 0
+   * @maxLength 2000
+   */
+  content: string;
+  /**
+   * @format int32
+   * @min 1
+   * @max 5
+   */
+  rating: number;
+  /** @format int64 */
+  trailId: number;
 }
 
 export interface GeoPoint {
@@ -282,14 +331,14 @@ export interface PageTrailListResponse {
   totalElements?: number;
   /** @format int32 */
   totalPages?: number;
-  first?: boolean;
-  last?: boolean;
   /** @format int32 */
   size?: number;
   content?: TrailListResponse[];
   /** @format int32 */
   number?: number;
   sort?: SortObject;
+  first?: boolean;
+  last?: boolean;
   /** @format int32 */
   numberOfElements?: number;
   pageable?: PageableObject;
@@ -300,18 +349,18 @@ export interface PageableObject {
   /** @format int64 */
   offset?: number;
   sort?: SortObject;
+  unpaged?: boolean;
+  /** @format int32 */
+  pageSize?: number;
   paged?: boolean;
   /** @format int32 */
   pageNumber?: number;
-  /** @format int32 */
-  pageSize?: number;
-  unpaged?: boolean;
 }
 
 export interface SortObject {
   empty?: boolean;
-  sorted?: boolean;
   unsorted?: boolean;
+  sorted?: boolean;
 }
 
 export interface TrailListResponse {
@@ -348,6 +397,22 @@ export interface TrailDetailResponse {
   rating?: number;
   startPoint?: number[];
   path?: number[][];
+}
+
+export interface BaseResponseReviewListResponse {
+  /** @format int32 */
+  httpStatus?: number;
+  message?: string;
+  data?: ReviewListResponse;
+}
+
+export interface ReviewListResponse {
+  /** @format int64 */
+  trailId?: number;
+  /** @format double */
+  rating?: number;
+  myReview?: ReviewResponse;
+  reviews?: ReviewResponse[];
 }
 
 export interface BaseResponseFriendListResponseDTO {
@@ -686,6 +751,46 @@ export class Api<
       }),
 
     /**
+     * @description 작성한 리뷰를 수정합니다.
+     *
+     * @tags 산책로
+     * @name UpdateReview
+     * @summary 산책로 리뷰 수정
+     * @request PUT:/api/trails/reviews/{reviewId}
+     * @secure
+     */
+    updateReview: (
+      reviewId: number,
+      data: ReviewUpdateRequest,
+      params: RequestParams = {}
+    ) =>
+      this.request<BaseResponseReviewResponse, any>({
+        path: `/api/trails/reviews/${reviewId}`,
+        method: 'PUT',
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * @description 작성한 리뷰를 삭제합니다.
+     *
+     * @tags 산책로
+     * @name DeleteReview
+     * @summary 산책로 리뷰 삭제
+     * @request DELETE:/api/trails/reviews/{reviewId}
+     * @secure
+     */
+    deleteReview: (reviewId: number, params: RequestParams = {}) =>
+      this.request<BaseResponseVoid, any>({
+        path: `/api/trails/reviews/${reviewId}`,
+        method: 'DELETE',
+        secure: true,
+        ...params,
+      }),
+
+    /**
      * @description 이름과 닉네임, 프로필 이미지, 이메일을 조회합니다.
      *
      * @tags 회원
@@ -820,6 +925,25 @@ export class Api<
         path: `/api/walks/new`,
         method: 'POST',
         body: data,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * @description 새로운 리뷰를 작성합니다.
+     *
+     * @tags 산책로
+     * @name CreateReview
+     * @summary 산책로 리뷰 등록
+     * @request POST:/api/trails/reviews/new
+     * @secure
+     */
+    createReview: (data: ReviewRequest, params: RequestParams = {}) =>
+      this.request<BaseResponseReviewResponse, any>({
+        path: `/api/trails/reviews/new`,
+        method: 'POST',
+        body: data,
+        secure: true,
         type: ContentType.Json,
         ...params,
       }),
@@ -1003,6 +1127,21 @@ export class Api<
     getTrailDetail: (trailId: number, params: RequestParams = {}) =>
       this.request<BaseResponseTrailDetailResponse, any>({
         path: `/api/trails/${trailId}`,
+        method: 'GET',
+        ...params,
+      }),
+
+    /**
+     * @description 산책로의 리뷰 목록을 조회합니다.
+     *
+     * @tags 산책로
+     * @name GetReviews
+     * @summary 산책로 리뷰 조회
+     * @request GET:/api/trails/{trailId}/reviews
+     */
+    getReviews: (trailId: number, params: RequestParams = {}) =>
+      this.request<BaseResponseReviewListResponse, any>({
+        path: `/api/trails/${trailId}/reviews`,
         method: 'GET',
         ...params,
       }),
