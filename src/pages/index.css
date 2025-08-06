@@ -122,4 +122,20 @@
   .safe-area-top {
     padding-top: max(1rem, env(safe-area-inset-top));
   }
+}
+
+/* 산책 컨트롤 패널 애니메이션 */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
 } 

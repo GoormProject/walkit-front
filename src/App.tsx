@@ -23,6 +23,7 @@ import WalkZustandTest from '@/pages/test/walk-zustand-test';
 import WalkIntegrationTest from '@/pages/test/walk-integration-test';
 import WalkSimpleTest from '@/pages/test/walk-simple-test';
 import WalkFullTest from '@/pages/test/walk-full-test';
+
 import '@/App.css';
 
 function App() {
@@ -79,6 +80,8 @@ function App() {
 
         {/* 산책 통합 테스트 페이지 (GPS + 지도 + API) */}
         <Route path="/test/walk-full" element={<WalkFullTest />} />
+
+
 
         {/* 홈 페이지 - RootLayout 없이 단독 렌더링 (Footer 없음) */}
         <Route 
