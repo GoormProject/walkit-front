@@ -86,14 +86,17 @@ const extractWeatherInfo = (data: any, key: string): WeatherInfo => {
     humidity: source.humidity || 0,
     condition: source.weather || '정보 없음',
     windSpeed: source.windSpeed || 0,
-    icon: getWeatherIcon(source.weather) || '❓',
+    icon: getWeatherIcon(source.weather, source.clouds) || '❓',
   };
 };
 
-export const getWeatherIcon = (condition: string): string => {
+export const getWeatherIcon = (condition: string, clouds: number): string => {
   switch (condition) {
     case '맑음':
-      return '☀️';
+      if (clouds === 2) return '⛅';
+      else if (clouds === 3) return '🌥️';
+      else if (clouds === 4) return '☁️';
+      else return '☀️';
     case '비':
       return '🌧️';
     case '비/눈':
