@@ -72,10 +72,10 @@ const Home = () => {
   const [sortOption, setSortOption] = useState('distance');
   const [selectedTrail, setSelectedTrail] = useState<Trail | null>(null);
   const [showTrailDetail, setShowTrailDetail] = useState(false);
-  const [trailMarker, setTrailMarker] = useState<kakao.maps.Marker | null>(null);
-  const [trailPolyline, setTrailPolyline] = useState<kakao.maps.Polyline | null>(null);
-  const [trailStartMarker, setTrailStartMarker] = useState<kakao.maps.Marker | null>(null);
-  const [trailEndMarker, setTrailEndMarker] = useState<kakao.maps.Marker | null>(null);
+  // ✅ useRef 배열로 마커/오버레이/폴리라인 관리 (솔루션 적용)
+  const trailMarkersRef = useRef<kakao.maps.Marker[]>([]);
+  const trailPolylinesRef = useRef<kakao.maps.Polyline[]>([]);
+  const trailOverlaysRef = useRef<kakao.maps.CustomOverlay[]>([]);
   const map = useRef<kakao.maps.Map | null>(null);
   const polyline = useRef<kakao.maps.Polyline | null>(null);
   const markersRef = useRef<kakao.maps.Marker[]>([]);
@@ -144,11 +144,8 @@ const Home = () => {
     setShowTrailDetail(false); // 상세 정보 닫기
     setSelectedTrail(null);
     
-    // 마커 제거
-    if (trailMarker) {
-      trailMarker.setMap(null);
-      setTrailMarker(null);
-    }
+    // ✅ 트레일 요소 일괄 제거
+    clearAllTrailElements();
     
     toast.success('산책을 시작합니다!', {
       description: 'GPS 신호가 안정적인 실외에서 이용해주세요.',
@@ -229,10 +226,8 @@ const Home = () => {
     setShowTrailDetail(true);
     setIsBottomSheetOpen(false); // 바텀시트 닫기
     
-    // 기존 마커 제거
-    if (trailMarker) {
-      trailMarker.setMap(null);
-    }
+    // ✅ 기존 트레일 요소 일괄 제거
+    clearAllTrailElements();
     
     // 지도를 해당 위치로 이동하고 마커 추가
     if (map.current && trail.coordinates) {
@@ -262,13 +257,12 @@ const Home = () => {
         logger.error('❌ 지도 이동 실패:', error);
       }
       
-      // 산책로 마커 생성 및 추가
+      // ✅ 산책로 마커 생성 및 배열에 추가
       const marker = new window.kakao.maps.Marker({
         position: latLng,
         map: map.current,
       });
-      
-      setTrailMarker(marker);
+      trailMarkersRef.current.push(marker);
       
       logger.log('🎯 산책로 마커 생성 완료:', {
         name: trail.name,
@@ -278,36 +272,57 @@ const Home = () => {
     }
   };
 
+  // ✅ 솔루션 적용: 일괄 마커/오버레이/폴리라인 제거 함수
+  const clearAllTrailElements = () => {
+    logger.log('🧹 트레일 요소 일괄 제거 시작');
+    
+    // 1. 마커 제거
+    trailMarkersRef.current.forEach((marker, index) => {
+      marker.setMap(null);
+      logger.log(`🗑️ 마커 ${index + 1} 제거 완료`);
+    });
+    trailMarkersRef.current = [];
+    
+    // 2. 폴리라인 제거
+    trailPolylinesRef.current.forEach((polyline, index) => {
+      polyline.setMap(null);
+      logger.log(`🗑️ 폴리라인 ${index + 1} 제거 완료`);
+    });
+    trailPolylinesRef.current = [];
+    
+    // 3. 커스텀 오버레이 제거 (솔루션의 핵심!)
+    trailOverlaysRef.current.forEach((overlay, index) => {
+      overlay.setMap(null);
+      
+      // 💡 솔루션 핵심: CustomOverlay DOM 수동 제거
+      try {
+        const content = overlay.getContent() as HTMLElement;
+        if (content && content.parentNode) {
+          content.parentNode.removeChild(content);
+          logger.log(`🗑️ 오버레이 ${index + 1} DOM 제거 완료`);
+        }
+      } catch (e) {
+        logger.log(`⚠️ 오버레이 ${index + 1} DOM 제거 실패 (무시)`);
+      }
+      
+      logger.log(`🗑️ 오버레이 ${index + 1} 제거 완료`);
+    });
+    trailOverlaysRef.current = [];
+    
+    logger.log('✅ 모든 트레일 요소 제거 완료');
+  };
+
   // 이전 페이지로 돌아가기
   const handleBackToTrails = () => {
     setShowTrailDetail(false);
     setSelectedTrail(null);
     setIsBottomSheetOpen(true);
     
-    // 산책로 마커 제거
-    if (trailMarker) {
-      trailMarker.setMap(null);
-      setTrailMarker(null);
-      logger.log('🗑️ 산책로 마커 제거 완료');
-    }
+    // ✅ 새로운 일괄 제거 함수 사용
+    clearAllTrailElements();
     
-    // 산책로 경로 제거
-    if (trailPolyline) {
-      trailPolyline.setMap(null);
-      setTrailPolyline(null);
-      logger.log('🗑️ 산책로 경로 제거 완료');
-    }
-    
-    // 시작점/끝점 마커 제거
-    if (trailStartMarker) {
-      trailStartMarker.setMap(null);
-      setTrailStartMarker(null);
-    }
-    if (trailEndMarker) {
-      trailEndMarker.setMap(null);
-      setTrailEndMarker(null);
-    }
-    
+    // ✅ DOM 백업 제거 로직 불필요 (솔루션 적용으로 제거)
+
     // 지도를 기본 위치로 복원 (현재 위치 또는 서울 시청)
     if (map.current) {
       try {
@@ -343,31 +358,20 @@ const Home = () => {
     );
   };
 
-  // 산책로 경로 시각화
+  // ✅ 솔루션 적용: 산책로 경로 시각화 (useRef 배열 방식)
   const handleTrailPathUpdate = (path: [number, number][]) => {
     if (!map.current || path.length === 0) return;
 
     try {
-      // 기존 경로 및 마커 제거
-      if (trailPolyline) {
-        trailPolyline.setMap(null);
-        setTrailPolyline(null);
-      }
-      if (trailStartMarker) {
-        trailStartMarker.setMap(null);
-        setTrailStartMarker(null);
-      }
-      if (trailEndMarker) {
-        trailEndMarker.setMap(null);
-        setTrailEndMarker(null);
-      }
+      // ✅ 기존 모든 트레일 요소 제거 (새로운 일괄 제거 함수 사용)
+      clearAllTrailElements();
 
       // 경로 좌표를 카카오맵 LatLng로 변환 ([경도, 위도] → [위도, 경도])
       const latLngPath = path.map(([lng, lat]) => 
         new window.kakao.maps.LatLng(lat, lng)
       );
 
-      // 폴리라인 생성
+      // ✅ 폴리라인 생성 및 배열에 추가
       const polyline = new window.kakao.maps.Polyline({
         path: latLngPath,
         strokeWeight: 4,
@@ -376,16 +380,16 @@ const Home = () => {
         strokeStyle: 'solid',
         map: map.current,
       });
+      trailPolylinesRef.current.push(polyline);
 
-      setTrailPolyline(polyline);
-
-      // 시작점 마커 생성
+      // ✅ 시작점 마커 생성 및 배열에 추가
       const startMarker = new window.kakao.maps.Marker({
         position: latLngPath[0],
         map: map.current,
       });
+      trailMarkersRef.current.push(startMarker);
 
-      // 시작점 마커에 작은 텍스트 오버레이 추가
+      // ✅ 시작점 오버레이 생성 및 배열에 추가
       const startLabel = document.createElement('div');
       startLabel.style.cssText = 'background:rgba(0,0,0,0.7);color:white;padding:2px 6px;border-radius:3px;font-size:10px;white-space:nowrap;text-align:center;';
       startLabel.textContent = '시작';
@@ -396,16 +400,17 @@ const Home = () => {
         map: map.current,
         yAnchor: 1.5,
       });
-      setTrailStartMarker(startMarker);
+      trailOverlaysRef.current.push(startOverlay);
 
-      // 끝점 마커 생성 (경로가 2개 이상일 때)
+      // ✅ 끝점 마커 생성 (경로가 2개 이상일 때) 및 배열에 추가
       if (latLngPath.length > 1) {
         const endMarker = new window.kakao.maps.Marker({
           position: latLngPath[latLngPath.length - 1],
           map: map.current,
         });
+        trailMarkersRef.current.push(endMarker);
 
-        // 끝점 마커에 작은 텍스트 오버레이 추가
+        // 끝점 오버레이 생성 및 배열에 추가
         const endLabel = document.createElement('div');
         endLabel.style.cssText = 'background:rgba(0,0,0,0.7);color:white;padding:2px 6px;border-radius:3px;font-size:10px;white-space:nowrap;text-align:center;';
         endLabel.textContent = '끝';
@@ -416,7 +421,7 @@ const Home = () => {
           map: map.current,
           yAnchor: 1.5,
         });
-        setTrailEndMarker(endMarker);
+        trailOverlaysRef.current.push(endOverlay);
       }
 
       // 경로가 모두 보이도록 지도 범위 조정
