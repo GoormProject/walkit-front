@@ -171,7 +171,7 @@ const Home = () => {
       // API 호출
       const response = await getTrails();
       
-      if (response.status === 200 && response.trails) {
+      if (response.status === 200 && response.trails && Array.isArray(response.trails)) {
         // API 응답을 Trail 타입으로 변환
         const trails = convertTrailResponseArrayToTrailArray(response.trails);
         
