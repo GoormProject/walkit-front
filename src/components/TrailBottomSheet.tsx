@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import BottomSheet from './ui/BottomSheet';
 import type { Trail } from '../types/trail';
+import { useWeather } from '@/hooks/useWeather';
+import { useClothing, translateClothing, getClothingIconPath } from '@/hooks/useClothing';
 
 interface TrailBottomSheetProps {
   isOpen: boolean;
   onClose: () => void;
-  activeTab: 'trails' | 'weather';
-  setActiveTab: (tab: 'trails' | 'weather') => void;
+  activeTab: 'trails' | 'weather' | 'clothing';
+  setActiveTab: (tab: 'trails' | 'weather' | 'clothing') => void;
   nearbyTrails: Trail[];
   isTrailsLoading?: boolean;
   sortOption: string;
@@ -25,11 +27,24 @@ const TrailBottomSheet: React.FC<TrailBottomSheetProps> = ({
   setSortOption,
   onTrailCardClick
 }) => {
+  const {
+    weatherInfo,
+    threeHourLater,
+    tomorrow,
+    dayAfterTomorrow,
+    threeDaysLater,
+    isLoading: isWeatherLoading,
+    error: weatherError,
+    getCloudDescription
+  } = useWeather();
+
+  const { recommendations, isClothingLoading, clothingError } = useClothing();
+
   return (
     <BottomSheet
       isOpen={isOpen}
       onClose={onClose}
-      title={activeTab === 'trails' ? '근처 산책로 및 날씨 정보' : '날씨 정보'}
+      title={activeTab === 'trails' ? '근처 산책로' : (activeTab === 'weather' ? '주변 날씨' : '옷차림 추천')}
       defaultSnapPoint={60}
       className="safe-area-bottom"
       showBackdrop={false}
@@ -56,7 +71,17 @@ const TrailBottomSheet: React.FC<TrailBottomSheetProps> = ({
                   : 'text-gray-500'
               }`}
             >
-              날씨
+              주변 날씨
+            </button>
+            <button
+              onClick={() => setActiveTab('clothing')}
+              className={`text-sm font-medium transition-colors ${
+                activeTab === 'clothing'
+                  ? 'text-black border-b-2 border-black pb-1'
+                  : 'text-gray-500'
+              }`}
+            >
+              옷차림 추천
             </button>
           </div>
           
@@ -76,7 +101,7 @@ const TrailBottomSheet: React.FC<TrailBottomSheetProps> = ({
 
         {/* 탭 콘텐츠 */}
         <div className="flex-1 overflow-y-auto">
-          {activeTab === 'trails' ? (
+          {activeTab === 'trails' && (
             <div className="p-4 space-y-4">
               {/* 로딩 상태 */}
               {isTrailsLoading ? (
@@ -137,34 +162,96 @@ const TrailBottomSheet: React.FC<TrailBottomSheetProps> = ({
                 </>
               )}
             </div>
-          ) : (
-            <div className="p-4">
-              {/* 날씨 정보 */}
-              <div className="bg-blue-500 rounded-lg p-4 text-white">
-                <div className="flex justify-between items-start">
-                  {/* 왼쪽 정보 */}
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-semibold">고양시</h3>
-                    <div className="text-3xl font-bold">29°C</div>
-                    <div className="text-sm space-y-1">
-                      <div>강수확률: 20%</div>
-                      <div>습도: 74%</div>
+          )}
+        {activeTab === 'weather' && (
+            <div className="p-4 overflow-y-auto">
+              {/* 날씨 로딩 또는 에러 처리 */}
+              {isWeatherLoading ? (
+                <div className="text-center text-sm text-gray-500">날씨 정보를 불러오는 중...</div>
+              ) : weatherError ? (
+                <div className="text-center text-sm text-red-500">{weatherError}</div>
+              ) : (
+                <>
+                  <div className="bg-blue-500 rounded-lg p-4 text-white">
+                    {weatherInfo && (
+                      <div className="flex justify-between items-start">
+                          <div className="space-y-2 text-left">
+                            <h3 className="text-lg font-semibold">{weatherInfo.city}</h3>
+                            <div className="text-3xl font-bold">{weatherInfo.temperature}°C</div>
+                            <div className="text-sm space-y-1">
+                              <div>습도: {weatherInfo.humidity}%</div>
+                              <div>풍속: {weatherInfo.windSpeed}m/s</div>
+                            </div>
+                          </div>
+                        <div className="text-right space-y-2">
+                          <div className="text-4xl">{weatherInfo.icon}</div>
+                          <div className="text-sm">{weatherInfo.condition}</div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-4 text-center text-gray-500 text-sm">
+                    <div className="text-left font-semibold text-black mb-2">날씨 예보</div>
+
+                    <div className="flex space-x-3 overflow-x-auto pb-2">
+                      {[ 
+                        { label: '현재', data: weatherInfo },
+                        { label: '3시간 뒤', data: threeHourLater },
+                        { label: '내일', data: tomorrow },
+                        { label: '모레', data: dayAfterTomorrow },
+                        { label: '3일 뒤', data: threeDaysLater },
+                      ].map(
+                        (forecast, idx) =>
+                          forecast.data && (
+                            <div
+                              key={idx}
+                              className="min-w-[100px] bg-white rounded-lg shadow p-2 text-black text-center"
+                            >
+                              <div className="text-xs font-medium">{forecast.label}</div>
+                              <div className="text-xl font-bold mt-1">{forecast.data.temperature}°C</div>
+                              <div className="text-2xl mt-1">{forecast.data.icon}</div>
+                              <div className="text-xs mt-2 space-y-1">
+                                {getCloudDescription(forecast.data.clouds) && (
+                                  <div>☁️ {getCloudDescription(forecast.data.clouds)}</div>
+                                )}
+                                <div>💧 {forecast.data.humidity}%</div>
+                              </div>
+                            </div>
+                          )
+                      )}
                     </div>
                   </div>
-                  
-                  {/* 오른쪽 정보 */}
-                  <div className="text-right space-y-2">
-                    <div className="text-4xl">☀️</div>
-                    <div className="text-sm">대체로 맑음</div>
-                    <div className="text-xs">최고:31° 최저:31°</div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="mt-4 text-center text-gray-500 text-sm">
-                날씨 API 연동 예정
-              </div>
+                </>
+              )}
             </div>
+          )}
+        {activeTab === 'clothing' && (
+          <div className='p-4 overflow-y-auto'>
+            {isClothingLoading && <p>👕 옷차림 추천 로딩 중...</p>}
+            {clothingError && <p className="text-red-500">{clothingError}</p>}
+            {!isClothingLoading && recommendations.length > 0 && (
+              <div className="grid gap-2">
+                {recommendations.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center bg-white rounded-lg shadow-sm p-3 border border-gray-200"
+                  >
+                    {/* SVG 아이콘 */}
+                    <img
+                      src={getClothingIconPath(item)}
+                      alt={item}
+                      className="w-8 h-8 mr-4"
+                    />
+
+                    {/* 추천 텍스트 */}
+                    <div className="text-sm text-gray-800 font-medium">
+                      {translateClothing(item)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           )}
         </div>
       </div>
