@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 export interface WeatherInfo {
   city: string;
+  clouds: number;
   temperature: number;
   humidity: number;
   condition: string;
@@ -12,12 +13,17 @@ export interface WeatherInfo {
 export const useWeather = () => {
   const [weatherInfo, setWeatherInfo] = useState<WeatherInfo>({
     city: '고양시',
+    clouds: 0,
     temperature: 29,
     humidity: 74,
     condition: '대체로 맑음',
     windSpeed: 3.5,
     icon: '☀️',
   });
+  const [threeHourLater, setThreeHourLater] = useState<WeatherInfo | null>(null);
+  const [tomorrow, setTomorrow] = useState<WeatherInfo | null>(null);
+  const [dayAfterTomorrow, setDayAfterTomorrow] = useState<WeatherInfo | null>(null);
+  const [threeDaysLater, setThreeDaysLater] = useState<WeatherInfo | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<null | string>(null);
@@ -35,15 +41,12 @@ export const useWeather = () => {
         console.log('📦 날씨 정보:', result);
         const data = result.data;
 
-        // TODO: 실제 API 응답 구조에 맞게 매핑
-        setWeatherInfo({
-          city: data.adminAreaName || '알 수 없음',
-          temperature: data.current.temperature || 0,
-          humidity: data.current.humidity || 0,
-          condition: data.current.weather || '정보 없음',
-          windSpeed: data.current.windSpeed || 0,
-          icon: getWeatherIcon(data.current.weather) || '❓',
-        });
+        setWeatherInfo(extractWeatherInfo(data, 'current'));
+        setThreeHourLater(extractWeatherInfo(data, 'after3hours'));
+        setTomorrow(extractWeatherInfo(data, 'tomorrow'));
+        setDayAfterTomorrow(extractWeatherInfo(data, 'dayAfterTomorrow'));
+        setThreeDaysLater(extractWeatherInfo(data, 'threeDaysLater'));
+
       } catch (err) {
         setError('날씨 정보를 불러오지 못했습니다.');
       } finally {
@@ -68,10 +71,33 @@ export const useWeather = () => {
     );
   }, [API_BASE_URL]);
 
-  return { weatherInfo, isLoading, error };
+  return {
+    weatherInfo,
+    threeHourLater,
+    tomorrow,
+    dayAfterTomorrow,
+    threeDaysLater,
+    isLoading,
+    error,
+    getCloudDescription
+  };  
+};
+
+const extractWeatherInfo = (data: any, key: string): WeatherInfo => {
+  const source = data[key] || {};
+  return {
+    city: data.adminAreaName || '알 수 없음',
+    clouds: source.clouds || 0,
+    temperature: source.temperature || 0,
+    humidity: source.humidity || 0,
+    condition: source.weather || '정보 없음',
+    windSpeed: source.windSpeed || 0,
+    icon: getWeatherIcon(source.weather) || '❓',
+  };
 };
 
 export const getWeatherIcon = (condition: string): string => {
+  console.log('🌤️ 날씨 아이콘:', condition);
   switch (condition) {
     case '맑음':
       return '☀️';
@@ -86,5 +112,22 @@ export const getWeatherIcon = (condition: string): string => {
     case '알 수 없음':
     default:
       return '❓';
+  }
+};
+
+const getCloudDescription = (clouds: number): string | null => {
+  switch (clouds) {
+    case -1:
+      return null;
+    case 1:
+      return '맑음';
+    case 2:
+      return '약간 흐림';
+    case 3:
+      return '흐림';
+    case 4:
+      return '매우 흐림';
+    default:
+      return null;
   }
 };
