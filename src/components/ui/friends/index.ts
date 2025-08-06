@@ -8,7 +8,7 @@ export { FriendsListSection } from './FriendsListSection';
 export { UserProfileSection } from './UserProfileSection';
 export { FriendSearch } from './FriendSearch';
 export { FriendsSearchBar } from './FriendsSearchBar';
-export { FriendCard } from './FriendCard';
+export { FriendCard } from './card/FriendCard';
 
 // Tab components
 export { TotalFriendPages } from './tabs/TotalFriendPages';

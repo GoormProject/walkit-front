@@ -1,5 +1,5 @@
 import React from 'react';
-import { FriendCard } from '@/components/ui/friends/FriendCard';
+import { FriendCard } from '@/components/ui/friends/card/FriendCard';
 
 interface OnlineFriendPagesProps {
   onlineFriends: number;
@@ -28,12 +28,6 @@ export const OnlineFriendPages = ({
     );
   }
 
-  const handleMoreClick = (friendId: number) => {
-    if (import.meta.env.DEV) {
-      console.log('🔧 [DEV] 온라인 친구 더보기 클릭:', friendId);
-    }
-  };
-
   return (
     <div className="w-full">
       {/* 온라인 친구 섹션 헤더 */}
@@ -45,11 +39,7 @@ export const OnlineFriendPages = ({
 
       {/* 온라인 친구 목록 */}
       {onlineFriendsList.map(friend => (
-        <FriendCard
-          key={friend.id}
-          friend={friend}
-          onMoreClick={handleMoreClick}
-        />
+        <FriendCard key={friend.id} friend={friend} />
       ))}
     </div>
   );
