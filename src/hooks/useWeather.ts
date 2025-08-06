@@ -97,7 +97,6 @@ const extractWeatherInfo = (data: any, key: string): WeatherInfo => {
 };
 
 export const getWeatherIcon = (condition: string): string => {
-  console.log('🌤️ 날씨 아이콘:', condition);
   switch (condition) {
     case '맑음':
       return '☀️';
