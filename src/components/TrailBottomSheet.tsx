@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import BottomSheet from './ui/BottomSheet';
 import type { Trail } from '../types/trail';
+import { useWeather } from '@/hooks/useWeather';
 
 interface TrailBottomSheetProps {
   isOpen: boolean;
@@ -14,6 +15,15 @@ interface TrailBottomSheetProps {
   onTrailCardClick: (trail: Trail) => void;
 }
 
+interface WeatherInfo {
+  city: string;
+  temperature: number;
+  precipitation: number;
+  humidity: number;
+  condition: string;
+  icon: string;
+}
+
 const TrailBottomSheet: React.FC<TrailBottomSheetProps> = ({
   isOpen,
   onClose,
@@ -25,6 +35,8 @@ const TrailBottomSheet: React.FC<TrailBottomSheetProps> = ({
   setSortOption,
   onTrailCardClick
 }) => {
+  const { weatherInfo, isLoading: isWeatherLoading, error: weatherError } = useWeather();
+
   return (
     <BottomSheet
       isOpen={isOpen}
@@ -139,31 +151,34 @@ const TrailBottomSheet: React.FC<TrailBottomSheetProps> = ({
             </div>
           ) : (
             <div className="p-4">
-              {/* 날씨 정보 */}
-              <div className="bg-blue-500 rounded-lg p-4 text-white">
-                <div className="flex justify-between items-start">
-                  {/* 왼쪽 정보 */}
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-semibold">고양시</h3>
-                    <div className="text-3xl font-bold">29°C</div>
-                    <div className="text-sm space-y-1">
-                      <div>강수확률: 20%</div>
-                      <div>습도: 74%</div>
+              {/* 날씨 로딩 또는 에러 처리 */}
+              {isWeatherLoading ? (
+                <div className="text-center text-sm text-gray-500">날씨 정보를 불러오는 중...</div>
+              ) : weatherError ? (
+                <div className="text-center text-sm text-red-500">{weatherError}</div>
+              ) : (
+                <>
+                  <div className="bg-blue-500 rounded-lg p-4 text-white">
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-2 text-left">
+                        <h3 className="text-lg font-semibold">{weatherInfo.city}</h3>
+                        <div className="text-3xl font-bold">{weatherInfo.temperature}°C</div>
+                        <div className="text-sm space-y-1">
+                          <div>습도: {weatherInfo.humidity}%</div>
+                          <div>풍속: {weatherInfo.windSpeed}m/s</div>
+                        </div>
+                      </div>
+                      <div className="text-right space-y-2">
+                        <div className="text-4xl">{weatherInfo.icon}</div>
+                        <div className="text-sm">{weatherInfo.condition}</div>
+                      </div>
                     </div>
                   </div>
-                  
-                  {/* 오른쪽 정보 */}
-                  <div className="text-right space-y-2">
-                    <div className="text-4xl">☀️</div>
-                    <div className="text-sm">대체로 맑음</div>
-                    <div className="text-xs">최고:31° 최저:31°</div>
+                  <div className="mt-4 text-center text-gray-500 text-sm">
+                    날씨 API 연동 예정
                   </div>
-                </div>
-              </div>
-              
-              <div className="mt-4 text-center text-gray-500 text-sm">
-                날씨 API 연동 예정
-              </div>
+                </>
+              )}
             </div>
           )}
         </div>
