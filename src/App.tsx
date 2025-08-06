@@ -80,6 +80,16 @@ function App() {
         {/* 산책 통합 테스트 페이지 (GPS + 지도 + API) */}
         <Route path="/test/walk-full" element={<WalkFullTest />} />
 
+        {/* 홈 페이지 - RootLayout 없이 단독 렌더링 (Footer 없음) */}
+        <Route 
+          path="/" 
+          element={
+            <AuthWrapper requireAuth={true}>
+              <Home />
+            </AuthWrapper>
+          } 
+        />
+
         {/* 모든 페이지에 RootLayout 적용 */}
         <Route element={<RootLayout />}>
           {/* 공개 경로들 (인증 불필요) */}
@@ -94,8 +104,6 @@ function App() {
               </AuthWrapper>
             }
           >
-            {/* 홈 페이지 - src/pages/index.tsx */}
-            <Route path="/" element={<Home />} />
 
             {/* 리뷰 페이지 - src/pages/reviews/index.tsx */}
             <Route path="/reviews" element={<Reviews />} />

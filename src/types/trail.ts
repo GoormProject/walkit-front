@@ -1,3 +1,19 @@
+// Trail 인터페이스 정의
+export interface Trail {
+  id: number;
+  name: string;
+  rating: number;
+  reviewCount: number;
+  description: string;
+  category: string;
+  distance: number;
+  image?: string;
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
+}
+
 // GeoJSON 타입 정의
 export interface GeoJSONPoint {
   type: 'Point';
