@@ -140,13 +140,22 @@ const BottomSheet = ({
             onEscapeKeyDown={onClose}
             onInteractOutside={showBackdrop ? () => onClose() : undefined}
           >
-            {/* 접근성을 위한 숨겨진 제목과 설명 */}
-            <Dialog.Title className="sr-only">
-              {title || '바텀시트'}
-            </Dialog.Title>
-            <Dialog.Description className="sr-only">
-              {title ? `${title} 콘텐츠` : '바텀시트 콘텐츠'}
-            </Dialog.Description>
+            {/* 접근성을 위한 숨겨진 제목과 설명 (title이 없을 때만) */}
+            {!title && (
+              <>
+                <Dialog.Title className="sr-only">
+                  바텀시트
+                </Dialog.Title>
+                <Dialog.Description className="sr-only">
+                  바텀시트 콘텐츠
+                </Dialog.Description>
+              </>
+            )}
+            {title && (
+              <Dialog.Description className="sr-only">
+                {title} 콘텐츠
+              </Dialog.Description>
+            )}
           {/* 핸들 */}
           <div
             className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing"
