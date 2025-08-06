@@ -5,7 +5,7 @@ import { ArrowLeft, MapPin, Timer, TrendingUp } from 'lucide-react';
 interface WalkSummaryProps {
   distance: number; // km
   duration: number; // seconds
-  path: number[][]; // [[lat, lng], ...]
+  path: number[][]; // [[lng, lat], ...]
   onComplete: () => void;
 }
 
@@ -57,36 +57,52 @@ const WalkSummary: React.FC<WalkSummaryProps> = ({
   // 지도 렌더링
   useEffect(() => {
     if (!mapRef.current || !window.kakao || !window.kakao.maps) {
+      console.warn('Kakao Maps API가 로드되지 않았습니다.');
       return;
     }
 
-    const mapContainer = mapRef.current;
-    const mapOption = {
-      center: new window.kakao.maps.LatLng(37.5665, 126.9780), // 서울 시청
-      level: 3,
-    };
+    try {
+      const mapContainer = mapRef.current;
+      const mapOption = {
+        center: new window.kakao.maps.LatLng(37.5665, 126.9780), // 서울 시청
+        level: 3,
+      };
 
-    const map = new window.kakao.maps.Map(mapContainer, mapOption);
+      const map = new window.kakao.maps.Map(mapContainer, mapOption);
 
-    // 경로가 있으면 폴리라인 그리기
-    if (path && path.length > 0) {
-      const pathPositions = path.map(coord => 
-        new window.kakao.maps.LatLng(coord[0], coord[1])
-      );
+      // 경로가 있으면 폴리라인 그리기
+      if (path && path.length > 0) {
+        // 좌표 유효성 검사
+        const validPath = path.filter(coord => 
+          Array.isArray(coord) && coord.length === 2 && 
+          typeof coord[0] === 'number' && typeof coord[1] === 'number'
+        );
+        
+        if (validPath.length === 0) {
+          console.warn('유효한 경로 데이터가 없습니다.');
+          return;
+        }
 
-      const polyline = new window.kakao.maps.Polyline({
-        path: pathPositions,
-        strokeWeight: 5,
-        strokeColor: '#FF0000',
-        strokeOpacity: 0.7,
-        strokeStyle: 'solid',
-        map: map
-      });
+        const pathPositions = validPath.map(([lng, lat]) => 
+          new window.kakao.maps.LatLng(lat, lng)
+        );
 
-      // 경로를 포함하는 영역으로 지도 이동
-      const bounds = new window.kakao.maps.LatLngBounds();
-      pathPositions.forEach(pos => bounds.extend(pos));
-      map.setBounds(bounds);
+        const polyline = new window.kakao.maps.Polyline({
+          path: pathPositions,
+          strokeWeight: 5,
+          strokeColor: '#FF0000',
+          strokeOpacity: 0.7,
+          strokeStyle: 'solid',
+          map: map
+        });
+
+        // 경로를 포함하는 영역으로 지도 이동
+        const bounds = new window.kakao.maps.LatLngBounds();
+        pathPositions.forEach(pos => bounds.extend(pos));
+        map.setBounds(bounds);
+      }
+    } catch (error) {
+      console.error('지도 렌더링 중 오류 발생:', error);
     }
   }, [path]);
 
