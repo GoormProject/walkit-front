@@ -169,6 +169,29 @@ export interface TrailListResponse {
   totalElements: number;
 }
 
+// 산책로 상세 조회 응답 타입
+export interface TrailDetailResponse {
+  /** @format int32 */
+  httpStatus: number;
+  message: string;
+  data: {
+    title: string;
+    description: string;
+    location: string;
+    /** @format double */
+    length: number;
+    routeImageUrl?: string;
+    /** @format int32 */
+    reviewCount: number;
+    /** @format double */
+    rating: number;
+    /** @format int64 */
+    pathId: number;
+    startPoint: [number, number]; // [경도, 위도]
+    path: [number, number][]; // [[경도, 위도], [경도, 위도], ...]
+  };
+}
+
 export interface BaseResponseListWalkListResponse {
   /** @format int32 */
   httpStatus?: number;
@@ -850,6 +873,21 @@ export class Api<
     getTrails: (params: RequestParams = {}) =>
       this.request<TrailListResponse, any>({
         path: `/api/trails`,
+        method: 'GET',
+        ...params,
+      }),
+
+    /**
+     * @description 특정 산책로의 상세 정보를 조회합니다.
+     *
+     * @tags 산책로
+     * @name GetTrailById
+     * @summary 산책로 상세 조회
+     * @request GET:/api/trails/{trailId}
+     */
+    getTrailById: (trailId: number, params: RequestParams = {}) =>
+      this.request<TrailDetailResponse, any>({
+        path: `/api/trails/${trailId}`,
         method: 'GET',
         ...params,
       }),

@@ -1,5 +1,5 @@
 import type { GeoJSONFeatureCollection } from '../types/trail';
-import type { TrailListResponse, TrailResponse } from '../api/swagger-api';
+import type { TrailListResponse, TrailResponse, TrailDetailResponse } from '../api/swagger-api';
 import type { Trail } from '../types/trail';
 import type { 
   WalkRecord,
@@ -319,5 +319,70 @@ export const getTrails = async (): Promise<TrailListResponse> => {
   } else {
     console.log('🚀 실제 API 모드로 산책로 조회');
     return getRealTrails();
+  }
+};
+
+/**
+ * 실제 산책로 상세 조회 API
+ */
+const getRealTrailById = async (trailId: number): Promise<TrailDetailResponse> => {
+  const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/trails/${trailId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`산책로 상세 조회 API 호출 실패: ${response.status}`);
+  }
+
+  return response.json();
+};
+
+/**
+ * Mock 산책로 상세 데이터 (개발용)
+ */
+const getMockTrailById = async (trailId: number): Promise<TrailDetailResponse> => {
+  // 개발용 Mock 데이터
+  const mockTrailDetail: TrailDetailResponse = {
+    httpStatus: 200,
+    message: '단건 조회 성공',
+    data: {
+      title: '남산 둘레길',
+      description: '남산 둘레기를 돌아보는 초급 코스입니다.',
+      location: '서울 중구 남산공원',
+      length: 3.8,
+      routeImageUrl: 'https://example.com/images/namsan-trail.png',
+      reviewCount: 25,
+      rating: 4.3,
+      pathId: trailId,
+      startPoint: [126.75791835403612, 37.662510637017874],
+      path: [
+        [126.75791835403612, 37.662510637017874],
+        [126.75790151956403, 37.66262761454681],
+        [126.75789029658108, 37.662723861742975],
+        [126.75790900155192, 37.66283343532169],
+        [126.75795763447428, 37.662935605134706],
+        [126.75809792174988, 37.66306886989648],
+        [126.75818770560676, 37.66312069501714]
+      ]
+    }
+  };
+
+  return mockTrailDetail;
+};
+
+/**
+ * 환경에 따라 적절한 산책로 상세 조회 API 함수 반환
+ */
+export const getTrailById = async (trailId: number): Promise<TrailDetailResponse> => {
+  if (isMockMode()) {
+    console.log('🔧 Mock API 모드로 산책로 상세 조회:', trailId);
+    return getMockTrailById(trailId);
+  } else {
+    console.log('🚀 실제 API 모드로 산책로 상세 조회:', trailId);
+    return getRealTrailById(trailId);
   }
 }; 

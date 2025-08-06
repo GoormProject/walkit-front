@@ -9,7 +9,7 @@ import type {
   KakaoMapMarkerOptions,
   Trail
 } from '../../types/trail';
-import type { TrailResponse } from '@/api/swagger-api';
+import type { TrailResponse, TrailDetailResponse } from '@/api/swagger-api';
 
 /**
  * GeoJSON 좌표를 카카오 맵 LatLng 객체로 변환
@@ -270,4 +270,32 @@ export const convertTrailResponseToTrail = (trailResponse: TrailResponse): Trail
  */
 export const convertTrailResponseArrayToTrailArray = (trailResponses: TrailResponse[]): Trail[] => {
   return trailResponses.map(convertTrailResponseToTrail);
+};
+
+/**
+ * API 응답의 TrailDetailResponse를 Trail 타입으로 변환
+ */
+export const convertTrailDetailResponseToTrail = (trailDetailResponse: TrailDetailResponse): Trail => {
+  const { data } = trailDetailResponse;
+  
+  return {
+    id: data.pathId,
+    name: data.title,
+    rating: data.rating,
+    reviewCount: data.reviewCount,
+    description: data.description,
+    category: '산책로', // 기본 카테고리
+    distance: data.length,
+    image: data.routeImageUrl,
+    coordinates: data.startPoint ? {
+      lat: data.startPoint[1], // 위도
+      lng: data.startPoint[0], // 경도
+    } : undefined,
+    // 상세 정보
+    location: data.location,
+    routeImageUrl: data.routeImageUrl,
+    pathId: data.pathId,
+    startPoint: data.startPoint,
+    path: data.path,
+  };
 }; 
