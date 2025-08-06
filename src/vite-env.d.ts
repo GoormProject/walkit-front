@@ -25,6 +25,7 @@ declare global {
         LatLng: new (lat: number, lng: number) => kakao.maps.LatLng;
         Marker: new (options: kakao.maps.MarkerOptions) => kakao.maps.Marker;
         Polyline: new (options: kakao.maps.PolylineOptions) => kakao.maps.Polyline;
+        LatLngBounds: new () => kakao.maps.LatLngBounds;
         InfoWindow: new (options: kakao.maps.InfoWindowOptions) => kakao.maps.InfoWindow;
         MapOptions: {
           center: kakao.maps.LatLng;
@@ -57,12 +58,20 @@ declare global {
         panTo(latLng: LatLng): void;
         getLevel(): number;
         getCenter(): LatLng;
+        setBounds(bounds: LatLngBounds): void;
       }
       
       class LatLng {
         constructor(lat: number, lng: number);
         getLat(): number;
         getLng(): number;
+      }
+      
+      class LatLngBounds {
+        constructor();
+        extend(latLng: LatLng): void;
+        getSouthWest(): LatLng;
+        getNorthEast(): LatLng;
       }
       
       class Marker {
@@ -76,6 +85,13 @@ declare global {
         setPath(path: LatLng[]): void;
         setMap(map: Map | null): void;
         setOptions(options: Partial<PolylineOptions>): void;
+      }
+      
+      class LatLngBounds {
+        constructor();
+        extend(latLng: LatLng): void;
+        getSouthWest(): LatLng;
+        getNorthEast(): LatLng;
       }
       
       class InfoWindow {

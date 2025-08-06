@@ -6,8 +6,10 @@ import type {
   TrailPathData,
   CourseStyle,
   KakaoMapPolylineOptions,
-  KakaoMapMarkerOptions
-} from '../types/trail';
+  KakaoMapMarkerOptions,
+  Trail
+} from '../../types/trail';
+import type { TrailResponse, TrailDetailResponse } from '@/api/swagger-api';
 
 /**
  * GeoJSON 좌표를 카카오 맵 LatLng 객체로 변환
@@ -243,5 +245,58 @@ export const createPolylineFromCoordinates = (
     strokeOpacity: style.strokeOpacity || defaultStyle.strokeOpacity,
     strokeStyle: style.strokeStyle || defaultStyle.strokeStyle,
     zIndex: 1
+  };
+}; 
+
+/**
+ * API 응답의 TrailResponse를 Trail 타입으로 변환
+ */
+export const convertTrailResponseToTrail = (trailResponse: TrailResponse): Trail => {
+  return {
+    id: trailResponse.id,
+    name: trailResponse.name,
+    rating: trailResponse.rating,
+    reviewCount: trailResponse.reviewCount,
+    description: '', // 기본 설명 (API에서 description 필드가 없음)
+    category: '산책로', // 기본 카테고리
+    distance: trailResponse.length,
+    image: undefined, // API에서 이미지 정보가 없으므로 undefined
+    coordinates: undefined, // API에서 좌표 정보가 없으므로 undefined
+    location: trailResponse.location, // location 필드로 올바르게 매핑
+  };
+};
+
+/**
+ * API 응답의 TrailResponse 배열을 Trail 배열로 변환
+ */
+export const convertTrailResponseArrayToTrailArray = (trailResponses: TrailResponse[]): Trail[] => {
+  return trailResponses.map(convertTrailResponseToTrail);
+};
+
+/**
+ * API 응답의 TrailDetailResponse를 Trail 타입으로 변환
+ */
+export const convertTrailDetailResponseToTrail = (trailDetailResponse: TrailDetailResponse): Trail => {
+  const { data } = trailDetailResponse;
+  
+  return {
+    id: data.pathId,
+    name: data.title,
+    rating: data.rating,
+    reviewCount: data.reviewCount,
+    description: data.description,
+    category: '산책로', // 기본 카테고리
+    distance: data.length,
+    image: data.routeImageUrl,
+    coordinates: data.startPoint ? {
+      lat: data.startPoint[1], // 위도
+      lng: data.startPoint[0], // 경도
+    } : undefined,
+    // 상세 정보
+    location: data.location,
+    routeImageUrl: data.routeImageUrl,
+    pathId: data.pathId,
+    startPoint: data.startPoint,
+    path: data.path,
   };
 }; 

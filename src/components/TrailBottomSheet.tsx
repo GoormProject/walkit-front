@@ -8,6 +8,7 @@ interface TrailBottomSheetProps {
   activeTab: 'trails' | 'weather';
   setActiveTab: (tab: 'trails' | 'weather') => void;
   nearbyTrails: Trail[];
+  isTrailsLoading?: boolean;
   sortOption: string;
   setSortOption: (option: string) => void;
   onTrailCardClick: (trail: Trail) => void;
@@ -19,6 +20,7 @@ const TrailBottomSheet: React.FC<TrailBottomSheetProps> = ({
   activeTab,
   setActiveTab,
   nearbyTrails,
+  isTrailsLoading = false,
   sortOption,
   setSortOption,
   onTrailCardClick
@@ -27,6 +29,7 @@ const TrailBottomSheet: React.FC<TrailBottomSheetProps> = ({
     <BottomSheet
       isOpen={isOpen}
       onClose={onClose}
+      title={activeTab === 'trails' ? '근처 산책로 및 날씨 정보' : '날씨 정보'}
       defaultSnapPoint={60}
       className="safe-area-bottom"
       showBackdrop={false}
@@ -75,53 +78,63 @@ const TrailBottomSheet: React.FC<TrailBottomSheetProps> = ({
         <div className="flex-1 overflow-y-auto">
           {activeTab === 'trails' ? (
             <div className="p-4 space-y-4">
-              {/* 근처 산책로 목록 */}
-              {nearbyTrails.length > 0 ? (
-                nearbyTrails.map((trail, index) => (
-                  <div 
-                    key={index} 
-                    className="flex space-x-3 p-3 bg-white rounded-lg shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors"
-                    onClick={() => onTrailCardClick(trail)}
-                  >
-                    {/* 이미지 */}
-                    <div className="w-16 h-16 bg-gray-200 rounded-lg flex-shrink-0">
-                      <img
-                        src={trail.image || '/public/test_picture/test_for_success.jpg'}
-                        alt={trail.name}
-                        className="w-full h-full object-cover rounded-lg"
-                      />
-                    </div>
-                    
-                    {/* 정보 */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-900 text-sm mb-1">
-                        {trail.name}
-                      </h3>
-                      
-                      {/* 평점 */}
-                      <div className="flex items-center mb-1">
-                        <span className="text-yellow-400 text-xs">★★★★☆</span>
-                        <span className="text-xs text-gray-600 ml-1">
-                          {trail.rating} ({trail.reviewCount})
-                        </span>
-                      </div>
-                      
-                      {/* 설명 */}
-                      <p className="text-xs text-gray-600 mb-1">
-                        {trail.description}
-                      </p>
-                      
-                      {/* 카테고리 */}
-                      <span className="text-xs text-gray-500">
-                        {trail.category}
-                      </span>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-500 text-sm">근처 산책로를 찾는 중...</p>
+              {/* 로딩 상태 */}
+              {isTrailsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mr-3"></div>
+                  <span className="text-gray-600 text-sm">산책로 목록을 불러오는 중...</span>
                 </div>
+              ) : (
+                <>
+                  {/* 근처 산책로 목록 */}
+                  {nearbyTrails.length > 0 ? (
+                    nearbyTrails.map((trail, index) => (
+                      <div 
+                        key={index} 
+                        className="flex space-x-3 p-3 bg-white rounded-lg shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors"
+                        onClick={() => onTrailCardClick(trail)}
+                      >
+                        {/* 이미지 */}
+                        <div className="w-16 h-16 bg-gray-200 rounded-lg flex-shrink-0">
+                          <img
+                            src={trail.image || '/public/test_picture/test_for_success.jpg'}
+                            alt={trail.name}
+                            className="w-full h-full object-cover rounded-lg"
+                          />
+                        </div>
+                        
+                        {/* 정보 */}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-gray-900 text-sm mb-1">
+                            {trail.name}
+                          </h3>
+                          
+                          {/* 평점 */}
+                          <div className="flex items-center mb-1">
+                            <span className="text-yellow-400 text-xs">★★★★☆</span>
+                            <span className="text-xs text-gray-600 ml-1">
+                              {trail.rating} ({trail.reviewCount})
+                            </span>
+                          </div>
+                          
+                          {/* 설명 */}
+                          <p className="text-xs text-gray-600 mb-1">
+                            {trail.description}
+                          </p>
+                          
+                          {/* 카테고리 */}
+                          <span className="text-xs text-gray-500">
+                            {trail.category}
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500 text-sm">근처 산책로를 찾는 중...</p>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           ) : (

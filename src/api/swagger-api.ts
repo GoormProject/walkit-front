@@ -146,6 +146,52 @@ export interface BaseResponseVoid {
   data?: any;
 }
 
+// 산책로 관련 타입 정의
+export interface TrailResponse {
+  /** @format int64 */
+  id: number;
+  name: string;
+  location: string;
+  /** @format double */
+  length: number;
+  /** @format double */
+  rating: number;
+  /** @format int32 */
+  reviewCount: number;
+}
+
+export interface TrailListResponse {
+  /** @format int32 */
+  status: number;
+  message: string;
+  trails: TrailResponse[];
+  /** @format int32 */
+  totalElements: number;
+}
+
+// 산책로 상세 조회 응답 타입
+export interface TrailDetailResponse {
+  /** @format int32 */
+  httpStatus: number;
+  message: string;
+  data: {
+    title: string;
+    description: string;
+    location: string;
+    /** @format double */
+    length: number;
+    routeImageUrl?: string;
+    /** @format int32 */
+    reviewCount: number;
+    /** @format double */
+    rating: number;
+    /** @format int64 */
+    pathId: number;
+    startPoint: [number, number]; // [경도, 위도]
+    path: [number, number][]; // [[경도, 위도], [경도, 위도], ...]
+  };
+}
+
 export interface BaseResponseListWalkListResponse {
   /** @format int32 */
   httpStatus?: number;
@@ -813,6 +859,36 @@ export class Api<
         path: `/api/friends/${friendMemberId}`,
         method: 'DELETE',
         secure: true,
+        ...params,
+      }),
+
+    /**
+     * @description 산책로 목록을 조회합니다.
+     *
+     * @tags 산책로
+     * @name GetTrails
+     * @summary 산책로 목록 조회
+     * @request GET:/api/trails
+     */
+    getTrails: (params: RequestParams = {}) =>
+      this.request<TrailListResponse, any>({
+        path: `/api/trails`,
+        method: 'GET',
+        ...params,
+      }),
+
+    /**
+     * @description 특정 산책로의 상세 정보를 조회합니다.
+     *
+     * @tags 산책로
+     * @name GetTrailById
+     * @summary 산책로 상세 조회
+     * @request GET:/api/trails/{trailId}
+     */
+    getTrailById: (trailId: number, params: RequestParams = {}) =>
+      this.request<TrailDetailResponse, any>({
+        path: `/api/trails/${trailId}`,
+        method: 'GET',
         ...params,
       }),
   };

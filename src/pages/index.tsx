@@ -9,6 +9,8 @@ import { isOAuthCallback } from '@/utils/oauth';
 import TrailBottomSheet from '@/components/TrailBottomSheet';
 import TrailDetailCard from '@/components/TrailDetailCard';
 import type { Trail } from '@/types/trail';
+import { getTrails } from '@/utils/backendApi';
+import { convertTrailResponseArrayToTrailArray } from '@/utils/converter/trailConverter';
 import './index.css';
 import '@/styles/rootlayout.css';
 
@@ -66,10 +68,14 @@ const Home = () => {
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'trails' | 'weather'>('trails');
   const [nearbyTrails, setNearbyTrails] = useState<Trail[]>([]);
+  const [isTrailsLoading, setIsTrailsLoading] = useState(false);
   const [sortOption, setSortOption] = useState('distance');
   const [selectedTrail, setSelectedTrail] = useState<Trail | null>(null);
   const [showTrailDetail, setShowTrailDetail] = useState(false);
-  const [trailMarker, setTrailMarker] = useState<kakao.maps.Marker | null>(null);
+  // ✅ useRef 배열로 마커/오버레이/폴리라인 관리 (솔루션 적용)
+  const trailMarkersRef = useRef<kakao.maps.Marker[]>([]);
+  const trailPolylinesRef = useRef<kakao.maps.Polyline[]>([]);
+  const trailOverlaysRef = useRef<kakao.maps.CustomOverlay[]>([]);
   const map = useRef<kakao.maps.Map | null>(null);
   const polyline = useRef<kakao.maps.Polyline | null>(null);
   const markersRef = useRef<kakao.maps.Marker[]>([]);
@@ -138,11 +144,8 @@ const Home = () => {
     setShowTrailDetail(false); // 상세 정보 닫기
     setSelectedTrail(null);
     
-    // 마커 제거
-    if (trailMarker) {
-      trailMarker.setMap(null);
-      setTrailMarker(null);
-    }
+    // ✅ 트레일 요소 일괄 제거
+    clearAllTrailElements();
     
     toast.success('산책을 시작합니다!', {
       description: 'GPS 신호가 안정적인 실외에서 이용해주세요.',
@@ -161,66 +164,47 @@ const Home = () => {
 
   // 근처 산책로 데이터 가져오기
   const fetchNearbyTrails = useCallback(async () => {
-    if (!position) return;
-
     try {
-      // 임시 데이터 (실제로는 API 호출)
-      const mockTrails = [
-        {
-          id: 1,
-          name: '일산 호수공원',
-          rating: 4.6,
-          reviewCount: 3369,
-          description: '산책, 예술, 이벤트를 즐길 수 있는',
-          category: '호숫가 공원',
-          image: '/public/test_picture/test_for_success.jpg',
-          distance: 0.8,
-          coordinates: { lat: 37.657019, lng: 126.763746 }
-        },
-        {
-          id: 2,
-          name: '고양시 한강공원',
-          rating: 4.3,
-          reviewCount: 2156,
-          description: '한강변을 따라 걷는 산책로',
-          category: '강변 공원',
-          image: '/public/test_picture/test_for_success.jpg',
-          distance: 1.2,
-          coordinates: { lat: 37.6612, lng: 126.7715 }
-        },
-        {
-          id: 3,
-          name: '고양시립도서관 주변',
-          rating: 4.1,
-          reviewCount: 892,
-          description: '조용하고 평화로운 산책 환경',
-          category: '도시 공원',
-          image: '/public/test_picture/test_for_success.jpg',
-          distance: 1.5,
-          coordinates: { lat: 37.6598, lng: 126.7682 }
+      setIsTrailsLoading(true);
+      logger.log('🏃 산책로 목록 조회 시작');
+      
+      // API 호출
+      const response = await getTrails();
+      
+      if (response.status === 200 && response.trails && Array.isArray(response.trails)) {
+        // API 응답을 Trail 타입으로 변환
+        const trails = convertTrailResponseArrayToTrailArray(response.trails);
+        
+        // 정렬 옵션에 따라 데이터 정렬
+        let sortedTrails = [...trails];
+        switch (sortOption) {
+          case 'distance':
+            sortedTrails.sort((a, b) => a.distance - b.distance);
+            break;
+          case 'rating':
+            sortedTrails.sort((a, b) => b.rating - a.rating);
+            break;
+          case 'popularity':
+            sortedTrails.sort((a, b) => b.reviewCount - a.reviewCount);
+            break;
         }
-      ];
 
-      // 정렬 옵션에 따라 데이터 정렬
-      let sortedTrails = [...mockTrails];
-      switch (sortOption) {
-        case 'distance':
-          sortedTrails.sort((a, b) => a.distance - b.distance);
-          break;
-        case 'rating':
-          sortedTrails.sort((a, b) => b.rating - a.rating);
-          break;
-        case 'popularity':
-          sortedTrails.sort((a, b) => b.reviewCount - a.reviewCount);
-          break;
+        setNearbyTrails(sortedTrails);
+        logger.log('✅ 산책로 목록 조회 성공:', {
+          totalCount: response.totalElements,
+          loadedCount: trails.length,
+          sortOption
+        });
+      } else {
+        throw new Error(`API 응답 오류: ${response.message}`);
       }
-
-      setNearbyTrails(sortedTrails);
     } catch (error) {
-      console.error('근처 산책로 데이터 가져오기 실패:', error);
+      logger.error('❌ 근처 산책로 데이터 가져오기 실패:', error);
       toast.error('근처 산책로 정보를 가져올 수 없습니다.');
+    } finally {
+      setIsTrailsLoading(false);
     }
-  }, [position, sortOption]);
+  }, [sortOption]);
 
   // 바텀시트가 열릴 때 또는 탭 변경 시 근처 산책로 데이터 가져오기
   useEffect(() => {
@@ -242,10 +226,8 @@ const Home = () => {
     setShowTrailDetail(true);
     setIsBottomSheetOpen(false); // 바텀시트 닫기
     
-    // 기존 마커 제거
-    if (trailMarker) {
-      trailMarker.setMap(null);
-    }
+    // ✅ 기존 트레일 요소 일괄 제거
+    clearAllTrailElements();
     
     // 지도를 해당 위치로 이동하고 마커 추가
     if (map.current && trail.coordinates) {
@@ -275,13 +257,12 @@ const Home = () => {
         logger.error('❌ 지도 이동 실패:', error);
       }
       
-      // 산책로 마커 생성 및 추가
+      // ✅ 산책로 마커 생성 및 배열에 추가
       const marker = new window.kakao.maps.Marker({
         position: latLng,
         map: map.current,
       });
-      
-      setTrailMarker(marker);
+      trailMarkersRef.current.push(marker);
       
       logger.log('🎯 산책로 마커 생성 완료:', {
         name: trail.name,
@@ -291,19 +272,57 @@ const Home = () => {
     }
   };
 
+  // ✅ 솔루션 적용: 일괄 마커/오버레이/폴리라인 제거 함수
+  const clearAllTrailElements = () => {
+    logger.log('🧹 트레일 요소 일괄 제거 시작');
+    
+    // 1. 마커 제거
+    trailMarkersRef.current.forEach((marker, index) => {
+      marker.setMap(null);
+      logger.log(`🗑️ 마커 ${index + 1} 제거 완료`);
+    });
+    trailMarkersRef.current = [];
+    
+    // 2. 폴리라인 제거
+    trailPolylinesRef.current.forEach((polyline, index) => {
+      polyline.setMap(null);
+      logger.log(`🗑️ 폴리라인 ${index + 1} 제거 완료`);
+    });
+    trailPolylinesRef.current = [];
+    
+    // 3. 커스텀 오버레이 제거 (솔루션의 핵심!)
+    trailOverlaysRef.current.forEach((overlay, index) => {
+      overlay.setMap(null);
+      
+      // 💡 솔루션 핵심: CustomOverlay DOM 수동 제거
+      try {
+        const content = overlay.getContent() as HTMLElement;
+        if (content && content.parentNode) {
+          content.parentNode.removeChild(content);
+          logger.log(`🗑️ 오버레이 ${index + 1} DOM 제거 완료`);
+        }
+      } catch (e) {
+        logger.log(`⚠️ 오버레이 ${index + 1} DOM 제거 실패 (무시)`);
+      }
+      
+      logger.log(`🗑️ 오버레이 ${index + 1} 제거 완료`);
+    });
+    trailOverlaysRef.current = [];
+    
+    logger.log('✅ 모든 트레일 요소 제거 완료');
+  };
+
   // 이전 페이지로 돌아가기
   const handleBackToTrails = () => {
     setShowTrailDetail(false);
     setSelectedTrail(null);
     setIsBottomSheetOpen(true);
     
-    // 산책로 마커 제거
-    if (trailMarker) {
-      trailMarker.setMap(null);
-      setTrailMarker(null);
-      logger.log('🗑️ 산책로 마커 제거 완료');
-    }
+    // ✅ 새로운 일괄 제거 함수 사용
+    clearAllTrailElements();
     
+    // ✅ DOM 백업 제거 로직 불필요 (솔루션 적용으로 제거)
+
     // 지도를 기본 위치로 복원 (현재 위치 또는 서울 시청)
     if (map.current) {
       try {
@@ -337,6 +356,86 @@ const Home = () => {
       { lat: pos1.getLat(), lng: pos1.getLng() },
       { lat: pos2.getLat(), lng: pos2.getLng() }
     );
+  };
+
+  // ✅ 솔루션 적용: 산책로 경로 시각화 (useRef 배열 방식)
+  const handleTrailPathUpdate = (path: [number, number][]) => {
+    if (!map.current || path.length === 0) return;
+
+    try {
+      // ✅ 기존 모든 트레일 요소 제거 (새로운 일괄 제거 함수 사용)
+      clearAllTrailElements();
+
+      // 경로 좌표를 카카오맵 LatLng로 변환 ([경도, 위도] → [위도, 경도])
+      const latLngPath = path.map(([lng, lat]) => 
+        new window.kakao.maps.LatLng(lat, lng)
+      );
+
+      // ✅ 폴리라인 생성 및 배열에 추가
+      const polyline = new window.kakao.maps.Polyline({
+        path: latLngPath,
+        strokeWeight: 4,
+        strokeColor: '#4CAF50', // 초록색
+        strokeOpacity: 0.8,
+        strokeStyle: 'solid',
+        map: map.current,
+      });
+      trailPolylinesRef.current.push(polyline);
+
+      // ✅ 시작점 마커 생성 및 배열에 추가
+      const startMarker = new window.kakao.maps.Marker({
+        position: latLngPath[0],
+        map: map.current,
+      });
+      trailMarkersRef.current.push(startMarker);
+
+      // ✅ 시작점 오버레이 생성 및 배열에 추가
+      const startLabel = document.createElement('div');
+      startLabel.style.cssText = 'background:rgba(0,0,0,0.7);color:white;padding:2px 6px;border-radius:3px;font-size:10px;white-space:nowrap;text-align:center;';
+      startLabel.textContent = '시작';
+      
+      const startOverlay = new window.kakao.maps.CustomOverlay({
+        position: latLngPath[0],
+        content: startLabel,
+        map: map.current,
+        yAnchor: 1.5,
+      });
+      trailOverlaysRef.current.push(startOverlay);
+
+      // ✅ 끝점 마커 생성 (경로가 2개 이상일 때) 및 배열에 추가
+      if (latLngPath.length > 1) {
+        const endMarker = new window.kakao.maps.Marker({
+          position: latLngPath[latLngPath.length - 1],
+          map: map.current,
+        });
+        trailMarkersRef.current.push(endMarker);
+
+        // 끝점 오버레이 생성 및 배열에 추가
+        const endLabel = document.createElement('div');
+        endLabel.style.cssText = 'background:rgba(0,0,0,0.7);color:white;padding:2px 6px;border-radius:3px;font-size:10px;white-space:nowrap;text-align:center;';
+        endLabel.textContent = '끝';
+        
+        const endOverlay = new window.kakao.maps.CustomOverlay({
+          position: latLngPath[latLngPath.length - 1],
+          content: endLabel,
+          map: map.current,
+          yAnchor: 1.5,
+        });
+        trailOverlaysRef.current.push(endOverlay);
+      }
+
+      // 경로가 모두 보이도록 지도 범위 조정
+      const bounds = new window.kakao.maps.LatLngBounds();
+      latLngPath.forEach(latLng => bounds.extend(latLng));
+      map.current.setBounds(bounds);
+
+      logger.log('✅ 산책로 경로 시각화 완료:', {
+        pathLength: path.length,
+        bounds: bounds.toString()
+      });
+    } catch (error) {
+      logger.error('❌ 산책로 경로 시각화 실패:', error);
+    }
   };
 
   // 위치 업데이트 시 경로 그리기
@@ -1078,6 +1177,7 @@ const Home = () => {
             trail={selectedTrail}
             onBack={handleBackToTrails}
             onStartWalk={handleStartWalk}
+            onTrailPathUpdate={handleTrailPathUpdate}
             error={error}
           />
         )}
@@ -1089,6 +1189,7 @@ const Home = () => {
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           nearbyTrails={nearbyTrails}
+          isTrailsLoading={isTrailsLoading}
           sortOption={sortOption}
           setSortOption={setSortOption}
           onTrailCardClick={handleTrailCardClick}

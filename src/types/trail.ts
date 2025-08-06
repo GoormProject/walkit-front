@@ -12,6 +12,12 @@ export interface Trail {
     lat: number;
     lng: number;
   };
+  // 상세 정보 (API에서 추가로 제공되는 필드들)
+  location?: string;
+  routeImageUrl?: string;
+  pathId?: number;
+  startPoint?: [number, number]; // [경도, 위도]
+  path?: [number, number][]; // [[경도, 위도], [경도, 위도], ...]
 }
 
 // GeoJSON 타입 정의
