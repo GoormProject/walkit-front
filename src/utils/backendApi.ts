@@ -1,16 +1,13 @@
 import type { GeoJSONFeatureCollection } from '../types/trail';
+import type { TrailListResponse, TrailResponse } from '../api/swagger-api';
+import type { Trail } from '../types/trail';
 import type { 
-  WalkRecordsResponse, 
-  WalkRecordDetailResponse, 
-  CreateWalkRecordRequest,
-  CreateWalkRecordResponse,
-  WalkPathDetailResponse,
-  WalkPathsResponse,
+  WalkRecord,
+  WalkListResponse,
   WalkStartApiResponse,
   WalkEventApiResponse,
   WalkCreateApiResponse,
   WalkDeleteApiResponse,
-  WalkListResponse,
   WalkCreateRequest
 } from '../types/walk';
 import { getTrailPaths as getMockTrailPaths } from './mockTrailApi';
@@ -251,4 +248,76 @@ export const getApiModeInfo = () => {
     baseUrl: import.meta.env.VITE_API_BASE_URL,
     environment: import.meta.env.MODE,
   };
+};
+
+/**
+ * 실제 산책로 목록 조회 API
+ */
+const getRealTrails = async (): Promise<TrailListResponse> => {
+  const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/trails`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`산책로 API 호출 실패: ${response.status}`);
+  }
+
+  return response.json();
+};
+
+/**
+ * Mock 산책로 데이터 (개발용)
+ */
+const getMockTrails = async (): Promise<TrailListResponse> => {
+  // 개발용 Mock 데이터
+  const mockTrails: TrailResponse[] = [
+    {
+      id: 1,
+      name: '한강공원 산책로',
+      location: '서울특별시 영등포구',
+      length: 5.2,
+      rating: 4.7,
+      reviewCount: 35,
+    },
+    {
+      id: 2,
+      name: '남산 둘레길',
+      location: '서울특별시 중구',
+      length: 3.1,
+      rating: 4.5,
+      reviewCount: 28,
+    },
+    {
+      id: 3,
+      name: '북서울꿈의숲',
+      location: '서울특별시 강북구',
+      length: 2.8,
+      rating: 4.3,
+      reviewCount: 22,
+    },
+  ];
+
+  return {
+    status: 200,
+    message: '산책로 리스트 조회 성공',
+    trails: mockTrails,
+    totalElements: mockTrails.length,
+  };
+};
+
+/**
+ * 환경에 따라 적절한 산책로 API 함수 반환
+ */
+export const getTrails = async (): Promise<TrailListResponse> => {
+  if (isMockMode()) {
+    console.log('🔧 Mock API 모드로 산책로 조회');
+    return getMockTrails();
+  } else {
+    console.log('🚀 실제 API 모드로 산책로 조회');
+    return getRealTrails();
+  }
 }; 

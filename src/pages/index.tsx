@@ -9,6 +9,8 @@ import { isOAuthCallback } from '@/utils/oauth';
 import TrailBottomSheet from '@/components/TrailBottomSheet';
 import TrailDetailCard from '@/components/TrailDetailCard';
 import type { Trail } from '@/types/trail';
+import { getTrails } from '@/utils/backendApi';
+import { convertTrailResponseArrayToTrailArray } from '@/utils/converter/trailConverter';
 import './index.css';
 import '@/styles/rootlayout.css';
 
@@ -66,6 +68,7 @@ const Home = () => {
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'trails' | 'weather'>('trails');
   const [nearbyTrails, setNearbyTrails] = useState<Trail[]>([]);
+  const [isTrailsLoading, setIsTrailsLoading] = useState(false);
   const [sortOption, setSortOption] = useState('distance');
   const [selectedTrail, setSelectedTrail] = useState<Trail | null>(null);
   const [showTrailDetail, setShowTrailDetail] = useState(false);
@@ -161,66 +164,47 @@ const Home = () => {
 
   // 근처 산책로 데이터 가져오기
   const fetchNearbyTrails = useCallback(async () => {
-    if (!position) return;
-
     try {
-      // 임시 데이터 (실제로는 API 호출)
-      const mockTrails = [
-        {
-          id: 1,
-          name: '일산 호수공원',
-          rating: 4.6,
-          reviewCount: 3369,
-          description: '산책, 예술, 이벤트를 즐길 수 있는',
-          category: '호숫가 공원',
-          image: '/public/test_picture/test_for_success.jpg',
-          distance: 0.8,
-          coordinates: { lat: 37.657019, lng: 126.763746 }
-        },
-        {
-          id: 2,
-          name: '고양시 한강공원',
-          rating: 4.3,
-          reviewCount: 2156,
-          description: '한강변을 따라 걷는 산책로',
-          category: '강변 공원',
-          image: '/public/test_picture/test_for_success.jpg',
-          distance: 1.2,
-          coordinates: { lat: 37.6612, lng: 126.7715 }
-        },
-        {
-          id: 3,
-          name: '고양시립도서관 주변',
-          rating: 4.1,
-          reviewCount: 892,
-          description: '조용하고 평화로운 산책 환경',
-          category: '도시 공원',
-          image: '/public/test_picture/test_for_success.jpg',
-          distance: 1.5,
-          coordinates: { lat: 37.6598, lng: 126.7682 }
+      setIsTrailsLoading(true);
+      logger.log('🏃 산책로 목록 조회 시작');
+      
+      // API 호출
+      const response = await getTrails();
+      
+      if (response.status === 200 && response.trails) {
+        // API 응답을 Trail 타입으로 변환
+        const trails = convertTrailResponseArrayToTrailArray(response.trails);
+        
+        // 정렬 옵션에 따라 데이터 정렬
+        let sortedTrails = [...trails];
+        switch (sortOption) {
+          case 'distance':
+            sortedTrails.sort((a, b) => a.distance - b.distance);
+            break;
+          case 'rating':
+            sortedTrails.sort((a, b) => b.rating - a.rating);
+            break;
+          case 'popularity':
+            sortedTrails.sort((a, b) => b.reviewCount - a.reviewCount);
+            break;
         }
-      ];
 
-      // 정렬 옵션에 따라 데이터 정렬
-      let sortedTrails = [...mockTrails];
-      switch (sortOption) {
-        case 'distance':
-          sortedTrails.sort((a, b) => a.distance - b.distance);
-          break;
-        case 'rating':
-          sortedTrails.sort((a, b) => b.rating - a.rating);
-          break;
-        case 'popularity':
-          sortedTrails.sort((a, b) => b.reviewCount - a.reviewCount);
-          break;
+        setNearbyTrails(sortedTrails);
+        logger.log('✅ 산책로 목록 조회 성공:', {
+          totalCount: response.totalElements,
+          loadedCount: trails.length,
+          sortOption
+        });
+      } else {
+        throw new Error(`API 응답 오류: ${response.message}`);
       }
-
-      setNearbyTrails(sortedTrails);
     } catch (error) {
-      console.error('근처 산책로 데이터 가져오기 실패:', error);
+      logger.error('❌ 근처 산책로 데이터 가져오기 실패:', error);
       toast.error('근처 산책로 정보를 가져올 수 없습니다.');
+    } finally {
+      setIsTrailsLoading(false);
     }
-  }, [position, sortOption]);
+  }, [sortOption]);
 
   // 바텀시트가 열릴 때 또는 탭 변경 시 근처 산책로 데이터 가져오기
   useEffect(() => {
@@ -1089,6 +1073,7 @@ const Home = () => {
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           nearbyTrails={nearbyTrails}
+          isTrailsLoading={isTrailsLoading}
           sortOption={sortOption}
           setSortOption={setSortOption}
           onTrailCardClick={handleTrailCardClick}

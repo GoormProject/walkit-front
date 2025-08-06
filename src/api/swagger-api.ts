@@ -146,6 +146,29 @@ export interface BaseResponseVoid {
   data?: any;
 }
 
+// 산책로 관련 타입 정의
+export interface TrailResponse {
+  /** @format int64 */
+  id: number;
+  name: string;
+  location: string;
+  /** @format double */
+  length: number;
+  /** @format double */
+  rating: number;
+  /** @format int32 */
+  reviewCount: number;
+}
+
+export interface TrailListResponse {
+  /** @format int32 */
+  status: number;
+  message: string;
+  trails: TrailResponse[];
+  /** @format int32 */
+  totalElements: number;
+}
+
 export interface BaseResponseListWalkListResponse {
   /** @format int32 */
   httpStatus?: number;
@@ -813,6 +836,21 @@ export class Api<
         path: `/api/friends/${friendMemberId}`,
         method: 'DELETE',
         secure: true,
+        ...params,
+      }),
+
+    /**
+     * @description 산책로 목록을 조회합니다.
+     *
+     * @tags 산책로
+     * @name GetTrails
+     * @summary 산책로 목록 조회
+     * @request GET:/api/trails
+     */
+    getTrails: (params: RequestParams = {}) =>
+      this.request<TrailListResponse, any>({
+        path: `/api/trails`,
+        method: 'GET',
         ...params,
       }),
   };
