@@ -3,10 +3,12 @@
 .cursor/
 docs/
 docs/*
+docs/** 
 .env
 env/
 .env.*
 .prettierrc
+changes.patch
 
 # Logs
 logs

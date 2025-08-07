@@ -19,7 +19,7 @@ export default [
       '*.log',
       '*.tmp',
       '*.temp',
-      // 특정 개발자 작업 파일들 (필요시 주석 해제)
+      // 특정 개발자 작업 파일들 (필요 시 주석 해제)
       // 'src/pages/other-developer-work/**',
       // 'src/components/experimental/**',
     ],

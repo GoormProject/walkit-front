@@ -371,7 +371,7 @@ export interface TrailListResponse {
   /** @format double */
   length?: number;
   routeImageUrl?: string;
-  /** @format int32 */
+  /** @format int64 */
   reviewCount?: number;
   /** @format double */
   rating?: number;
@@ -391,7 +391,7 @@ export interface TrailDetailResponse {
   /** @format double */
   length?: number;
   routeImageUrl?: string;
-  /** @format int32 */
+  /** @format int64 */
   reviewCount?: number;
   /** @format double */
   rating?: number;
