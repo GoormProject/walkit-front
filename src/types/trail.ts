@@ -107,4 +107,33 @@ export type EasingFunction = 'linear' | 'easeIn' | 'easeOut' | 'easeInOut';
 export interface SplitPathData {
   completed: kakao.maps.LatLng[];
   remaining: kakao.maps.LatLng[];
+}
+
+// 산책로 등록 요청
+export interface TrailRegisterRequest {
+  walkId: number;
+  title: string;
+  description: string;
+  location: string;
+  length: number; // km 단위
+  routeImageUrl: string;
+  pathId: number;
+  startPoint: number[]; // [lng, lat]
+  path: number[][]; // 좌표 배열
+  isUploaded: boolean;
+}
+
+// 산책로 등록 응답
+export interface TrailRegisterResponse {
+  walkId: number;
+  trailId: number;
+  createdAt: string;
+  isUploaded: boolean;
+}
+
+// 산책로 등록 API 응답
+export interface TrailRegisterApiResponse {
+  httpStatus: number;
+  message: string;
+  data: TrailRegisterResponse;
 } 

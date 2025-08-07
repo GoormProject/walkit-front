@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import type { WalkRecord, WalkListRequest } from '../types/walk';
 import { getWalkList, deleteWalk } from '../utils/walkApi';
 import { formatDistance, formatTime, formatPace, getWalkTypeFromRecord } from '../utils/walkUtils';
@@ -16,6 +16,7 @@ interface WalkHistoryListProps {
 }
 
 const WalkHistoryList: React.FC<WalkHistoryListProps> = ({ onWalkSelect }) => {
+  const navigate = useNavigate();
   const [walks, setWalks] = useState<WalkRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -238,6 +239,25 @@ const WalkHistoryList: React.FC<WalkHistoryListProps> = ({ onWalkSelect }) => {
                       >
                         상세보기
                       </button>
+                      {/* 개인 산책(등록되지 않은 산책)에만 공유 버튼 표시 */}
+                      {!walk.isUploaded && !walk.trailId && (
+                        <button
+                          onClick={() => navigate(`/trail-register/${walk.walkId}`)}
+                          className="text-green-600 hover:text-green-800 text-sm font-medium"
+                        >
+                          공유하기
+                        </button>
+                      )}
+                      {/* 등록된 산책로를 걸었을 때 리뷰 버튼 표시 */}
+                      {/* TODO: API 개선 후 내가 만든 산책로는 제외하도록 수정 필요 */}
+                      {walk.trailId && walk.isUploaded && (
+                        <button
+                          onClick={() => navigate(`/reviews/${walk.trailId}`)}
+                          className="text-purple-600 hover:text-purple-800 text-sm font-medium"
+                        >
+                          리뷰 남기기
+                        </button>
+                      )}
                       <button
                         onClick={() => handleDeleteWalk(walk.walkId)}
                         className="text-red-600 hover:text-red-800 text-sm font-medium"
