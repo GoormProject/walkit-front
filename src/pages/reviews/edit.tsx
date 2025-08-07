@@ -18,20 +18,25 @@ const ReviewEditPage: React.FC = () => {
   // 기존 리뷰 데이터 로드
   useEffect(() => {
     const loadReviewData = async () => {
-      if (!trailId) return;
+      if (!trailId) {
+        setError('산책로 ID가 없습니다.');
+        return;
+      }
       
       try {
         setIsLoading(true);
         setError(null);
         
+        console.log('📝 내 리뷰 데이터 로드 시작:', trailId);
         const review = await getMyReview(Number(trailId));
         
         if (review) {
           setMyReview(review);
           setContent(review.content);
           setRating(review.rating);
+          console.log('✅ 내 리뷰 데이터 로드 성공:', review.reviewId);
         } else {
-          setError('수정할 리뷰를 찾을 수 없습니다.');
+          setError('이 산책로에 작성한 리뷰가 없습니다.');
         }
       } catch (error) {
         console.error('❌ 리뷰 데이터 로드 실패:', error);
@@ -138,12 +143,22 @@ const ReviewEditPage: React.FC = () => {
         <div className="text-center">
           <span className="text-red-500 text-4xl mb-4">⚠️</span>
           <p className="text-gray-600 mb-4">{error}</p>
-          <button
-            onClick={() => navigate(-1)}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-          >
-            뒤로 가기
-          </button>
+          <div className="space-y-2">
+            <button
+              onClick={() => navigate(-1)}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors mr-2"
+            >
+              뒤로 가기
+            </button>
+            {error.includes('리뷰가 없습니다') && (
+              <button
+                onClick={() => navigate(`/reviews/${trailId}`)}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              >
+                리뷰 작성하기
+              </button>
+            )}
+          </div>
         </div>
       </div>
     );

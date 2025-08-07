@@ -5,6 +5,7 @@ import { getTrailById } from '../utils/mockTrailApi';
 import { convertTrailDetailResponseToTrail } from '../utils/converter/trailConverter';
 import TrailReviewsList from './TrailReviewsList';
 import { checkMyReview } from '../utils/reviewApi';
+import { renderStarRating } from '../utils/starRating';
 
 interface TrailDetailCardProps {
   trail: Trail;
@@ -125,9 +126,7 @@ const TrailDetailCard: React.FC<TrailDetailCardProps> = ({
                       className="flex items-center hover:opacity-80 transition-opacity cursor-pointer"
                     >
                       <span className="text-yellow-400 text-sm">
-                        {'★'.repeat(Math.floor(detailedTrail.rating))}
-                        {detailedTrail.rating % 1 >= 0.5 ? '☆' : ''}
-                        {'☆'.repeat(5 - Math.ceil(detailedTrail.rating))}
+                        {renderStarRating(detailedTrail.rating)}
                       </span>
                       <span className="text-sm text-gray-600 ml-1 underline">
                         {detailedTrail.rating} ({detailedTrail.reviewCount})

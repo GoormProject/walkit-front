@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getTrailReviewsPaginated } from '../utils/reviewApi';
+import { renderStarRatingJSX } from '../utils/starRating';
 import type { ReviewListResponse, ReviewResponse } from '../types/review';
 
 interface TrailReviewsListProps {
@@ -81,13 +82,7 @@ const TrailReviewsList: React.FC<TrailReviewsListProps> = ({ trailId, onClose })
   };
 
   const renderStars = (rating: number) => {
-    return (
-      <span className="text-yellow-400 text-sm">
-        {'★'.repeat(Math.floor(rating))}
-        {rating % 1 >= 0.5 ? '☆' : ''}
-        {'☆'.repeat(5 - Math.ceil(rating))}
-      </span>
-    );
+    return renderStarRatingJSX(rating);
   };
 
   if (isLoading) {
