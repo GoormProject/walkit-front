@@ -239,8 +239,8 @@ const WalkHistoryList: React.FC<WalkHistoryListProps> = ({ onWalkSelect }) => {
                       >
                         상세보기
                       </button>
-                      {/* 현재는 업로드되지 않은 산책에만 공유 버튼 표시 */}
-                      {!walk.isUploaded && (
+                      {/* 개인 산책(등록되지 않은 산책)에만 공유 버튼 표시 */}
+                      {!walk.isUploaded && !walk.trailId && (
                         <button
                           onClick={() => navigate(`/trail-register/${walk.walkId}`)}
                           className="text-green-600 hover:text-green-800 text-sm font-medium"
