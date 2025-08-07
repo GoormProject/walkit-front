@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import type { Trail } from '../types/trail';
 import { getTrailById } from '../utils/mockTrailApi';
 import { convertTrailDetailResponseToTrail } from '../utils/converter/trailConverter';
+import TrailReviewsList from './TrailReviewsList';
 
 interface TrailDetailCardProps {
   trail: Trail;
@@ -21,6 +22,7 @@ const TrailDetailCard: React.FC<TrailDetailCardProps> = ({
   const [detailedTrail, setDetailedTrail] = useState<Trail>(trail);
   const [isLoading, setIsLoading] = useState(false);
   const [detailError, setDetailError] = useState<string | null>(null);
+  const [showReviews, setShowReviews] = useState(false);
 
   // 상세 정보 조회
   useEffect(() => {
@@ -91,14 +93,19 @@ const TrailDetailCard: React.FC<TrailDetailCardProps> = ({
                 <div className="flex-1">
                   {/* 평점 */}
                   <div className="flex items-center mb-2">
-                    <span className="text-yellow-400 text-sm">
-                      {'★'.repeat(Math.floor(detailedTrail.rating))}
-                      {detailedTrail.rating % 1 >= 0.5 ? '☆' : ''}
-                      {'☆'.repeat(5 - Math.ceil(detailedTrail.rating))}
-                    </span>
-                    <span className="text-sm text-gray-600 ml-1">
-                      {detailedTrail.rating} ({detailedTrail.reviewCount})
-                    </span>
+                    <button
+                      onClick={() => setShowReviews(true)}
+                      className="flex items-center hover:opacity-80 transition-opacity cursor-pointer"
+                    >
+                      <span className="text-yellow-400 text-sm">
+                        {'★'.repeat(Math.floor(detailedTrail.rating))}
+                        {detailedTrail.rating % 1 >= 0.5 ? '☆' : ''}
+                        {'☆'.repeat(5 - Math.ceil(detailedTrail.rating))}
+                      </span>
+                      <span className="text-sm text-gray-600 ml-1 underline">
+                        {detailedTrail.rating} ({detailedTrail.reviewCount})
+                      </span>
+                    </button>
                   </div>
 
                   {/* 설명 */}
@@ -148,6 +155,14 @@ const TrailDetailCard: React.FC<TrailDetailCardProps> = ({
           )}
         </div>
       </div>
+      
+      {/* 리뷰 목록 모달 */}
+      {showReviews && detailedTrail.id && (
+        <TrailReviewsList
+          trailId={detailedTrail.id}
+          onClose={() => setShowReviews(false)}
+        />
+      )}
     </div>
   );
 };

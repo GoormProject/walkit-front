@@ -1,4 +1,4 @@
-import type { ReviewCreateRequest, ReviewApiResponse } from '../types/review';
+import type { ReviewCreateRequest, ReviewApiResponse, ReviewListApiResponse } from '../types/review';
 
 const getHeaders = () => {
   return {
@@ -84,5 +84,57 @@ export const checkMyReview = async (trailId: number): Promise<boolean> => {
   } catch (error) {
     console.error('리뷰 확인 오류:', error);
     return false;
+  }
+};
+
+/**
+ * 특정 산책로의 리뷰 목록 조회 API
+ */
+export const getTrailReviews = async (trailId: number): Promise<ReviewListApiResponse> => {
+  console.log('📋 산책로 리뷰 목록 조회 API 호출:', trailId);
+  
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10초 타임아웃
+
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/trails/${trailId}/reviews`, {
+      method: 'GET',
+      headers: getHeaders(),
+      credentials: 'include',
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      
+      // 상태 코드별 에러 메시지
+      switch (response.status) {
+        case 401:
+          throw new Error('로그인이 필요합니다.');
+        case 403:
+          throw new Error('비회원의 멤버 프로필 접근입니다.');
+        case 404:
+          throw new Error('요청한 산책로를 찾을 수 없습니다.');
+        default:
+          throw new Error(errorData?.message || '리뷰 목록 조회에 실패했습니다.');
+      }
+    }
+
+    const result = await response.json();
+    
+    // 응답 데이터 검증
+    if (!result || typeof result.httpStatus !== 'number') {
+      throw new Error('잘못된 응답 형식입니다.');
+    }
+    
+    return result;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('요청 시간이 초과되었습니다.');
+    }
+    throw error;
   }
 }; 
