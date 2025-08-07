@@ -1,7 +1,7 @@
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 2rem;  /* 이 패딩이 지도 상호작용을 방해! */
   text-align: center;
 }
 

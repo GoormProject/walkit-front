@@ -23,6 +23,10 @@ import WalkZustandTest from '@/pages/test/walk-zustand-test';
 import WalkIntegrationTest from '@/pages/test/walk-integration-test';
 import WalkSimpleTest from '@/pages/test/walk-simple-test';
 import WalkFullTest from '@/pages/test/walk-full-test';
+import WalkHistoryPage from '@/pages/walk-history';
+import TrailRegisterPage from '@/pages/trail-register';
+import ReviewPage from '@/pages/reviews';
+
 import '@/App.css';
 
 function App() {
@@ -80,11 +84,44 @@ function App() {
         {/* 산책 통합 테스트 페이지 (GPS + 지도 + API) */}
         <Route path="/test/walk-full" element={<WalkFullTest />} />
 
+
+
+        {/* 홈 페이지 - RootLayout 없이 단독 렌더링 (Footer 없음) */}
+        <Route 
+          path="/" 
+          element={
+            <AuthWrapper requireAuth={true}>
+              <Home />
+            </AuthWrapper>
+          } 
+        />
+
         {/* 모든 페이지에 RootLayout 적용 */}
         <Route element={<RootLayout />}>
           {/* 공개 경로들 (인증 불필요) */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          
+          {/* 인증이 필요한 경로들 */}
+          <Route path="/walk-history" element={
+            <AuthWrapper requireAuth={true}>
+              <WalkHistoryPage />
+            </AuthWrapper>
+          } />
+          
+          {/* 산책로 등록 페이지 */}
+          <Route path="/trail-register/:walkId" element={
+            <AuthWrapper requireAuth={true}>
+              <TrailRegisterPage />
+            </AuthWrapper>
+          } />
+          
+          {/* 리뷰 작성 페이지 */}
+          <Route path="/reviews/:trailId" element={
+            <AuthWrapper requireAuth={true}>
+              <ReviewPage />
+            </AuthWrapper>
+          } />
 
           {/* 보호된 경로들 (인증 필요) */}
           <Route
@@ -94,8 +131,6 @@ function App() {
               </AuthWrapper>
             }
           >
-            {/* 홈 페이지 - src/pages/index.tsx */}
-            <Route path="/" element={<Home />} />
 
             {/* 리뷰 페이지 - src/pages/reviews/index.tsx */}
             <Route path="/reviews" element={<Reviews />} />

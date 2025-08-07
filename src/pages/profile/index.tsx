@@ -170,6 +170,12 @@ const Profile = () => {
                 : '프로필 수정 (비활성화)'}
             </Link>
             <Link
+              to="/walk-history"
+              className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg text-center transition-colors"
+            >
+              내 산책 기록
+            </Link>
+            <Link
               to="/"
               className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg text-center transition-colors"
             >

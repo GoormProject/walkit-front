@@ -57,6 +57,9 @@ interface WalkState {
     // 경로 좌표 추가
     addPathCoordinate: (coordinate: number[]) => void;
     
+    // 경로 업데이트
+    updateWalkPath: (path: number[][]) => void;
+    
     // 상태 초기화
     resetWalk: () => void;
     
@@ -283,6 +286,16 @@ export const useWalkStore = create<WalkState>()((set, get) => ({
         currentWalk: {
           ...state.currentWalk,
           path: [...state.currentWalk.path, coordinate],
+        },
+      }));
+    },
+
+    // 경로 업데이트
+    updateWalkPath: (path: number[][]) => {
+      set(state => ({
+        currentWalk: {
+          ...state.currentWalk,
+          path,
         },
       }));
     },

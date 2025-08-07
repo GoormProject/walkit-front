@@ -1,3 +1,25 @@
+// Trail 인터페이스 정의
+export interface Trail {
+  id: number;
+  name: string;
+  rating: number;
+  reviewCount: number;
+  description: string;
+  category: string;
+  distance: number;
+  image?: string;
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
+  // 상세 정보 (API에서 추가로 제공되는 필드들)
+  location?: string;
+  routeImageUrl?: string;
+  pathId?: number;
+  startPoint?: [number, number]; // [경도, 위도]
+  path?: [number, number][]; // [[경도, 위도], [경도, 위도], ...]
+}
+
 // GeoJSON 타입 정의
 export interface GeoJSONPoint {
   type: 'Point';
@@ -85,4 +107,33 @@ export type EasingFunction = 'linear' | 'easeIn' | 'easeOut' | 'easeInOut';
 export interface SplitPathData {
   completed: kakao.maps.LatLng[];
   remaining: kakao.maps.LatLng[];
+}
+
+// 산책로 등록 요청
+export interface TrailRegisterRequest {
+  walkId: number;
+  title: string;
+  description: string;
+  location: string;
+  length: number; // km 단위
+  routeImageUrl: string;
+  pathId: number;
+  startPoint: number[]; // [lng, lat]
+  path: number[][]; // 좌표 배열
+  isUploaded: boolean;
+}
+
+// 산책로 등록 응답
+export interface TrailRegisterResponse {
+  walkId: number;
+  trailId: number;
+  createdAt: string;
+  isUploaded: boolean;
+}
+
+// 산책로 등록 API 응답
+export interface TrailRegisterApiResponse {
+  httpStatus: number;
+  message: string;
+  data: TrailRegisterResponse;
 } 

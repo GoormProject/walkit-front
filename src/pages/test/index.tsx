@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTrailPathsSafe } from '../../hooks/useTrailPaths';
-import { useWalkPaths } from '../../hooks/useWalkRecords';
+// useWalkPaths는 나중에 구현 예정
+// import { useWalkPaths } from '../../hooks/useWalkRecords';
 
 import { parseWktLineString } from '@/utils/converter';
 import { getApiModeInfo } from '@/utils/backendApi';
@@ -215,9 +216,9 @@ const TrailApiTest: React.FC = () => {
   );
 };
 
-// 산책 기록 API 테스트 컴포넌트
+// 산책 기록 API 테스트 컴포넌트 (임시로 비활성화)
 const WalkApiTest: React.FC = () => {
-  const { walkPaths, isLoading, error, refetch } = useWalkPaths();
+  // const { walkPaths, isLoading, error, refetch } = useWalkPaths();
 
   return (
     <div>
@@ -225,78 +226,19 @@ const WalkApiTest: React.FC = () => {
         📝 산책 기록 API 테스트
       </h2>
 
-      <div className="mb-4">
-        <button
-          onClick={refetch}
-          disabled={isLoading}
-          className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 disabled:opacity-50"
-        >
-          {isLoading ? '로딩 중...' : '데이터 새로고침'}
-        </button>
+      <div className="bg-yellow-900 border border-yellow-600 text-yellow-200 px-4 py-3 rounded-lg mb-4">
+        <strong>알림:</strong> 산책 기록 API 테스트는 현재 비활성화되어 있습니다.
       </div>
 
-      {error && (
-        <div className="bg-red-900 border border-red-600 text-red-200 px-4 py-3 rounded-lg mb-4">
-          <strong>오류:</strong> {error}
-        </div>
-      )}
-
-      {isLoading && (
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-2 text-gray-600">데이터를 불러오는 중...</p>
-        </div>
-      )}
-
-      {!isLoading && !error && (
-        <div>
-          <h3 className="text-lg font-medium mb-3">
-            수신된 경로 데이터 ({walkPaths.length}개)
-          </h3>
-          <div className="space-y-4">
-            {walkPaths.map(path => (
-              <div
-                key={path.pathId}
-                className="border border-gray-200 rounded-lg p-4"
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <h4 className="font-medium text-lg">{path.name}</h4>
-                  <span
-                    className={`px-2 py-1 rounded text-xs font-medium ${
-                      path.courseType === 'easy'
-                        ? 'bg-green-100 text-green-800'
-                        : path.courseType === 'medium'
-                          ? 'bg-orange-100 text-orange-800'
-                          : path.courseType === 'hard'
-                            ? 'bg-red-100 text-red-800'
-                            : path.courseType === 'scenic'
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-purple-100 text-purple-800'
-                    }`}
-                  >
-                    {path.courseType}
-                  </span>
-                </div>
-                <p className="text-gray-600 text-sm mb-2">{path.description}</p>
-                <div className="grid grid-cols-3 gap-4 text-sm">
-                  <div>
-                    <strong>거리:</strong> {path.distance}km
-                  </div>
-                  <div>
-                    <strong>소요시간:</strong> {path.duration}분
-                  </div>
-                  <div>
-                    <strong>난이도:</strong> {path.difficulty}
-                  </div>
-                </div>
-                <div className="mt-2 text-xs text-gray-500">
-                  <strong>WKT:</strong> {path.path.substring(0, 50)}...
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <div className="text-center py-8">
+        <p className="text-gray-600">산책 기록 기능은 /walk-history 페이지에서 확인할 수 있습니다.</p>
+        <Link
+          to="/walk-history"
+          className="inline-block mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+        >
+          산책 기록 페이지로 이동
+        </Link>
+      </div>
     </div>
   );
 };

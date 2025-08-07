@@ -25,6 +25,8 @@ declare global {
         LatLng: new (lat: number, lng: number) => kakao.maps.LatLng;
         Marker: new (options: kakao.maps.MarkerOptions) => kakao.maps.Marker;
         Polyline: new (options: kakao.maps.PolylineOptions) => kakao.maps.Polyline;
+        LatLngBounds: new () => kakao.maps.LatLngBounds;
+        InfoWindow: new (options: kakao.maps.InfoWindowOptions) => kakao.maps.InfoWindow;
         MapOptions: {
           center: kakao.maps.LatLng;
           level: number;
@@ -52,12 +54,24 @@ declare global {
       class Map {
         constructor(container: HTMLElement, options: MapOptions);
         setCenter(latLng: LatLng): void;
+        setLevel(level: number): void;
+        panTo(latLng: LatLng): void;
+        getLevel(): number;
+        getCenter(): LatLng;
+        setBounds(bounds: LatLngBounds): void;
       }
       
       class LatLng {
         constructor(lat: number, lng: number);
         getLat(): number;
         getLng(): number;
+      }
+      
+      class LatLngBounds {
+        constructor();
+        extend(latLng: LatLng): void;
+        getSouthWest(): LatLng;
+        getNorthEast(): LatLng;
       }
       
       class Marker {
@@ -73,9 +87,27 @@ declare global {
         setOptions(options: Partial<PolylineOptions>): void;
       }
       
+      class LatLngBounds {
+        constructor();
+        extend(latLng: LatLng): void;
+        getSouthWest(): LatLng;
+        getNorthEast(): LatLng;
+      }
+      
+      class InfoWindow {
+        constructor(options: InfoWindowOptions);
+        open(map: Map, marker: Marker): void;
+        close(): void;
+        setContent(content: string): void;
+      }
+      
       interface MapOptions {
         center: LatLng;
         level: number;
+      }
+      
+      interface InfoWindowOptions {
+        content: string;
       }
       
       interface MarkerOptions {

@@ -60,4 +60,82 @@
   width: 22px;
   height: 12px;
   background: url('https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/vertex_white.png');
+}
+
+/* 모바일 친화적인 스타일 */
+@media (max-width: 768px) {
+  /* 장소 정보 오버레이 모바일 최적화 */
+  .placeinfo_wrap {
+    left: -120px;
+    width: 240px;
+  }
+  
+  .placeinfo .title {
+    font-size: 13px;
+    margin: 12px 0 0 8px;
+  }
+  
+  .placeinfo .jibun {
+    font-size: 10px;
+  }
+  
+  /* 검색 결과 모바일 최적화 */
+  .search-results {
+    max-height: 40vh;
+  }
+  
+  /* 카테고리 버튼 모바일 최적화 */
+  .category-buttons {
+    gap: 0.5rem;
+  }
+  
+  .category-buttons button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* 터치 디바이스 최적화 */
+@media (hover: none) and (pointer: coarse) {
+  /* 터치 디바이스에서 버튼 크기 증가 */
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* 터치 디바이스에서 간격 조정 */
+  .space-y-3 > * + * {
+    margin-top: 0.75rem;
+  }
+  
+  .space-y-6 > * + * {
+    margin-top: 1.5rem;
+  }
+}
+
+/* 안전 영역 대응 (iPhone X 이상) */
+@supports (padding: max(0px)) {
+  .safe-area-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  
+  .safe-area-top {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+}
+
+/* 산책 컨트롤 패널 애니메이션 */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
 } 

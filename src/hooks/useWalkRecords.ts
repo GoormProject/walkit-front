@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { WalkRecord, WalkPath } from '../types/walk';
-import { getWalkRecords, getWalkRecordById, createWalkRecord, getWalkPathById, getWalkPaths } from '@/utils/backendApi';
+import type { WalkRecord, WalkCreateRequest } from '../types/walk';
+import { getWalkList, getWalkDetail, createWalk } from '@/utils/walkApi';
+import { convertWalkDetailToRecord, safeParseInt, validateAndSanitizeWalkRecord, isValidWalkRecord, isValidWalkDetail } from '@/utils/walkUtils';
 
 interface UseWalkRecordsReturn {
   walkRecords: WalkRecord[];
@@ -31,7 +32,7 @@ export const useWalkRecords = (): UseWalkRecordsReturn => {
       setIsLoading(true);
       setError(null);
 
-      const response = await getWalkRecords();
+      const response = await getWalkList();
       setWalkRecords(response.data);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '산책 기록을 불러오는데 실패했습니다.';
@@ -75,8 +76,20 @@ export const useWalkRecordDetail = (walkId: string): UseWalkRecordDetailReturn =
       setIsLoading(true);
       setError(null);
 
-      const response = await getWalkRecordById(walkId);
-      setWalkRecord(response.data);
+      const walkIdNum = parseInt(walkId, 10);
+      if (isNaN(walkIdNum)) {
+        throw new Error('유효하지 않은 산책 기록 ID입니다.');
+      }
+              const response = await getWalkDetail(walkIdNum);
+        
+        // API 응답 데이터 유효성 검사
+        if (!isValidWalkDetail(response.data)) {
+          console.warn('API 응답 데이터 형식이 예상과 다릅니다:', response.data);
+        }
+        
+        const walkRecordData = convertWalkDetailToRecord(response.data);
+        const sanitizedWalkRecord = validateAndSanitizeWalkRecord(walkRecordData);
+        setWalkRecord(sanitizedWalkRecord);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '산책 기록 상세 정보를 불러오는데 실패했습니다.';
       setError(errorMessage);
@@ -105,32 +118,23 @@ export const useWalkRecordDetail = (walkId: string): UseWalkRecordDetailReturn =
 };
 
 /**
- * 산책 기록 등록을 위한 커스텀 훅
+ * 산책 기록 생성 훅
  */
 export const useCreateWalkRecord = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const createRecord = useCallback(async (walkData: {
-    memberId: number;
-    date: string;
-    startedAt: string;
-    endedAt: string;
-    totalDistance: number;
-    totalTime: string;
-    pace: string;
-    locationName: string;
-  }) => {
+  const createRecord = useCallback(async (walkData: WalkCreateRequest) => {
     try {
       setIsLoading(true);
       setError(null);
 
-      const response = await createWalkRecord(walkData);
-      return response.data;
+      const response = await createWalk(walkData);
+      return response;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '산책 기록 등록에 실패했습니다.';
+      const errorMessage = err instanceof Error ? err.message : '산책 기록 생성에 실패했습니다.';
       setError(errorMessage);
-      console.error('산책 기록 등록 실패:', err);
+      console.error('산책 기록 생성 실패:', err);
       throw err;
     } finally {
       setIsLoading(false);
@@ -150,99 +154,43 @@ export const useCreateWalkRecord = () => {
 };
 
 /**
- * 산책 기록 통계를 제공하는 커스텀 훅
+ * 산책 기록 통계 훅
  */
 export const useWalkRecordsStats = () => {
-  const { walkRecords } = useWalkRecords();
-  
-  const stats = {
-    total: walkRecords.length,
-    totalDistance: walkRecords.reduce((sum, record) => sum + record.totalDistance, 0),
-    averageDistance: walkRecords.length > 0 
-      ? walkRecords.reduce((sum, record) => sum + record.totalDistance, 0) / walkRecords.length
-      : 0,
-    totalTime: walkRecords.reduce((sum, record) => {
-      const [hours, minutes, seconds] = record.totalTime.split(':').map(Number);
-      return sum + hours * 3600 + minutes * 60 + seconds;
-    }, 0),
-    averagePace: walkRecords.length > 0 
-      ? walkRecords.reduce((sum, record) => {
-          const [minutes, seconds] = record.pace.split(':').map(Number);
-          return sum + minutes * 60 + seconds;
-        }, 0) / walkRecords.length
-      : 0,
-    byLocation: walkRecords.reduce((acc, record) => {
-      acc[record.locationName] = (acc[record.locationName] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>),
-  };
-
-  return stats;
-};
-
-/**
- * 산책 경로 상세 정보를 관리하는 커스텀 훅
- */
-export const useWalkPathDetail = (pathId: string) => {
-  const [walkPath, setWalkPath] = useState<WalkPath | null>(null);
+  const [stats, setStats] = useState({
+    totalWalks: 0,
+    totalDistance: 0,
+    totalTime: 0,
+    averagePace: 0,
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchWalkPathDetail = useCallback(async () => {
-    if (!pathId) return;
-
+  const fetchStats = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
 
-      const response = await getWalkPathById(pathId);
-      setWalkPath(response.data);
+      const response = await getWalkList();
+      const walks = response.data;
+
+      const totalWalks = walks.length;
+      const totalDistance = walks.reduce((sum, walk) => sum + walk.totalDistance, 0);
+      const totalTime = walks.reduce((sum, walk) => sum + safeParseInt(walk.totalTime, 0), 0);
+      const averagePace = totalDistance > 0 
+        ? totalTime / totalDistance  // 초/미터
+        : 0;
+
+      setStats({
+        totalWalks,
+        totalDistance,
+        totalTime,
+        averagePace,
+      });
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '산책 경로 상세 정보를 불러오는데 실패했습니다.';
+      const errorMessage = err instanceof Error ? err.message : '통계를 불러오는데 실패했습니다.';
       setError(errorMessage);
-      console.error('산책 경로 상세 로드 실패:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [pathId]);
-
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
-
-  // pathId가 변경될 때마다 데이터 로드
-  useEffect(() => {
-    fetchWalkPathDetail();
-  }, [fetchWalkPathDetail]);
-
-  return {
-    walkPath,
-    isLoading,
-    error,
-    refetch: fetchWalkPathDetail,
-    clearError,
-  };
-};
-
-/**
- * 산책 경로 목록을 관리하는 커스텀 훅
- */
-export const useWalkPaths = () => {
-  const [walkPaths, setWalkPaths] = useState<WalkPath[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchWalkPaths = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const response = await getWalkPaths();
-      setWalkPaths(response.data);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '산책 경로를 불러오는데 실패했습니다.';
-      setError(errorMessage);
-      console.error('산책 경로 로드 실패:', err);
+      console.error('통계 로드 실패:', err);
     } finally {
       setIsLoading(false);
     }
@@ -252,16 +200,17 @@ export const useWalkPaths = () => {
     setError(null);
   }, []);
 
-  // 컴포넌트 마운트 시 데이터 로드
   useEffect(() => {
-    fetchWalkPaths();
-  }, [fetchWalkPaths]);
+    fetchStats();
+  }, [fetchStats]);
 
   return {
-    walkPaths,
+    stats,
     isLoading,
     error,
-    refetch: fetchWalkPaths,
+    refetch: fetchStats,
     clearError,
   };
-}; 
+};
+
+// 산책 경로 관련 훅들은 나중에 구현 예정 

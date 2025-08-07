@@ -121,24 +121,41 @@ const BottomSheet = ({
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={open => !open && onClose()}>
-      <Dialog.Portal>
-        <Dialog.Overlay
-          className={`fixed inset-0 z-50 ${
-            showBackdrop ? 'bg-black/50' : 'bg-transparent'
-          }`}
-        />
-        <Dialog.Content
-          ref={sheetRef}
-          className={`fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-xl shadow-2xl w-full ${className}`}
-          style={{
-            height: isDragging
-              ? `${Math.max(10, Math.min(95, currentSnapPoint - ((currentY - startY) / window.innerHeight) * 100))}dvh`
-              : `${currentSnapPoint}dvh`,
-            transition: isDragging ? 'none' : 'height 0.3s ease-out',
-          }}
-          onEscapeKeyDown={onClose}
-          onInteractOutside={showBackdrop ? () => onClose() : undefined}
-        >
+      {isOpen && (
+        <>
+          {showBackdrop && (
+            <Dialog.Overlay
+              className="absolute inset-0 z-50 bg-black/50 pointer-events-auto"
+            />
+          )}
+          <Dialog.Content
+            ref={sheetRef}
+            className={`absolute bottom-0 left-0 right-0 z-60 bg-white rounded-t-xl shadow-2xl pointer-events-auto ${className}`}
+            style={{
+              height: isDragging
+                ? `${Math.max(10, Math.min(95, currentSnapPoint - ((currentY - startY) / window.innerHeight) * 100))}dvh`
+                : `${currentSnapPoint}dvh`,
+              transition: isDragging ? 'none' : 'height 0.3s ease-out',
+            }}
+            onEscapeKeyDown={onClose}
+            onInteractOutside={showBackdrop ? () => onClose() : undefined}
+          >
+            {/* 접근성을 위한 숨겨진 제목과 설명 (title이 없을 때만) */}
+            {!title && (
+              <>
+                <Dialog.Title className="sr-only">
+                  바텀시트
+                </Dialog.Title>
+                <Dialog.Description className="sr-only">
+                  바텀시트 콘텐츠
+                </Dialog.Description>
+              </>
+            )}
+            {title && (
+              <Dialog.Description className="sr-only">
+                {title} 콘텐츠
+              </Dialog.Description>
+            )}
           {/* 핸들 */}
           <div
             className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing"
@@ -172,7 +189,8 @@ const BottomSheet = ({
           {/* 콘텐츠 */}
           <div className="flex-1 overflow-y-auto p-4">{children}</div>
         </Dialog.Content>
-      </Dialog.Portal>
+        </>
+      )}
     </Dialog.Root>
   );
 };
