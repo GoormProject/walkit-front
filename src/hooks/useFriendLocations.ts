@@ -20,6 +20,7 @@ export const useFriendLocations = (
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const prevFriendsCountRef = useRef<number>(0);
 
   // 친구 위치 조회 함수
   const fetchFriendLocations = useCallback(async () => {
@@ -37,11 +38,14 @@ export const useFriendLocations = (
       
       console.log('✅ 친구 위치 조회 성공:', response.friends.length, '명');
       
-      if (response.friends.length > 0) {
+      // 친구 수가 변경되었을 때만 토스트 알림 표시 (사용자 방해 최소화)
+      if (response.friends.length > 0 && 
+          response.friends.length !== prevFriendsCountRef.current) {
         toast.success(`${response.friends.length}명의 친구가 근처에 있습니다!`, {
           description: '지도에서 친구들의 위치를 확인해보세요.',
         });
       }
+      prevFriendsCountRef.current = response.friends.length;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '친구 위치 조회에 실패했습니다.';
       setError(errorMessage);
