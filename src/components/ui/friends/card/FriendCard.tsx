@@ -38,11 +38,11 @@ export const FriendCard = ({
           </div>
 
           <div className="flex flex-col">
-            <div className="[font-family:'Roboto-SemiBold',Helvetica] font-semibold text-black text-[15px] leading-[18px]">
+            <div className="font-roboto-semibold font-semibold text-black text-[15px] leading-[18px]">
               {friend.name}
             </div>
             <div
-              className={`[font-family:'Roboto-SemiBold',Helvetica] font-semibold text-xs ${
+              className={`font-roboto-semibold font-semibold text-xs ${
                 friend.isOnline ? 'text-green-500' : 'text-gray-500'
               }`}
             >

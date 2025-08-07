@@ -44,7 +44,7 @@ export const FriendSearch: React.FC<FriendSearchProps> = ({
           value={searchTerm}
           onChange={handleSearchChange}
           placeholder="친구 검색..."
-          className="border-0 bg-transparent [font-family:'Roboto-SemiBold',Helvetica] font-semibold text-[#8c8c8c] text-[15px] p-0 h-auto focus-visible:ring-0 placeholder:text-[#8c8c8c] flex-1"
+          className="border-0 bg-transparent font-roboto-semibold font-semibold text-[#8c8c8c] text-[15px] p-0 h-auto focus-visible:ring-0 placeholder:text-[#8c8c8c] flex-1"
         />
       </div>
     </div>

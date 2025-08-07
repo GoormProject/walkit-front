@@ -62,7 +62,7 @@ export const FriendPagesTab = ({
                   h-[5dvh] rounded-none border-t border-b border-[#00000033] text-[13px] font-semibold tracking-[0] leading-normal whitespace-nowrap
                   data-[state=active]:bg-green-700 data-[state=active]:text-white data-[state=active]:shadow-none
                   data-[state=inactive]:bg-white data-[state=inactive]:text-black data-[state=inactive]:shadow-none
-                  [font-family:'Roboto-SemiBold',Helvetica]
+                  font-roboto-semibold
                 `}
               >
                 {tab.label}

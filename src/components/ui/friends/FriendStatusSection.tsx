@@ -15,10 +15,10 @@ export const FriendStatusSection = (): React.ReactNode => {
           </div>
 
           <div className="flex flex-col">
-            <div className="[font-family:'Roboto-SemiBold',Helvetica] font-semibold text-black text-[15px] leading-[18px]">
+            <div className="font-roboto-semibold font-semibold text-black text-[15px] leading-[18px]">
               홍길동
             </div>
-            <div className="[font-family:'Roboto-SemiBold',Helvetica] font-semibold text-green-500 text-xs">
+            <div className="font-roboto-semibold font-semibold text-green-500 text-xs">
               온라인
             </div>
           </div>

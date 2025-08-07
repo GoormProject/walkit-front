@@ -23,10 +23,10 @@ export const FriendRequestsSection = (): React.ReactNode => {
           )}
         </div>
         <div className="flex flex-col">
-          <div className="[font-family:'Roboto-SemiBold',Helvetica] font-semibold text-black text-[15px] leading-normal">
+          <div className="font-roboto-semibold font-semibold text-black text-[15px] leading-normal">
             {friendData.name}
           </div>
-          <div className="[font-family:'Roboto-SemiBold',Helvetica] font-semibold text-green-500 text-xs leading-normal">
+          <div className="font-roboto-semibold font-semibold text-green-500 text-xs leading-normal">
             {friendData.status}
           </div>
         </div>

@@ -47,6 +47,22 @@ export default {
       },
 
       // Typography Tokens
+      fontFamily: {
+        'roboto-semibold': [
+          'Roboto-SemiBold',
+          'Helvetica',
+          'Arial',
+          'sans-serif',
+        ],
+        'roboto-medium': ['Roboto-Medium', 'Helvetica', 'Arial', 'sans-serif'],
+        'roboto-regular': [
+          'Roboto-Regular',
+          'Helvetica',
+          'Arial',
+          'sans-serif',
+        ],
+        'samsung-one': ['SamsungOne-400', 'Helvetica', 'Arial', 'sans-serif'],
+      },
       fontSize: {
         xs: 'var(--font-size-xs)',
         sm: 'var(--font-size-sm)',
@@ -121,7 +137,5 @@ export default {
       },
     },
   },
-  plugins: [
-    require('@tailwindcss/line-clamp'),
-  ],
+  plugins: [require('@tailwindcss/line-clamp')],
 };

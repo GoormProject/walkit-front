@@ -245,7 +245,7 @@ const FriendsScreen = (): React.ReactNode => {
     <div className="bg-white w-full max-w-[100%] min-h-[85dvh] flex flex-col relative mx-auto">
       {/* Page-Header */}
       <div className="w-full h-[8.9dvh] flex items-center px-5 border-b border-[#dfe3e7]">
-        <div className="flex-1 text-center [font-family:'Roboto-SemiBold',Helvetica] font-semibold text-black text-4xl tracking-[0] leading-[normal]">
+        <div className="flex-1 text-center font-roboto-semibold font-semibold text-black text-4xl tracking-[0] leading-[normal]">
           친구 관리
         </div>
       </div>

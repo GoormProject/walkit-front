@@ -99,7 +99,7 @@ export const FriendsSearchBar = ({
           onBlur={handleBlur}
           onKeyPress={handleKeyPress}
           placeholder={isFocused ? '' : placeholder}
-          className="border-0 bg-transparent [font-family:'Roboto-SemiBold',Helvetica] font-semibold text-[#8c8c8c] text-[15px] p-0 h-auto focus-visible:ring-0 placeholder:text-[#8c8c8c] flex-1 outline-none"
+          className="border-0 bg-transparent font-roboto-semibold font-semibold text-[#8c8c8c] text-[15px] p-0 h-auto focus-visible:ring-0 placeholder:text-[#8c8c8c] flex-1 outline-none"
         />
         {inputValue.trim() && (
           <Button

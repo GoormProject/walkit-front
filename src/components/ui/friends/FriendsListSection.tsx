@@ -24,12 +24,12 @@ export const FriendsListSection = (): React.ReactNode => {
           </div>
 
           <div className="flex flex-col">
-            <div className="[font-family:'Roboto-SemiBold',Helvetica] font-semibold text-black text-[15px] leading-[18px]">
+            <div className="font-roboto-semibold font-semibold text-black text-[15px] leading-[18px]">
               홍길동
             </div>
             <Badge
               variant="secondary"
-              className="w-fit mt-1 px-0 bg-transparent text-green-500 [font-family:'Roboto-SemiBold',Helvetica] font-semibold text-xs h-auto"
+              className="w-fit mt-1 px-0 bg-transparent text-green-500 font-roboto-semibold font-semibold text-xs h-auto"
             >
               온라인
             </Badge>
