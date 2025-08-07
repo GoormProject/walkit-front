@@ -3,7 +3,9 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { toast, Toaster } from 'sonner';
 import KakaoMap from '../components/KakaoMap';
 import { GPSTracker } from '@/components/GPSTracker';
+import FriendLocationMarkers from '@/components/FriendLocationMarkers';
 import { useGPSStore } from '@/features/gps/gpsSlice';
+import { useFriendLocations } from '@/hooks/useFriendLocations';
 import { calculateDistance as calculateCoordinateDistance } from '@/utils/converter/pathConverter';
 import { isOAuthCallback } from '@/utils/oauth';
 import './index.css';
@@ -59,6 +61,7 @@ const Home = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [isPlacesServiceReady, setIsPlacesServiceReady] = useState(false);
   const [isMapReady, setIsMapReady] = useState(false);
+  const [showFriendLocations, setShowFriendLocations] = useState(false);
   const map = useRef<kakao.maps.Map | null>(null);
   const polyline = useRef<kakao.maps.Polyline | null>(null);
   const markersRef = useRef<kakao.maps.Marker[]>([]);
@@ -68,6 +71,9 @@ const Home = () => {
   const selectedCategoryRef = useRef<string>(''); // 현재 카테고리 상태를 실시간으로 추적
   const { error, isLoading, position } = useGPSStore();
   const navigate = useNavigate();
+
+  // 친구 위치 조회 훅
+  const { friends, isLoading: isLoadingFriends, refreshLocations } = useFriendLocations(showFriendLocations);
 
   // 검색 반경 상수
   const SEARCH_RADIUS = {
@@ -825,6 +831,13 @@ const Home = () => {
           />
         )}
 
+        {/* 친구 위치 마커 */}
+        <FriendLocationMarkers
+          map={map.current}
+          friends={friends}
+          isVisible={showFriendLocations}
+        />
+
         {/* 좌측 상단 - 메뉴 버튼 (사람 아이콘) */}
         <div className="absolute top-4 left-4 z-10 pointer-events-none">
           <button
@@ -892,6 +905,50 @@ const Home = () => {
             )}
           </div>
 
+          {/* 친구 위치 토글 버튼 */}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => {
+                setShowFriendLocations(!showFriendLocations);
+                if (!showFriendLocations) {
+                  refreshLocations();
+                }
+              }}
+              disabled={isLoadingFriends}
+              className={`px-3 py-2 rounded-full shadow-lg transition-all pointer-events-auto text-sm font-medium ${
+                showFriendLocations
+                  ? 'bg-blue-500 text-white hover:bg-blue-600'
+                  : 'bg-white/90 text-gray-700 hover:bg-white'
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              {isLoadingFriends ? (
+                <span className="flex items-center gap-1">
+                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></div>
+                  로딩
+                </span>
+              ) : (
+                <span className="flex items-center gap-1">
+                  <span className="material-icons text-sm">people</span>
+                  친구 {friends.length > 0 && `(${friends.length})`}
+                </span>
+              )}
+            </button>
+            
+            {/* 새로고침 버튼 */}
+            {showFriendLocations && (
+              <button
+                onClick={refreshLocations}
+                disabled={isLoadingFriends}
+                className="p-2 rounded-full bg-white/90 shadow-lg hover:bg-white transition-all pointer-events-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                title="친구 위치 새로고침"
+              >
+                <span className="material-icons text-gray-700 text-sm">
+                  {isLoadingFriends ? 'hourglass_empty' : 'refresh'}
+                </span>
+              </button>
+            )}
+          </div>
+
           {!isWalking ? (
             <button
               onClick={handleStartWalk}
@@ -936,6 +993,55 @@ const Home = () => {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* 친구 위치 정보 표시 */}
+        {showFriendLocations && (
+          <div className="absolute bottom-20 left-4 right-4 z-10 bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 max-h-40 overflow-y-auto pointer-events-auto">
+            <div className="p-3">
+              <h3 className="text-sm font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                <span className="material-icons text-blue-500 text-sm">people</span>
+                근처 친구 {friends.length > 0 ? `(${friends.length}명)` : '(없음)'}
+              </h3>
+              {friends.length > 0 ? (
+                <div className="space-y-2">
+                  {friends.slice(0, 3).map((friend, index) => (
+                    <div
+                      key={friend.friendId}
+                      className="flex items-center gap-3 p-2 hover:bg-gray-50 cursor-pointer rounded"
+                    >
+                      <img
+                        src={friend.profile || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMiIgZmlsbD0iIzNiODJmNiIvPjxjaXJjbGUgY3g9IjEyIiBjeT0iOSIgcj0iNCIgZmlsbD0id2hpdGUiLz48cGF0aCBkPSJNNC41IDIwYzAtNC40MTggMy41ODItOCA4LTggczggMy41ODIgOCA4IiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg=='}
+                        alt={friend.nickname}
+                        className="w-8 h-8 rounded-full object-cover border-2 border-gray-200"
+                        onError={(e) => {
+                          e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMiIgZmlsbD0iIzNiODJmNiIvPjxjaXJjbGUgY3g9IjEyIiBjeT0iOSIgcj0iNCIgZmlsbD0id2hpdGUiLz48cGF0aCBkPSJNNC41IDIwYzAtNC40MTggMy41ODItOCA4LTggczggMy41ODIgOCA4IiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg==';
+                        }}
+                      />
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-900 text-sm">
+                          {friend.nickname}
+                        </div>
+                        <div className="text-xs text-gray-600">
+                          📍 현재 위치에서 활동 중
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {friends.length > 3 && (
+                    <div className="text-xs text-gray-500 text-center py-1">
+                      외 {friends.length - 3}명의 친구가 더 있습니다
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-4 text-gray-500 text-sm">
+                  <span className="material-icons text-gray-400 text-2xl mb-2 block">person_off</span>
+                  근처에 온라인 친구가 없습니다
+                </div>
+              )}
             </div>
           </div>
         )}
