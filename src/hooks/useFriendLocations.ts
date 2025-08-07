@@ -22,6 +22,17 @@ export const useFriendLocations = (
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const prevFriendsCountRef = useRef<number>(0);
 
+  // 인증 또는 권한 관련 에러인지 확인하는 헬퍼 함수
+  const isAuthOrPermissionError = (error: unknown): boolean => {
+    if (error instanceof Error) {
+      return error.message.includes('인증') || 
+             error.message.includes('친구 관계') ||
+             error.message.includes('401') ||
+             error.message.includes('403');
+    }
+    return false;
+  };
+
   // 친구 위치 조회 함수
   const fetchFriendLocations = useCallback(async () => {
     if (!isEnabled) return;
@@ -51,8 +62,8 @@ export const useFriendLocations = (
       setError(errorMessage);
       console.error('❌ 친구 위치 조회 실패:', err);
       
-      // 사용자에게 에러 알림 (401, 403 등은 조용히 처리)
-      if (!errorMessage.includes('인증') && !errorMessage.includes('친구 관계')) {
+      // 사용자에게 에러 알림 (인증/권한 에러는 조용히 처리)
+      if (!isAuthOrPermissionError(err)) {
         toast.error('친구 위치를 가져올 수 없습니다.', {
           description: errorMessage,
         });
