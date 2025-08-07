@@ -26,6 +26,8 @@ import WalkFullTest from '@/pages/test/walk-full-test';
 import WalkHistoryPage from '@/pages/walk-history';
 import TrailRegisterPage from '@/pages/trail-register';
 import ReviewPage from '@/pages/reviews';
+import TrailReviewsTest from '@/pages/test/trail-reviews-test';
+import ReviewEditPage from '@/pages/reviews/edit';
 
 import '@/App.css';
 
@@ -84,6 +86,9 @@ function App() {
         {/* 산책 통합 테스트 페이지 (GPS + 지도 + API) */}
         <Route path="/test/walk-full" element={<WalkFullTest />} />
 
+        {/* 산책로 리뷰 테스트 페이지 */}
+        <Route path="/test/trail-reviews-test" element={<TrailReviewsTest />} />
+
 
 
         {/* 홈 페이지 - RootLayout 없이 단독 렌더링 (Footer 없음) */}
@@ -120,6 +125,13 @@ function App() {
           <Route path="/reviews/:trailId" element={
             <AuthWrapper requireAuth={true}>
               <ReviewPage />
+            </AuthWrapper>
+          } />
+          
+          {/* 리뷰 수정 페이지 */}
+          <Route path="/reviews/edit/:reviewId/:trailId" element={
+            <AuthWrapper requireAuth={true}>
+              <ReviewEditPage />
             </AuthWrapper>
           } />
 

@@ -36,7 +36,7 @@ const ReviewPage: React.FC = () => {
 
       const response = await createReview(request);
       
-      if (response.httpStatus === 200) {
+      if (response.httpStatus === 201) {
         alert('리뷰가 성공적으로 작성되었습니다!');
         navigate('/walk-history');
       } else {
