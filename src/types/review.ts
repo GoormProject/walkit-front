@@ -8,12 +8,10 @@ export interface ReviewCreateRequest {
 // 리뷰 응답
 export interface ReviewResponse {
   reviewId: number;
-  trailId: number;
-  memberId: number;
   content: string;
   rating: number;
+  eventId: number;
   createdAt: string;
-  updatedAt: string;
 }
 
 // 리뷰 API 응답

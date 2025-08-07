@@ -13,18 +13,53 @@ const getHeaders = () => {
 export const createReview = async (request: ReviewCreateRequest): Promise<ReviewApiResponse> => {
   console.log('📝 리뷰 작성 API 호출');
   
-  const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/reviews`, {
-    method: 'POST',
-    headers: getHeaders(),
-    credentials: 'include',
-    body: JSON.stringify(request),
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10초 타임아웃
 
-  if (!response.ok) {
-    throw new Error(`리뷰 작성 실패: ${response.status}`);
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/trails/reviews/new`, {
+      method: 'POST',
+      headers: getHeaders(),
+      credentials: 'include',
+      body: JSON.stringify(request),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      
+      // 상태 코드별 에러 메시지
+      switch (response.status) {
+        case 400:
+          throw new Error(errorData?.message || '유효하지 않은 요청입니다. (빈 내용, 평점 범위 초과 등)');
+        case 401:
+          throw new Error('로그인이 필요합니다.');
+        case 403:
+          throw new Error('리뷰 작성 권한이 없습니다. (이미 리뷰를 작성했거나 해당 이벤트 참여자가 아닙니다)');
+        case 404:
+          throw new Error('존재하지 않는 산책로입니다.');
+        default:
+          throw new Error(errorData?.message || '리뷰 작성에 실패했습니다.');
+      }
+    }
+
+    const result = await response.json();
+    
+    // 응답 데이터 검증
+    if (!result || typeof result.httpStatus !== 'number') {
+      throw new Error('잘못된 응답 형식입니다.');
+    }
+    
+    return result;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('요청 시간이 초과되었습니다.');
+    }
+    throw error;
   }
-
-  return response.json();
 };
 
 /**
