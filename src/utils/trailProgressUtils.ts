@@ -169,4 +169,13 @@ export const splitPathByDistance = (
     completed: path.slice(0, splitIndex + 1),
     remaining: path.slice(splitIndex + 1)
   };
+};
+
+/**
+ * 진행률을 퍼센트로 변환
+ * @param progress 0.0 ~ 1.0 범위의 진행률
+ * @returns 0 ~ 100 범위의 퍼센트
+ */
+export const progressToPercentage = (progress: number): number => {
+  return Math.round(progress * 100);
 }; 

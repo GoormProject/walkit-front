@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { Trail } from '../types/trail';
-import { getTrailById } from '../utils/backendApi';
+import { getTrailById } from '../utils/mockTrailApi';
 import { convertTrailDetailResponseToTrail } from '../utils/converter/trailConverter';
 
 interface TrailDetailCardProps {
