@@ -13,23 +13,44 @@ const getHeaders = () => {
 export const registerTrail = async (request: TrailRegisterRequest | FormData): Promise<TrailRegisterApiResponse> => {
   console.log('🏔️ 산책로 등록 API 호출');
   
-  // FormData인 경우 Content-Type 헤더를 제거 (브라우저가 자동으로 설정)
   const headers = request instanceof FormData 
     ? { 'Accept': 'application/json' }
     : getHeaders();
   
-  const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/trails/new`, {
-    method: 'POST',
-    headers,
-    credentials: 'include',
-    body: request instanceof FormData ? request : JSON.stringify(request),
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10초 타임아웃
 
-  if (!response.ok) {
-    throw new Error(`산책로 등록 실패: ${response.status}`);
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/trails/new`, {
+      method: 'POST',
+      headers,
+      credentials: 'include',
+      body: request instanceof FormData ? request : JSON.stringify(request),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      throw new Error(errorData?.message || '산책로 등록에 실패했습니다.');
+    }
+
+    const result = await response.json();
+    
+    // 응답 데이터 검증
+    if (!result || typeof result.httpStatus !== 'number') {
+      throw new Error('잘못된 응답 형식입니다.');
+    }
+    
+    return result;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('요청 시간이 초과되었습니다.');
+    }
+    throw error;
   }
-
-  return response.json();
 };
 
 /**
