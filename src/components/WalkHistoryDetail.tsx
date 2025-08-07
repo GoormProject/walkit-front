@@ -155,7 +155,8 @@ const WalkHistoryDetail: React.FC<WalkHistoryDetailProps> = ({ walkId, onClose }
                   {walk.isUploaded ? '업로드됨' : '업로드 안됨'}
                 </span>
               </div>
-              {walk.calories && (
+              {/* 실제 칼로리 센서 데이터가 있을 때만 표시 */}
+              {walk.calories && walk.calories > 0 && (
                 <div className="flex justify-between">
                   <span className="text-gray-600">소모 칼로리:</span>
                   <span className="font-medium">{walk.calories} kcal</span>
@@ -168,30 +169,35 @@ const WalkHistoryDetail: React.FC<WalkHistoryDetailProps> = ({ walkId, onClose }
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">상세 통계</h3>
             <div className="space-y-3">
-              {walk.averageSpeed && (
+              {/* 실제 GPS 데이터로 계산된 평균 속도가 있을 때만 표시 */}
+              {walk.averageSpeed && walk.averageSpeed > 0 && (
                 <div className="flex justify-between">
                   <span className="text-gray-600">평균 속도:</span>
                   <span className="font-medium">{walk.averageSpeed.toFixed(1)} km/h</span>
                 </div>
               )}
-              {walk.maxSpeed && (
+              {/* 실제 GPS 데이터로 계산된 최고 속도가 있을 때만 표시 */}
+              {walk.maxSpeed && walk.maxSpeed > 0 && (
                 <div className="flex justify-between">
                   <span className="text-gray-600">최고 속도:</span>
                   <span className="font-medium">{walk.maxSpeed.toFixed(1)} km/h</span>
                 </div>
               )}
-              {walk.elevationGain && (
+              {/* 실제 고도 센서 데이터가 있을 때만 표시 */}
+              {walk.elevationGain && walk.elevationGain > 0 && (
                 <div className="flex justify-between">
                   <span className="text-gray-600">고도 상승:</span>
                   <span className="font-medium">{walk.elevationGain}m</span>
                 </div>
               )}
-              {walk.elevationLoss && (
+              {/* 실제 고도 센서 데이터가 있을 때만 표시 */}
+              {walk.elevationLoss && walk.elevationLoss > 0 && (
                 <div className="flex justify-between">
                   <span className="text-gray-600">고도 하강:</span>
                   <span className="font-medium">{walk.elevationLoss}m</span>
                 </div>
               )}
+              {/* 예상 칼로리는 거리 기반 계산값이므로 항상 표시 */}
               <div className="flex justify-between">
                 <span className="text-gray-600">예상 칼로리:</span>
                 <span className="font-medium">{calories} kcal</span>

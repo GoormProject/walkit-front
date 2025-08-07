@@ -223,17 +223,12 @@ export const getWalkDetail = async (walkId: number): Promise<WalkDetailResponse>
     startPoint: [126.9780, 37.5665], // Mock 데이터
     endPoint: [126.9820, 37.5705], // Mock 데이터
     path: [[126.9780, 37.5665], [126.9790, 37.5675], [126.9800, 37.5685], [126.9810, 37.5695], [126.9820, 37.5705]], // Mock 데이터
-    calories: calculateCalories(mockData.totalDistance),
-    averageSpeed: (() => {
-      const timeInHours = (safeParseInt(mockData.totalTime, 0) || 0) / 3600;
-      return timeInHours > 0 ? (mockData.totalDistance / 1000) / timeInHours : 0;
-    })(),
-    maxSpeed: (() => {
-      const timeInHours = (safeParseInt(mockData.totalTime, 0) || 0) / 3600;
-      return timeInHours > 0 ? ((mockData.totalDistance / 1000) / timeInHours) * 1.2 : 0;
-    })(),
-    elevationGain: 50, // Mock 데이터
-    elevationLoss: 30 // Mock 데이터
+    // API 스펙에 맞춰 실제 데이터가 있는 경우에만 포함
+    // calories: 실제 칼로리 센서 데이터가 있을 때만 제공
+    // averageSpeed: 실제 GPS 데이터로 계산된 평균 속도
+    // maxSpeed: 실제 GPS 데이터로 계산된 최고 속도
+    // elevationGain: 실제 고도 센서 데이터가 있을 때만 제공
+    // elevationLoss: 실제 고도 센서 데이터가 있을 때만 제공
   };
 
   // 유효성 검사 및 데이터 정제
