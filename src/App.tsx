@@ -27,6 +27,7 @@ import WalkHistoryPage from '@/pages/walk-history';
 import TrailRegisterPage from '@/pages/trail-register';
 import ReviewPage from '@/pages/reviews';
 import TrailReviewsTest from '@/pages/test/trail-reviews-test';
+import ReviewEditPage from '@/pages/reviews/edit';
 
 import '@/App.css';
 
@@ -124,6 +125,13 @@ function App() {
           <Route path="/reviews/:trailId" element={
             <AuthWrapper requireAuth={true}>
               <ReviewPage />
+            </AuthWrapper>
+          } />
+          
+          {/* 리뷰 수정 페이지 */}
+          <Route path="/reviews/edit/:reviewId/:trailId" element={
+            <AuthWrapper requireAuth={true}>
+              <ReviewEditPage />
             </AuthWrapper>
           } />
 

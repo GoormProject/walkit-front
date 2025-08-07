@@ -137,4 +137,111 @@ export const getTrailReviews = async (trailId: number): Promise<ReviewListApiRes
     }
     throw error;
   }
+};
+
+/**
+ * 리뷰 수정 API
+ */
+export const updateReview = async (reviewId: number, content: string, rating: number): Promise<ReviewApiResponse> => {
+  console.log('✏️ 리뷰 수정 API 호출:', reviewId);
+  
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10초 타임아웃
+
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/trails/reviews/${reviewId}`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      credentials: 'include',
+      body: JSON.stringify({ content, rating }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      
+      // 상태 코드별 에러 메시지
+      switch (response.status) {
+        case 400:
+          throw new Error(errorData?.message || '유효하지 않은 요청입니다. (빈 내용, 평점 범위 초과 등)');
+        case 401:
+          throw new Error('로그인이 필요합니다.');
+        case 403:
+          throw new Error('해당 리뷰의 작성자가 아닙니다.');
+        case 404:
+          throw new Error('해당 리뷰를 찾을 수 없습니다.');
+        default:
+          throw new Error(errorData?.message || '리뷰 수정에 실패했습니다.');
+      }
+    }
+
+    const result = await response.json();
+    
+    // 응답 데이터 검증
+    if (!result || typeof result.httpStatus !== 'number') {
+      throw new Error('잘못된 응답 형식입니다.');
+    }
+    
+    return result;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('요청 시간이 초과되었습니다.');
+    }
+    throw error;
+  }
+};
+
+/**
+ * 리뷰 삭제 API
+ */
+export const deleteReview = async (reviewId: number): Promise<{ httpStatus: number; message: string; data: null }> => {
+  console.log('🗑️ 리뷰 삭제 API 호출:', reviewId);
+  
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10초 타임아웃
+
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/trails/reviews/${reviewId}`, {
+      method: 'DELETE',
+      headers: getHeaders(),
+      credentials: 'include',
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      
+      // 상태 코드별 에러 메시지
+      switch (response.status) {
+        case 400:
+          throw new Error(errorData?.message || '잘못된 요청입니다.');
+        case 403:
+          throw new Error('비회원의 멤버 프로필 접근입니다.');
+        case 404:
+          throw new Error('요청한 리뷰를 찾을 수 없습니다.');
+        default:
+          throw new Error(errorData?.message || '리뷰 삭제에 실패했습니다.');
+      }
+    }
+
+    const result = await response.json();
+    
+    // 응답 데이터 검증
+    if (!result || typeof result.httpStatus !== 'number') {
+      throw new Error('잘못된 응답 형식입니다.');
+    }
+    
+    return result;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('요청 시간이 초과되었습니다.');
+    }
+    throw error;
+  }
 }; 
