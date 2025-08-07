@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import type { RegisteredTrail } from '../utils/mockTrailApi';
 import { getRegisteredTrails } from '../utils/mockTrailApi';
-import { formatDistance } from '../utils/trailProgressUtils';
+import { formatDistance } from '../utils/walkUtils';
 
 interface RegisteredTrailListProps {
   onTrailSelect: (trail: RegisteredTrail) => void;

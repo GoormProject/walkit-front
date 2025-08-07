@@ -5,6 +5,7 @@ import RegisteredTrailWalker from '@/components/RegisteredTrailWalker';
 import type { RegisteredTrail } from '@/utils/mockTrailApi';
 import { getRegisteredTrailById } from '@/utils/mockTrailApi';
 import { progressToPercentage } from '@/utils/trailProgressUtils';
+import { handleGPSError } from '@/utils/gpsErrorHandler';
 
 const RegisteredTrailWalkTest: React.FC = () => {
   const [map, setMap] = useState<kakao.maps.Map | null>(null);
@@ -28,7 +29,8 @@ const RegisteredTrailWalkTest: React.FC = () => {
       },
       (error) => {
         console.error('GPS 위치 추적 오류:', error);
-        alert('GPS 위치를 가져올 수 없습니다.');
+        const errorMessage = handleGPSError(error);
+        alert(errorMessage);
       },
       {
         enableHighAccuracy: true,
@@ -90,9 +92,11 @@ const RegisteredTrailWalkTest: React.FC = () => {
   // 컴포넌트 언마운트 시 GPS 추적 정리
   useEffect(() => {
     return () => {
-      stopLocationTracking();
+      if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+      }
     };
-  }, []);
+  }, [watchId]);
 
   return (
     <div className="h-screen flex flex-col">

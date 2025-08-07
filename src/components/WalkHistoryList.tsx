@@ -4,6 +4,13 @@ import type { WalkRecord, WalkListRequest } from '../types/walk';
 import { getWalkList, deleteWalk } from '../utils/walkApi';
 import { formatDistance, formatTime, formatPace, getWalkTypeFromRecord } from '../utils/walkUtils';
 
+type WalkType = 'ALL' | 'PERSONAL' | 'REGISTERED_TRAIL' | 'UPLOADED_TRAIL';
+
+// 타입 가드 함수
+const isValidWalkType = (value: string): value is WalkType => {
+  return ['ALL', 'PERSONAL', 'REGISTERED_TRAIL', 'UPLOADED_TRAIL'].includes(value);
+};
+
 interface WalkHistoryListProps {
   onWalkSelect?: (walk: WalkRecord) => void;
 }
@@ -14,7 +21,7 @@ const WalkHistoryList: React.FC<WalkHistoryListProps> = ({ onWalkSelect }) => {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [selectedWalkType, setSelectedWalkType] = useState<'ALL' | 'PERSONAL' | 'REGISTERED_TRAIL' | 'UPLOADED_TRAIL'>('ALL');
+  const [selectedWalkType, setSelectedWalkType] = useState<WalkType>('ALL');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
 
@@ -36,8 +43,8 @@ const WalkHistoryList: React.FC<WalkHistoryListProps> = ({ onWalkSelect }) => {
       
       if (response.data) {
         setWalks(response.data);
-        // 페이징 정보는 백엔드 응답에 따라 조정 필요
-        setTotalPages(Math.ceil(response.data.length / 10));
+        // Mock API에서 제공하는 페이징 정보 사용
+        setTotalPages((response as any).totalPages || 1);
       }
     } catch (err) {
       console.error('산책 기록 로드 실패:', err);
@@ -132,7 +139,12 @@ const WalkHistoryList: React.FC<WalkHistoryListProps> = ({ onWalkSelect }) => {
             <label className="block text-sm font-medium text-gray-700 mb-1">산책 유형</label>
             <select
               value={selectedWalkType}
-              onChange={(e) => setSelectedWalkType(e.target.value as any)}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (isValidWalkType(value)) {
+                  setSelectedWalkType(value);
+                }
+              }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="ALL">전체</option>

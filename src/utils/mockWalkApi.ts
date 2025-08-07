@@ -1,4 +1,4 @@
-import type { WalkRecord } from '../types/walk';
+import type { WalkRecord, WalkCreateRequest, WalkCreateApiResponse, WalkDeleteApiResponse } from '../types/walk';
 
 /**
  * Mock 산책 기록 데이터 (API 스펙에 맞게 생성)
@@ -99,7 +99,7 @@ export const getMockWalkDetail = async (walkId: number): Promise<WalkRecord | nu
 /**
  * Mock 산책 기록 생성
  */
-export const createMockWalkRecord = async (request: any): Promise<any> => {
+export const createMockWalkRecord = async (request: WalkCreateRequest): Promise<WalkCreateApiResponse> => {
   await new Promise(resolve => setTimeout(resolve, 1000));
   
   // 새로운 산책 기록 생성
@@ -130,7 +130,7 @@ export const createMockWalkRecord = async (request: any): Promise<any> => {
 /**
  * Mock 산책 기록 삭제
  */
-export const deleteMockWalkRecord = async (walkId: number): Promise<any> => {
+export const deleteMockWalkRecord = async (walkId: number): Promise<WalkDeleteApiResponse> => {
   await new Promise(resolve => setTimeout(resolve, 600));
   
   const index = mockWalkRecords.findIndex(record => record.walkId === walkId);
@@ -145,6 +145,6 @@ export const deleteMockWalkRecord = async (walkId: number): Promise<any> => {
   return {
     httpStatus: 200,
     message: "산책 기록 삭제 성공",
-    data: { walkId }
+    data: { walkId, memberId: 1 } // Mock memberId
   };
 }; 

@@ -1,3 +1,5 @@
+import type { WalkDetail, WalkRecord } from '../types/walk';
+
 /**
  * 거리를 읽기 쉬운 형식으로 변환
  * @param distance 미터 단위 거리
@@ -13,11 +15,11 @@ export const formatDistance = (distance: number): string => {
 
 /**
  * 시간을 읽기 쉬운 형식으로 변환
- * @param timeString 시간 문자열 (API에서 받은 형태)
+ * @param time 시간 (초 단위) 또는 시간 문자열
  * @returns 포맷된 시간 문자열 (HH:MM:SS)
  */
-export const formatTime = (timeString: string): string => {
-  const seconds = parseInt(timeString, 10);
+export const formatTime = (time: string | number): string => {
+  const seconds = typeof time === 'string' ? parseInt(time, 10) : time;
   if (isNaN(seconds)) return '00:00';
   
   const hours = Math.floor(seconds / 3600);
@@ -33,15 +35,15 @@ export const formatTime = (timeString: string): string => {
 
 /**
  * 페이스를 읽기 쉬운 형식으로 변환
- * @param paceString 페이스 문자열 (API에서 받은 형태)
+ * @param pace 페이스 (초/미터) 또는 페이스 문자열
  * @returns 포맷된 페이스 문자열 (분:초/km)
  */
-export const formatPace = (paceString: string): string => {
-  const pace = parseFloat(paceString);
-  if (isNaN(pace) || pace <= 0) return '--:--';
+export const formatPace = (pace: string | number): string => {
+  const paceValue = typeof pace === 'string' ? parseFloat(pace) : pace;
+  if (isNaN(paceValue) || paceValue <= 0) return '--:--';
   
   // 초/미터를 분:초/km로 변환
-  const secondsPerKm = pace * 1000;
+  const secondsPerKm = paceValue * 1000;
   const minutes = Math.floor(secondsPerKm / 60);
   const seconds = Math.floor(secondsPerKm % 60);
   
@@ -173,4 +175,81 @@ export const getWalkTypeFromRecord = (walk: { trailId: number | null; isUploaded
   } else {
     return 'REGISTERED_TRAIL';
   }
+};
+
+/**
+ * WalkDetail을 WalkRecord로 변환
+ * @param detail WalkDetail 객체
+ * @returns WalkRecord 객체
+ */
+export const convertWalkDetailToRecord = (detail: WalkDetail): WalkRecord => {
+  return {
+    walkId: detail.walkId,
+    trailId: detail.trailId,
+    eventId: detail.eventId,
+    eventTime: detail.eventTime,
+    trailImageId: detail.trailImageId,
+    routeImageUrl: detail.routeImageUrl,
+    totalDistance: detail.totalDistance,
+    totalTime: detail.totalTime.toString(), // 숫자를 문자열로 변환
+    pace: detail.pace.toString(), // 숫자를 문자열로 변환
+    title: detail.title,
+    isUploaded: detail.isUploaded
+  };
+};
+
+/**
+ * 안전한 문자열을 정수로 변환
+ * @param value 변환할 문자열
+ * @param fallback 기본값 (기본값: 0)
+ * @returns 변환된 정수 또는 기본값
+ */
+export const safeParseInt = (value: string | number, fallback: number = 0): number => {
+  if (typeof value === 'number') {
+    return isNaN(value) ? fallback : value;
+  }
+  
+  if (!value || value.trim() === '') {
+    return fallback;
+  }
+  
+  const parsed = parseInt(value, 10);
+  return isNaN(parsed) ? fallback : parsed;
+};
+
+/**
+ * 안전한 문자열을 실수로 변환
+ * @param value 변환할 문자열
+ * @param fallback 기본값 (기본값: 0)
+ * @returns 변환된 실수 또는 기본값
+ */
+export const safeParseFloat = (value: string | number, fallback: number = 0): number => {
+  if (typeof value === 'number') {
+    return isNaN(value) ? fallback : value;
+  }
+  
+  if (!value || value.trim() === '') {
+    return fallback;
+  }
+  
+  const parsed = parseFloat(value);
+  return isNaN(parsed) ? fallback : parsed;
+};
+
+/**
+ * WalkRecord의 totalTime을 안전하게 숫자로 변환
+ * @param totalTime totalTime 문자열
+ * @returns 변환된 숫자 (기본값: 0)
+ */
+export const safeParseTotalTime = (totalTime: string): number => {
+  return safeParseInt(totalTime, 0);
+};
+
+/**
+ * WalkRecord의 pace를 안전하게 숫자로 변환
+ * @param pace pace 문자열
+ * @returns 변환된 숫자 (기본값: 0)
+ */
+export const safeParsePace = (pace: string): number => {
+  return safeParseFloat(pace, 0);
 }; 

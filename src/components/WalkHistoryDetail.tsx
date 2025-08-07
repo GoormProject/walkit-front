@@ -80,10 +80,9 @@ const WalkHistoryDetail: React.FC<WalkHistoryDetailProps> = ({ walkId, onClose }
     color: getWalkTypeColor(walkType)
   };
 
-  // API에서 받은 문자열을 숫자로 변환
-  const totalTimeSeconds = parseInt(walk.totalTime, 10);
-  const averageSpeed = totalTimeSeconds > 0 ? (walk.totalDistance / 1000) / (totalTimeSeconds / 3600) : 0;
-  const calories = calculateCalories(walk.totalDistance);
+  // API에서 이미 계산된 값 사용
+  const averageSpeed = walk.averageSpeed || 0;
+  const calories = walk.calories || calculateCalories(walk.totalDistance);
 
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden">
@@ -121,10 +120,12 @@ const WalkHistoryDetail: React.FC<WalkHistoryDetailProps> = ({ walkId, onClose }
             <div className="text-sm text-gray-600">총 거리</div>
           </div>
           <div className="text-center">
+            {/* walk.totalTime은 WalkDetail 타입에서 number로 정의됨 */}
             <div className="text-2xl font-bold text-green-600">{formatTime(walk.totalTime)}</div>
             <div className="text-sm text-gray-600">총 시간</div>
           </div>
           <div className="text-center">
+            {/* walk.pace는 WalkDetail 타입에서 number로 정의됨 */}
             <div className="text-2xl font-bold text-purple-600">{formatPace(walk.pace)}</div>
             <div className="text-sm text-gray-600">평균 페이스</div>
           </div>

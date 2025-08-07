@@ -8,7 +8,7 @@ import type {
   WalkCreateRequest,
   WalkListRequest,
 } from '../types/walk';
-import { calculateCalories } from './walkUtils';
+import { calculateCalories, safeParseInt, safeParseFloat } from './walkUtils';
 
 /**
  * API 호출 헤더 생성
@@ -156,14 +156,16 @@ export const getWalkList = async (params?: WalkListRequest): Promise<WalkListRes
   }
   
   if (params?.startDate) {
+    const startDate = params.startDate;
     filteredData = filteredData.filter(walk => 
-      new Date(walk.eventTime) >= new Date(params.startDate!)
+      new Date(walk.eventTime) >= new Date(startDate)
     );
   }
   
   if (params?.endDate) {
+    const endDate = params.endDate;
     filteredData = filteredData.filter(walk => 
-      new Date(walk.eventTime) <= new Date(params.endDate!)
+      new Date(walk.eventTime) <= new Date(endDate)
     );
   }
   
@@ -177,8 +179,12 @@ export const getWalkList = async (params?: WalkListRequest): Promise<WalkListRes
   return {
     httpStatus: 200,
     message: '산책 기록 목록 조회 성공',
-    data: paginatedData
-  };
+    data: paginatedData,
+    totalCount: filteredData.length,
+    totalPages: Math.ceil(filteredData.length / size),
+    currentPage: page,
+    pageSize: size
+  } as any;
 };
 
 /**
@@ -201,15 +207,21 @@ export const getWalkDetail = async (walkId: number): Promise<WalkDetailResponse>
   
   const walkDetail = {
     ...mockData,
-    totalTime: parseInt(mockData.totalTime, 10), // 문자열을 숫자로 변환
-    pace: parseFloat(mockData.pace), // 문자열을 숫자로 변환
+    totalTime: safeParseInt(mockData.totalTime, 0), // 안전한 문자열을 숫자로 변환
+    pace: safeParseFloat(mockData.pace, 0), // 안전한 문자열을 숫자로 변환
     walkType,
     startPoint: [126.9780, 37.5665], // Mock 데이터
     endPoint: [126.9820, 37.5705], // Mock 데이터
     path: [[126.9780, 37.5665], [126.9790, 37.5675], [126.9800, 37.5685], [126.9810, 37.5695], [126.9820, 37.5705]], // Mock 데이터
     calories: calculateCalories(mockData.totalDistance),
-    averageSpeed: parseFloat(mockData.totalTime) > 0 ? (mockData.totalDistance / 1000) / (parseFloat(mockData.totalTime) / 3600) : 0,
-    maxSpeed: (mockData.totalDistance / 1000) / (parseFloat(mockData.totalTime) / 3600) * 1.2, // Mock 데이터
+    averageSpeed: (() => {
+      const timeInHours = (safeParseInt(mockData.totalTime, 0) || 0) / 3600;
+      return timeInHours > 0 ? (mockData.totalDistance / 1000) / timeInHours : 0;
+    })(),
+    maxSpeed: (() => {
+      const timeInHours = (safeParseInt(mockData.totalTime, 0) || 0) / 3600;
+      return timeInHours > 0 ? ((mockData.totalDistance / 1000) / timeInHours) * 1.2 : 0;
+    })(),
     elevationGain: 50, // Mock 데이터
     elevationLoss: 30 // Mock 데이터
   };

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { WalkRecord } from '../types/walk';
+import type { WalkRecord, WalkCreateRequest } from '../types/walk';
 import { getWalkList, getWalkDetail, createWalk } from '@/utils/walkApi';
+import { convertWalkDetailToRecord, safeParseInt } from '@/utils/walkUtils';
 
 interface UseWalkRecordsReturn {
   walkRecords: WalkRecord[];
@@ -75,21 +76,12 @@ export const useWalkRecordDetail = (walkId: string): UseWalkRecordDetailReturn =
       setIsLoading(true);
       setError(null);
 
-      const response = await getWalkDetail(parseInt(walkId, 10));
-      // WalkDetail을 WalkRecord로 변환
-      const walkRecordData: WalkRecord = {
-        walkId: response.data.walkId,
-        trailId: response.data.trailId,
-        eventId: response.data.eventId,
-        eventTime: response.data.eventTime,
-        trailImageId: response.data.trailImageId,
-        routeImageUrl: response.data.routeImageUrl,
-        totalDistance: response.data.totalDistance,
-        totalTime: response.data.totalTime.toString(),
-        pace: response.data.pace.toString(),
-        title: response.data.title,
-        isUploaded: response.data.isUploaded
-      };
+      const walkIdNum = parseInt(walkId, 10);
+      if (isNaN(walkIdNum)) {
+        throw new Error('유효하지 않은 산책 기록 ID입니다.');
+      }
+      const response = await getWalkDetail(walkIdNum);
+      const walkRecordData = convertWalkDetailToRecord(response.data);
       setWalkRecord(walkRecordData);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '산책 기록 상세 정보를 불러오는데 실패했습니다.';
@@ -125,7 +117,7 @@ export const useCreateWalkRecord = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const createRecord = useCallback(async (walkData: any) => {
+  const createRecord = useCallback(async (walkData: WalkCreateRequest) => {
     try {
       setIsLoading(true);
       setError(null);
@@ -177,9 +169,9 @@ export const useWalkRecordsStats = () => {
 
       const totalWalks = walks.length;
       const totalDistance = walks.reduce((sum, walk) => sum + walk.totalDistance, 0);
-      const totalTime = walks.reduce((sum, walk) => sum + parseInt(walk.totalTime, 10), 0);
-      const averagePace = walks.length > 0 
-        ? walks.reduce((sum, walk) => sum + parseFloat(walk.pace), 0) / walks.length 
+      const totalTime = walks.reduce((sum, walk) => sum + safeParseInt(walk.totalTime, 0), 0);
+      const averagePace = totalDistance > 0 
+        ? totalTime / totalDistance  // 초/미터
         : 0;
 
       setStats({
