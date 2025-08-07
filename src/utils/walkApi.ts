@@ -138,7 +138,12 @@ export const createWalk = async (walkData: WalkCreateRequest): Promise<WalkCreat
 /**
  * 산책 기록 목록 조회 API (페이징 및 필터링 지원)
  */
-export const getWalkList = async (params?: WalkListRequest): Promise<WalkListResponse> => {
+export const getWalkList = async (params?: WalkListRequest): Promise<WalkListResponse & {
+  totalCount: number;
+  totalPages: number;
+  currentPage: number;
+  pageSize: number;
+}> => {
   console.log('📋 실제 산책 기록 목록 API 호출');
   
   // Mock API 사용 (실제 API 구현 전까지)
@@ -184,7 +189,7 @@ export const getWalkList = async (params?: WalkListRequest): Promise<WalkListRes
     totalPages: Math.ceil(filteredData.length / size),
     currentPage: page,
     pageSize: size
-  } as any;
+  };
 };
 
 /**
