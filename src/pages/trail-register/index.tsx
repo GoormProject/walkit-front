@@ -222,11 +222,11 @@ const TrailRegisterPage: React.FC = () => {
             <div className="text-center">
               <div className="inline-block relative">
                 <img
-                  src={previewImage || '/test_picture/fail_to_loading.jpg'}
+                  src={previewImage || '/images/placeholder-trail.jpg'}
                   alt="산책로 이미지"
                   className="w-full h-80 object-cover rounded-lg border-2 border-gray-200 shadow-sm"
                   onError={e => {
-                    e.currentTarget.src = '/test_picture/fail_to_loading.jpg';
+                    e.currentTarget.src = '/images/placeholder-trail.jpg';
                   }}
                 />
                 <label className="absolute bottom-2 right-2 bg-blue-600 text-white p-3 rounded-lg cursor-pointer hover:bg-blue-700 transition-colors shadow-lg">
