@@ -191,8 +191,8 @@ export const convertWalkDetailToRecord = (detail: WalkDetail): WalkRecord => {
     trailImageId: detail.trailImageId,
     routeImageUrl: detail.routeImageUrl,
     totalDistance: detail.totalDistance,
-    totalTime: detail.totalTime.toString(), // 숫자를 문자열로 변환
-    pace: detail.pace.toString(), // 숫자를 문자열로 변환
+    totalTime: typeof detail.totalTime === 'number' ? detail.totalTime.toString() : detail.totalTime,
+    pace: typeof detail.pace === 'number' ? detail.pace.toString() : detail.pace,
     title: detail.title,
     isUploaded: detail.isUploaded
   };
@@ -276,8 +276,8 @@ export const validateAndSanitizeWalkRecord = (walk: WalkRecord): WalkRecord => {
 export const validateAndSanitizeWalkDetail = (detail: WalkDetail): WalkDetail => {
   return {
     ...detail,
-    totalTime: safeParseInt(detail.totalTime, 0),
-    pace: safeParseFloat(detail.pace, 0),
+    totalTime: typeof detail.totalTime === 'string' ? safeParseInt(detail.totalTime, 0) : (isNaN(detail.totalTime) ? 0 : detail.totalTime),
+    pace: typeof detail.pace === 'string' ? safeParseFloat(detail.pace, 0) : (isNaN(detail.pace) ? 0 : detail.pace),
     totalDistance: isNaN(detail.totalDistance) ? 0 : Math.max(0, detail.totalDistance),
     averageSpeed: detail.averageSpeed && !isNaN(detail.averageSpeed) ? Math.max(0, detail.averageSpeed) : 0,
     maxSpeed: detail.maxSpeed && !isNaN(detail.maxSpeed) ? Math.max(0, detail.maxSpeed) : 0,
@@ -314,8 +314,8 @@ export const isValidWalkDetail = (data: any): data is WalkDetail => {
     data &&
     typeof data.walkId === 'number' &&
     typeof data.totalDistance === 'number' &&
-    typeof data.totalTime === 'number' &&
-    typeof data.pace === 'number' &&
+    (typeof data.totalTime === 'number' || typeof data.totalTime === 'string') &&
+    (typeof data.pace === 'number' || typeof data.pace === 'string') &&
     typeof data.title === 'string' &&
     typeof data.eventTime === 'string' &&
     typeof data.walkType === 'string'
