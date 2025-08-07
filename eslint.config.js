@@ -11,7 +11,18 @@ import swaggerGuard from './eslint-plugin-swagger-guard.js';
 
 export default [
   {
-    ignores: ['dist/**', 'docs/**'],
+    ignores: [
+      'dist/**',
+      'docs/**',
+      'build/**',
+      'node_modules/**',
+      '*.log',
+      '*.tmp',
+      '*.temp',
+      // 특정 개발자 작업 파일들 (필요시 주석 해제)
+      // 'src/pages/other-developer-work/**',
+      // 'src/components/experimental/**',
+    ],
   },
   ...tseslint.configs.recommended,
   js.configs.recommended,
