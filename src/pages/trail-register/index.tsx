@@ -137,7 +137,7 @@ const TrailRegisterPage: React.FC = () => {
         formData.append('routeImage', routeImage);
       }
 
-      const response = await registerTrail(formData as any);
+      const response = await registerTrail(formData);
       
       if (response.httpStatus === 200) {
         alert('산책로가 성공적으로 등록되었습니다!');
