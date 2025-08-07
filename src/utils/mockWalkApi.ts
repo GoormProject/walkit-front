@@ -15,7 +15,7 @@ const mockWalkRecords: WalkRecord[] = [
     totalTime: "3600",
     pace: "3.765",
     title: "일산호수공원",
-    isUploaded: false
+    isUploaded: true
   },
   {
     walkId: 13,
@@ -67,7 +67,7 @@ const mockWalkRecords: WalkRecord[] = [
     totalTime: "4800",
     pace: "4.200",
     title: "한강공원 산책로",
-    isUploaded: false
+    isUploaded: true
   }
 ];
 

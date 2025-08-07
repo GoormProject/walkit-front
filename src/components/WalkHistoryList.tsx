@@ -249,6 +249,7 @@ const WalkHistoryList: React.FC<WalkHistoryListProps> = ({ onWalkSelect }) => {
                         </button>
                       )}
                       {/* 등록된 산책로를 걸었을 때 리뷰 버튼 표시 */}
+                      {/* TODO: API 개선 후 내가 만든 산책로는 제외하도록 수정 필요 */}
                       {walk.trailId && walk.isUploaded && (
                         <button
                           onClick={() => navigate(`/reviews/${walk.trailId}`)}
