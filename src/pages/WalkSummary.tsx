@@ -1,6 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, MapPin, Timer, TrendingUp } from 'lucide-react';
+import { createWalk } from '@/utils/walkApi';
+import type { WalkCreateRequest } from '@/types/walk';
 
 interface WalkSummaryProps {
   distance: number; // km
@@ -17,6 +19,8 @@ const WalkSummary: React.FC<WalkSummaryProps> = ({
 }) => {
   const navigate = useNavigate();
   const mapRef = useRef<HTMLDivElement>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [walkTitle, setWalkTitle] = useState('나의 산책');
 
   // 시간 포맷팅
   const formatTime = (seconds: number): string => {
@@ -52,6 +56,41 @@ const WalkSummary: React.FC<WalkSummaryProps> = ({
     const minutes = now.getMinutes().toString().padStart(2, '0');
     
     return `${day}/${month}/${year} - ${hours}:${minutes} (종료시간)`;
+  };
+
+  // 산책 기록 저장
+  const handleSaveWalk = async () => {
+    if (isSaving) return;
+    
+    setIsSaving(true);
+    
+    try {
+      // 페이스 계산 (초/미터)
+      const pace = duration / (distance * 1000);
+      
+      const walkData: WalkCreateRequest = {
+        walkId: Date.now(), // 임시 ID (실제로는 백엔드에서 생성)
+        walkTitle: walkTitle,
+        totalTime: duration,
+        totalDistance: distance * 1000, // km를 m로 변환
+        pace: pace,
+        path: path,
+        startPoint: path.length > 0 ? path[0] : [0, 0],
+        eventId: Date.now(),
+        eventType: 'END'
+      };
+
+      await createWalk(walkData);
+      
+      // 저장 성공 후 완료 처리
+      onComplete();
+      navigate('/walk-history');
+    } catch (error) {
+      console.error('산책 기록 저장 실패:', error);
+      alert('산책 기록 저장에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // 지도 렌더링
@@ -120,7 +159,13 @@ const WalkSummary: React.FC<WalkSummaryProps> = ({
             </button>
             <div className="text-center">
               <div className="text-sm text-gray-500">{formatDate()}</div>
-              <div className="text-lg font-semibold text-gray-900">제목</div>
+              <input
+                type="text"
+                value={walkTitle}
+                onChange={(e) => setWalkTitle(e.target.value)}
+                className="text-lg font-semibold text-gray-900 bg-transparent border-none text-center focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2"
+                placeholder="산책 제목을 입력하세요"
+              />
             </div>
             <button className="p-2 rounded-full hover:bg-gray-100">
               <span className="material-icons text-gray-600">edit</span>
@@ -164,10 +209,15 @@ const WalkSummary: React.FC<WalkSummaryProps> = ({
 
           {/* 완료 버튼 */}
           <button
-            onClick={onComplete}
-            className="w-full bg-green-500 text-white py-4 rounded-lg font-semibold text-lg hover:bg-green-600 transition-colors"
+            onClick={handleSaveWalk}
+            disabled={isSaving}
+            className={`w-full py-4 rounded-lg font-semibold text-lg transition-colors ${
+              isSaving
+                ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                : 'bg-green-500 text-white hover:bg-green-600'
+            }`}
           >
-            완료
+                      {isSaving ? '저장 중...' : '산책 기록 저장'}
           </button>
         </div>
       </div>

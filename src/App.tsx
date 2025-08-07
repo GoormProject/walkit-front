@@ -23,6 +23,7 @@ import WalkZustandTest from '@/pages/test/walk-zustand-test';
 import WalkIntegrationTest from '@/pages/test/walk-integration-test';
 import WalkSimpleTest from '@/pages/test/walk-simple-test';
 import WalkFullTest from '@/pages/test/walk-full-test';
+import WalkHistoryPage from '@/pages/walk-history';
 
 import '@/App.css';
 
@@ -98,6 +99,13 @@ function App() {
           {/* 공개 경로들 (인증 불필요) */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          
+          {/* 인증이 필요한 경로들 */}
+          <Route path="/walk-history" element={
+            <AuthWrapper requireAuth={true}>
+              <WalkHistoryPage />
+            </AuthWrapper>
+          } />
 
           {/* 보호된 경로들 (인증 필요) */}
           <Route

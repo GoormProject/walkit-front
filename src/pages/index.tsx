@@ -11,7 +11,7 @@ import TrailDetailCard from '@/components/TrailDetailCard';
 import WalkControlPanel from '@/components/WalkControlPanel';
 import WalkSummary from '@/pages/WalkSummary';
 import type { Trail } from '@/types/trail';
-import { getTrails } from '@/utils/backendApi';
+import { getTrails } from '@/utils/mockTrailApi';
 import { convertTrailResponseArrayToTrailArray } from '@/utils/converter/trailConverter';
 import { useWalkApi } from '@/hooks/useWalkApi';
 import './index.css';

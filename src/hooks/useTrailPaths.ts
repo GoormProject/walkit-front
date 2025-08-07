@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { GeoJSONFeatureCollection, TrailPathData } from '../types/trail';
-import { getTrailPaths } from '@/utils/backendApi';
+import { getTrailPaths } from '@/utils/mockTrailApi';
 import { convertFeatureCollectionToTrailPathsSafe, convertFeatureCollectionToTrailPaths } from '@/utils/converter';
 
 interface UseTrailPathsReturn {
@@ -38,7 +38,7 @@ const calculateTrailStats = (trailPaths: TrailPathData[] | (Omit<TrailPathData, 
   }, {} as Record<string, number>);
   
   const totalDistance = trailPaths.reduce((sum, path) => 
-    sum + (path.properties.distance || 0), 0
+    sum + (Number(path.properties.distance) || 0), 0
   );
   
   const averageDistance = total > 0 ? totalDistance / total : 0;
