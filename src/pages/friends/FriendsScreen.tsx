@@ -279,6 +279,7 @@ const FriendsScreen = (): React.ReactNode => {
           offlineFriends={friendsData.offline}
           actualOnlineFriends={friendsData.onlineFriends}
           actualOfflineFriends={friendsData.offlineFriends}
+          onDataChange={fetchFriendsData}
         />
       </div>
 

@@ -9,11 +9,13 @@ interface OnlineFriendPagesProps {
     status: string;
     isOnline: boolean;
   }>;
+  onDataChange?: () => void;
 }
 
 export const OnlineFriendPages = ({
   onlineFriends,
   actualOnlineFriends = [],
+  onDataChange,
 }: OnlineFriendPagesProps): React.ReactNode => {
   // 실제 친구 데이터만 사용 (더미 데이터 제거)
   const onlineFriendsList = actualOnlineFriends;
@@ -42,7 +44,11 @@ export const OnlineFriendPages = ({
       {/* 온라인 친구 목록 */}
       {onlineFriendsList.length > 0 ? (
         onlineFriendsList.map(friend => (
-          <FriendCard key={friend.id} friend={friend} />
+          <FriendCard
+            key={friend.id}
+            friend={friend}
+            onDataChange={onDataChange}
+          />
         ))
       ) : (
         <div className="px-4 py-8 text-center text-gray-500">

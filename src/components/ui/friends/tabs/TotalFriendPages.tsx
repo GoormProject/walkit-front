@@ -5,11 +5,13 @@ import { OfflineFriendPages } from '@/components/ui/friends/tabs/OfflineFriendPa
 interface TotalFriendPagesProps {
   onlineFriends: number;
   offlineFriends: number;
+  onDataChange?: () => void;
 }
 
 export const TotalFriendPages = ({
   onlineFriends,
   offlineFriends,
+  onDataChange,
 }: TotalFriendPagesProps): React.ReactNode => {
   // DEV 환경에서만 로그 출력
   if (import.meta.env.DEV) {
@@ -29,12 +31,18 @@ export const TotalFriendPages = ({
     <div className="w-full">
       {/* 온라인 친구 섹션 */}
       <div className="border-b border-gray-100">
-        <OnlineFriendPages onlineFriends={onlineFriends} />
+        <OnlineFriendPages
+          onlineFriends={onlineFriends}
+          onDataChange={onDataChange}
+        />
       </div>
 
       {/* 오프라인 친구 섹션 */}
       <div>
-        <OfflineFriendPages offlineFriends={offlineFriends} />
+        <OfflineFriendPages
+          offlineFriends={offlineFriends}
+          onDataChange={onDataChange}
+        />
       </div>
     </div>
   );

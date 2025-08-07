@@ -10,9 +10,13 @@ interface Friend {
 
 interface FriendCardProps {
   friend: Friend;
+  onDataChange?: () => void;
 }
 
-export const FriendCard = ({ friend }: FriendCardProps): React.ReactNode => {
+export const FriendCard = ({
+  friend,
+  onDataChange,
+}: FriendCardProps): React.ReactNode => {
   return (
     <div className="w-full h-[7.8dvh] bg-white border-b border-gray-200 relative">
       <div className="flex items-center justify-between px-4 py-2 h-full">
@@ -47,7 +51,7 @@ export const FriendCard = ({ friend }: FriendCardProps): React.ReactNode => {
           </div>
         </div>
 
-        <FriendCardMenu />
+        <FriendCardMenu friendId={friend.id} onDataChange={onDataChange} />
       </div>
     </div>
   );
