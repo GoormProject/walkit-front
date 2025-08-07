@@ -22,6 +22,12 @@ const ReviewPage: React.FC = () => {
       setSubmitting(true);
       setError(null);
 
+      // 평점 값 검증 (1-5 범위)
+      if (rating < 1 || rating > 5) {
+        setError('올바른 평점을 선택해주세요.');
+        return;
+      }
+
       const request: ReviewCreateRequest = {
         trailId: parseInt(trailId, 10),
         content: content.trim(),
