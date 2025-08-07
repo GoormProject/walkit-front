@@ -252,4 +252,72 @@ export const safeParseTotalTime = (totalTime: string): number => {
  */
 export const safeParsePace = (pace: string): number => {
   return safeParseFloat(pace, 0);
+};
+
+/**
+ * WalkRecord 데이터의 유효성을 검사하고 안전하게 변환
+ * @param walk WalkRecord 객체
+ * @returns 유효성 검사 및 변환이 완료된 WalkRecord 객체
+ */
+export const validateAndSanitizeWalkRecord = (walk: WalkRecord): WalkRecord => {
+  return {
+    ...walk,
+    totalTime: safeParseInt(walk.totalTime, 0).toString(),
+    pace: safeParseFloat(walk.pace, 0).toString(),
+    totalDistance: isNaN(walk.totalDistance) ? 0 : Math.max(0, walk.totalDistance)
+  };
+};
+
+/**
+ * WalkDetail 데이터의 유효성을 검사하고 안전하게 변환
+ * @param detail WalkDetail 객체
+ * @returns 유효성 검사 및 변환이 완료된 WalkDetail 객체
+ */
+export const validateAndSanitizeWalkDetail = (detail: WalkDetail): WalkDetail => {
+  return {
+    ...detail,
+    totalTime: safeParseInt(detail.totalTime, 0),
+    pace: safeParseFloat(detail.pace, 0),
+    totalDistance: isNaN(detail.totalDistance) ? 0 : Math.max(0, detail.totalDistance),
+    averageSpeed: detail.averageSpeed && !isNaN(detail.averageSpeed) ? Math.max(0, detail.averageSpeed) : 0,
+    maxSpeed: detail.maxSpeed && !isNaN(detail.maxSpeed) ? Math.max(0, detail.maxSpeed) : 0,
+    calories: detail.calories && !isNaN(detail.calories) ? Math.max(0, detail.calories) : 0,
+    elevationGain: detail.elevationGain && !isNaN(detail.elevationGain) ? detail.elevationGain : 0,
+    elevationLoss: detail.elevationLoss && !isNaN(detail.elevationLoss) ? detail.elevationLoss : 0
+  };
+};
+
+/**
+ * API 응답 데이터의 유효성을 검사하는 타입 가드
+ * @param data 검사할 데이터
+ * @returns 유효성 여부
+ */
+export const isValidWalkRecord = (data: any): data is WalkRecord => {
+  return (
+    data &&
+    typeof data.walkId === 'number' &&
+    typeof data.totalDistance === 'number' &&
+    typeof data.totalTime === 'string' &&
+    typeof data.pace === 'string' &&
+    typeof data.title === 'string' &&
+    typeof data.eventTime === 'string'
+  );
+};
+
+/**
+ * API 응답 데이터의 유효성을 검사하는 타입 가드
+ * @param data 검사할 데이터
+ * @returns 유효성 여부
+ */
+export const isValidWalkDetail = (data: any): data is WalkDetail => {
+  return (
+    data &&
+    typeof data.walkId === 'number' &&
+    typeof data.totalDistance === 'number' &&
+    typeof data.totalTime === 'number' &&
+    typeof data.pace === 'number' &&
+    typeof data.title === 'string' &&
+    typeof data.eventTime === 'string' &&
+    typeof data.walkType === 'string'
+  );
 }; 

@@ -8,7 +8,7 @@ import type {
   WalkCreateRequest,
   WalkListRequest,
 } from '../types/walk';
-import { calculateCalories, safeParseInt, safeParseFloat } from './walkUtils';
+import { calculateCalories, safeParseInt, safeParseFloat, validateAndSanitizeWalkDetail, isValidWalkDetail } from './walkUtils';
 
 /**
  * API 호출 헤더 생성
@@ -205,6 +205,11 @@ export const getWalkDetail = async (walkId: number): Promise<WalkDetailResponse>
   if (!mockData) {
     throw new Error(`산책 기록을 찾을 수 없습니다: ${walkId}`);
   }
+
+  // API 응답 데이터 유효성 검사
+  if (!isValidWalkDetail(mockData)) {
+    console.warn('API 응답 데이터 형식이 예상과 다릅니다:', mockData);
+  }
   
   // WalkRecord를 WalkDetail로 변환
   const walkType: 'PERSONAL' | 'REGISTERED_TRAIL' | 'UPLOADED_TRAIL' = 
@@ -230,11 +235,14 @@ export const getWalkDetail = async (walkId: number): Promise<WalkDetailResponse>
     elevationGain: 50, // Mock 데이터
     elevationLoss: 30 // Mock 데이터
   };
+
+  // 유효성 검사 및 데이터 정제
+  const sanitizedWalkDetail = validateAndSanitizeWalkDetail(walkDetail);
   
   return {
     httpStatus: 200,
     message: '산책 기록 상세 조회 성공',
-    data: walkDetail
+    data: sanitizedWalkDetail
   };
 };
 

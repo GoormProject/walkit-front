@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { WalkRecord, WalkCreateRequest } from '../types/walk';
 import { getWalkList, getWalkDetail, createWalk } from '@/utils/walkApi';
-import { convertWalkDetailToRecord, safeParseInt } from '@/utils/walkUtils';
+import { convertWalkDetailToRecord, safeParseInt, validateAndSanitizeWalkRecord, isValidWalkRecord, isValidWalkDetail } from '@/utils/walkUtils';
 
 interface UseWalkRecordsReturn {
   walkRecords: WalkRecord[];
@@ -80,9 +80,16 @@ export const useWalkRecordDetail = (walkId: string): UseWalkRecordDetailReturn =
       if (isNaN(walkIdNum)) {
         throw new Error('유효하지 않은 산책 기록 ID입니다.');
       }
-      const response = await getWalkDetail(walkIdNum);
-      const walkRecordData = convertWalkDetailToRecord(response.data);
-      setWalkRecord(walkRecordData);
+              const response = await getWalkDetail(walkIdNum);
+        
+        // API 응답 데이터 유효성 검사
+        if (!isValidWalkDetail(response.data)) {
+          console.warn('API 응답 데이터 형식이 예상과 다릅니다:', response.data);
+        }
+        
+        const walkRecordData = convertWalkDetailToRecord(response.data);
+        const sanitizedWalkRecord = validateAndSanitizeWalkRecord(walkRecordData);
+        setWalkRecord(sanitizedWalkRecord);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '산책 기록 상세 정보를 불러오는데 실패했습니다.';
       setError(errorMessage);
