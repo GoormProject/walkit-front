@@ -10,9 +10,16 @@ interface FriendLocationMarkersProps {
 const FriendLocationMarkers = ({ map, friends, isVisible }: FriendLocationMarkersProps) => {
   const markersRef = useRef<kakao.maps.Marker[]>([]);
   const infoWindowRef = useRef<kakao.maps.InfoWindow | null>(null);
+  
+  // 컴포넌트 언마운트 시 생성된 URL들을 정리하기 위한 ref 추가
+  const defaultImageUrlRef = useRef<string | null>(null);
 
-  // 기본 프로필 이미지 생성 (SVG 기반)
+  // 기본 프로필 이미지 생성 (SVG 기반) - 메모리 누수 방지
   const createDefaultProfileImage = useCallback(() => {
+    if (defaultImageUrlRef.current) {
+      return defaultImageUrlRef.current;
+    }
+    
     const svg = `
       <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
         <circle cx="20" cy="20" r="20" fill="#3b82f6"/>
@@ -22,7 +29,9 @@ const FriendLocationMarkers = ({ map, friends, isVisible }: FriendLocationMarker
     `;
     
     const blob = new Blob([svg], { type: 'image/svg+xml' });
-    return URL.createObjectURL(blob);
+    const url = URL.createObjectURL(blob);
+    defaultImageUrlRef.current = url;
+    return url;
   }, []);
 
   // 기존 마커 제거
@@ -166,6 +175,11 @@ const FriendLocationMarkers = ({ map, friends, isVisible }: FriendLocationMarker
       removeMarkers();
       if (infoWindowRef.current) {
         infoWindowRef.current.close();
+      }
+      // 생성된 blob URL 정리 (메모리 누수 방지)
+      if (defaultImageUrlRef.current) {
+        URL.revokeObjectURL(defaultImageUrlRef.current);
+        defaultImageUrlRef.current = null;
       }
     };
   }, [isVisible, createFriendMarkers, removeMarkers]);
