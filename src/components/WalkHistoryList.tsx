@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import type { WalkRecord, WalkListRequest } from '../types/walk';
 import { getWalkList, deleteWalk } from '../utils/walkApi';
 import { formatDistance, formatTime, formatPace, getWalkTypeFromRecord } from '../utils/walkUtils';
@@ -16,6 +16,7 @@ interface WalkHistoryListProps {
 }
 
 const WalkHistoryList: React.FC<WalkHistoryListProps> = ({ onWalkSelect }) => {
+  const navigate = useNavigate();
   const [walks, setWalks] = useState<WalkRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -238,6 +239,15 @@ const WalkHistoryList: React.FC<WalkHistoryListProps> = ({ onWalkSelect }) => {
                       >
                         상세보기
                       </button>
+                      {/* 업로드되지 않은 산책로에만 공유 버튼 표시 */}
+                      {!walk.isUploaded && (
+                        <button
+                          onClick={() => navigate(`/trail-register/${walk.walkId}`)}
+                          className="text-green-600 hover:text-green-800 text-sm font-medium"
+                        >
+                          공유하기
+                        </button>
+                      )}
                       <button
                         onClick={() => handleDeleteWalk(walk.walkId)}
                         className="text-red-600 hover:text-red-800 text-sm font-medium"

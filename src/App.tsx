@@ -24,6 +24,7 @@ import WalkIntegrationTest from '@/pages/test/walk-integration-test';
 import WalkSimpleTest from '@/pages/test/walk-simple-test';
 import WalkFullTest from '@/pages/test/walk-full-test';
 import WalkHistoryPage from '@/pages/walk-history';
+import TrailRegisterPage from '@/pages/trail-register';
 
 import '@/App.css';
 
@@ -104,6 +105,13 @@ function App() {
           <Route path="/walk-history" element={
             <AuthWrapper requireAuth={true}>
               <WalkHistoryPage />
+            </AuthWrapper>
+          } />
+          
+          {/* 산책로 등록 페이지 */}
+          <Route path="/trail-register/:walkId" element={
+            <AuthWrapper requireAuth={true}>
+              <TrailRegisterPage />
             </AuthWrapper>
           } />
 
