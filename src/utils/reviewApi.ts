@@ -25,4 +25,29 @@ export const createReview = async (request: ReviewCreateRequest): Promise<Review
   }
 
   return response.json();
+};
+
+/**
+ * 특정 산책로에 대한 내 리뷰 작성 여부 확인 API
+ */
+export const checkMyReview = async (trailId: number): Promise<boolean> => {
+  console.log('🔍 내 리뷰 작성 여부 확인 API 호출');
+  
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/reviews/my/${trailId}`, {
+      method: 'GET',
+      headers: getHeaders(),
+      credentials: 'include',
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      return data.data !== null; // 리뷰가 있으면 true, 없으면 false
+    }
+    
+    return false; // API 오류 시 리뷰가 없다고 가정
+  } catch (error) {
+    console.error('리뷰 확인 오류:', error);
+    return false;
+  }
 }; 

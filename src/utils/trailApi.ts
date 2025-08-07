@@ -57,4 +57,29 @@ export const getAddressFromCoordinates = async (lng: number, lat: number): Promi
     console.error('주소 변환 오류:', error);
     return '주소를 찾을 수 없습니다.';
   }
+};
+
+/**
+ * 산책로 소유자 확인 API (내가 만든 산책로인지 확인)
+ */
+export const checkTrailOwnership = async (trailId: number): Promise<boolean> => {
+  console.log('👤 산책로 소유자 확인 API 호출');
+  
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/trails/${trailId}/ownership`, {
+      method: 'GET',
+      headers: getHeaders(),
+      credentials: 'include',
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      return data.data === true; // 내가 만든 산책로면 true
+    }
+    
+    return false; // API 오류 시 내가 만든 것이 아니라고 가정
+  } catch (error) {
+    console.error('산책로 소유자 확인 오류:', error);
+    return false;
+  }
 }; 

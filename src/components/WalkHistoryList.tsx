@@ -239,24 +239,19 @@ const WalkHistoryList: React.FC<WalkHistoryListProps> = ({ onWalkSelect }) => {
                       >
                         상세보기
                       </button>
-                      {/* 산책 유형에 따라 다른 버튼 표시 */}
-                      {walk.trailId && walk.isUploaded ? (
-                        // 등록된 산책로를 걸었을 때: 리뷰 남기기
-                        <button
-                          onClick={() => navigate(`/reviews/${walk.trailId}`)}
-                          className="text-purple-600 hover:text-purple-800 text-sm font-medium"
-                        >
-                          리뷰 남기기
-                        </button>
-                      ) : !walk.isUploaded ? (
-                        // 업로드되지 않은 개인 산책: 공유하기
+                      {/* 현재는 업로드되지 않은 산책에만 공유 버튼 표시 */}
+                      {!walk.isUploaded && (
                         <button
                           onClick={() => navigate(`/trail-register/${walk.walkId}`)}
                           className="text-green-600 hover:text-green-800 text-sm font-medium"
                         >
                           공유하기
                         </button>
-                      ) : null}
+                      )}
+                      {/* TODO: API 개선 후 리뷰 버튼 로직 추가
+                      - 내가 만든 산책로: 리뷰 버튼 표시 안함
+                      - 다른 사람이 만든 산책로: 리뷰 버튼 표시
+                      - 이미 리뷰를 남겼다면: 리뷰 버튼 표시 안함 */}
                       <button
                         onClick={() => handleDeleteWalk(walk.walkId)}
                         className="text-red-600 hover:text-red-800 text-sm font-medium"
