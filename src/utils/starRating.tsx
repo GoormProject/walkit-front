@@ -6,8 +6,16 @@ import React from 'react';
  * @returns 별점 문자열 (예: "★★★☆☆")
  */
 export const renderStarRating = (rating: number): string => {
-  const fullStars = Math.floor(rating);
-  const hasHalfStar = rating % 1 >= 0.5;
+  // 입력값 검증
+  if (typeof rating !== 'number' || isNaN(rating)) {
+    return '☆☆☆☆☆';
+  }
+  
+  // 범위 제한 (0-5)
+  const validRating = Math.max(0, Math.min(5, rating));
+  
+  const fullStars = Math.floor(validRating);
+  const hasHalfStar = validRating % 1 >= 0.5;
   const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
   
   return '★'.repeat(fullStars) + (hasHalfStar ? '☆' : '') + '☆'.repeat(emptyStars);
@@ -25,4 +33,13 @@ export const renderStarRatingJSX = (rating: number, className: string = "text-ye
       {renderStarRating(rating)}
     </span>
   );
+};
+
+/**
+ * 별점 입력값이 유효한지 검증하는 함수
+ * @param rating - 검증할 평점
+ * @returns 유효한지 여부
+ */
+export const isValidRating = (rating: number): boolean => {
+  return typeof rating === 'number' && !isNaN(rating) && rating >= 0 && rating <= 5;
 }; 

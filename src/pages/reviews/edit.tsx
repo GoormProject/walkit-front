@@ -4,7 +4,7 @@ import { updateReview, deleteReview, getMyReview } from '../../utils/reviewApi';
 import type { ReviewResponse } from '../../types/review';
 
 const ReviewEditPage: React.FC = () => {
-  const { trailId } = useParams<{ trailId: string }>();
+  const { reviewId, trailId } = useParams<{ reviewId: string; trailId: string }>();
   const navigate = useNavigate();
   
   const [content, setContent] = useState('');
@@ -18,8 +18,8 @@ const ReviewEditPage: React.FC = () => {
   // 기존 리뷰 데이터 로드
   useEffect(() => {
     const loadReviewData = async () => {
-      if (!trailId) {
-        setError('산책로 ID가 없습니다.');
+      if (!reviewId || !trailId) {
+        setError('리뷰 ID 또는 산책로 ID가 없습니다.');
         return;
       }
       
@@ -27,16 +27,16 @@ const ReviewEditPage: React.FC = () => {
         setIsLoading(true);
         setError(null);
         
-        console.log('📝 내 리뷰 데이터 로드 시작:', trailId);
+        console.log('📝 내 리뷰 데이터 로드 시작:', reviewId, trailId);
         const review = await getMyReview(Number(trailId));
         
-        if (review) {
+        if (review && review.reviewId === Number(reviewId)) {
           setMyReview(review);
           setContent(review.content);
           setRating(review.rating);
           console.log('✅ 내 리뷰 데이터 로드 성공:', review.reviewId);
         } else {
-          setError('이 산책로에 작성한 리뷰가 없습니다.');
+          setError('해당 리뷰를 찾을 수 없습니다.');
         }
       } catch (error) {
         console.error('❌ 리뷰 데이터 로드 실패:', error);
@@ -47,12 +47,12 @@ const ReviewEditPage: React.FC = () => {
     };
 
     loadReviewData();
-  }, [trailId]);
+  }, [reviewId, trailId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!myReview || !content.trim()) {
+    if (!reviewId || !content.trim()) {
       setError('리뷰 내용을 입력해주세요.');
       return;
     }
@@ -61,7 +61,7 @@ const ReviewEditPage: React.FC = () => {
       setIsSubmitting(true);
       setError(null);
       
-      const response = await updateReview(myReview.reviewId, content.trim(), rating);
+      const response = await updateReview(Number(reviewId), content.trim(), rating);
       
       if (response.httpStatus === 200) {
         console.log('✅ 리뷰 수정 성공');
@@ -79,7 +79,7 @@ const ReviewEditPage: React.FC = () => {
   };
 
   const handleDelete = async () => {
-    if (!myReview) return;
+    if (!reviewId) return;
     
     if (!window.confirm('정말로 이 리뷰를 삭제하시겠습니까?')) {
       return;
@@ -89,7 +89,7 @@ const ReviewEditPage: React.FC = () => {
       setIsDeleting(true);
       setError(null);
       
-      const response = await deleteReview(myReview.reviewId);
+      const response = await deleteReview(Number(reviewId));
       
       if (response.httpStatus === 200) {
         console.log('✅ 리뷰 삭제 성공');
