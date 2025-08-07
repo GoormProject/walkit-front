@@ -58,29 +58,30 @@ export const registerTrail = async (request: TrailRegisterRequest | FormData): P
  */
 export const getAddressFromCoordinates = async (lng: number, lat: number): Promise<string> => {
   try {
-    // 카카오 API를 사용하여 좌표를 주소로 변환
+    // 백엔드를 통해 주소 변환을 요청하도록 변경
     const response = await fetch(
-      `https://dapi.kakao.com/v2/local/geo/coord2address.json?x=${lng}&y=${lat}`,
+      `${import.meta.env.VITE_API_BASE_URL}/api/utils/address?lng=${lng}&lat=${lat}`,
       {
-        headers: {
-          'Authorization': `KakaoAK ${import.meta.env.VITE_KAKAO_API_KEY}`,
-        },
+        method: 'GET',
+        headers: getHeaders(),
+        credentials: 'include',
+        signal: AbortSignal.timeout(5000), // 5초 타임아웃
       }
     );
 
     if (!response.ok) {
-      throw new Error('주소 변환 실패');
+      const errorData = await response.json().catch(() => null);
+      throw new Error(errorData?.message || '주소 변환에 실패했습니다.');
     }
 
     const data = await response.json();
-    if (data.documents && data.documents.length > 0) {
-      const address = data.documents[0].address;
-      return `${address.region_1depth_name} ${address.region_2depth_name} ${address.region_3depth_name}`;
-    }
+    return data.address || '주소를 찾을 수 없습니다.';
 
-    return '주소를 찾을 수 없습니다.';
   } catch (error) {
     console.error('주소 변환 오류:', error);
+    if (error instanceof Error && error.name === 'TimeoutError') {
+      return '주소 변환 시간이 초과되었습니다.';
+    }
     return '주소를 찾을 수 없습니다.';
   }
 };
