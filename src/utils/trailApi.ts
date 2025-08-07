@@ -92,21 +92,38 @@ export const getAddressFromCoordinates = async (lng: number, lat: number): Promi
 export const checkTrailOwnership = async (trailId: number): Promise<boolean> => {
   console.log('👤 산책로 소유자 확인 API 호출');
   
+  if (!Number.isInteger(trailId) || trailId <= 0) {
+    console.error('잘못된 trailId:', trailId);
+    return false;
+  }
+  
   try {
     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/trails/${trailId}/ownership`, {
       method: 'GET',
       headers: getHeaders(),
       credentials: 'include',
+      signal: AbortSignal.timeout(5000), // 5초 타임아웃
     });
 
     if (response.ok) {
       const data = await response.json();
-      return data.data === true; // 내가 만든 산책로면 true
+      // 타입 가드를 통한 안전한 데이터 접근
+      return typeof data?.data === 'boolean' ? data.data : false;
     }
     
-    return false; // API 오류 시 내가 만든 것이 아니라고 가정
+    // HTTP 에러 상태에 따른 로깅
+    if (response.status === 404) {
+      console.warn(`산책로를 찾을 수 없습니다: ${trailId}`);
+    } else if (response.status === 403) {
+      console.warn('산책로 소유자 확인 권한이 없습니다.');
+    }
+    
+    return false;
   } catch (error) {
     console.error('산책로 소유자 확인 오류:', error);
+    if (error instanceof Error && error.name === 'TimeoutError') {
+      console.error('산책로 소유자 확인 요청이 시간 초과되었습니다.');
+    }
     return false;
   }
 }; 
