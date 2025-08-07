@@ -8,7 +8,13 @@ import {
 import { SentRequestsTab } from './SentRequestsTab';
 import { ReceivedRequestsTab } from './ReceivedRequestsTab';
 
-export const FriendRequestTabs = (): React.ReactNode => {
+interface FriendRequestTabsProps {
+  onDataChange?: () => void;
+}
+
+export const FriendRequestTabs = ({
+  onDataChange,
+}: FriendRequestTabsProps): React.ReactNode => {
   const [activeTab, setActiveTab] = useState('received');
 
   return (
@@ -30,7 +36,7 @@ export const FriendRequestTabs = (): React.ReactNode => {
         </TabsList>
 
         <TabsContent value="received" className="mt-6">
-          <ReceivedRequestsTab />
+          <ReceivedRequestsTab onDataChange={onDataChange} />
         </TabsContent>
 
         <TabsContent value="sent" className="mt-6">

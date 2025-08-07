@@ -22,7 +22,7 @@ export interface WalkEventResponse {
   walkId?: number;
   /** @format int64 */
   eventId?: number;
-  eventType?: 'START' | 'PAUSE' | 'RESUME' | 'END';
+  eventType?: "START" | "PAUSE" | "RESUME" | "END";
   /** @format date-time */
   eventTime?: string;
 }
@@ -240,7 +240,7 @@ export interface BaseResponseFriendRequestResponseDTO {
 }
 
 export interface FriendRequestResponseDTO {
-  status?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+  status?: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
   senderNickname?: string;
   receiverNickname?: string;
   /** @format int64 */
@@ -327,10 +327,10 @@ export interface BaseResponsePageTrailListResponse {
 }
 
 export interface PageTrailListResponse {
-  /** @format int64 */
-  totalElements?: number;
   /** @format int32 */
   totalPages?: number;
+  /** @format int64 */
+  totalElements?: number;
   /** @format int32 */
   size?: number;
   content?: TrailListResponse[];
@@ -349,18 +349,18 @@ export interface PageableObject {
   /** @format int64 */
   offset?: number;
   sort?: SortObject;
-  unpaged?: boolean;
   /** @format int32 */
   pageSize?: number;
   paged?: boolean;
   /** @format int32 */
   pageNumber?: number;
+  unpaged?: boolean;
 }
 
 export interface SortObject {
   empty?: boolean;
-  unsorted?: boolean;
   sorted?: boolean;
+  unsorted?: boolean;
 }
 
 export interface TrailListResponse {
@@ -438,7 +438,7 @@ export interface FriendResponseDTO {
   friendId?: number;
   nickname?: string;
   profile?: string;
-  memberStatus?: 'OFFLINE' | 'ONLINE' | 'WALKING';
+  memberStatus?: "OFFLINE" | "ONLINE" | "WALKING";
 }
 
 export interface BaseResponseListFriendResponseDTO {
@@ -457,7 +457,7 @@ export interface BaseResponseListSentFriendResponse {
 
 export interface SentFriendResponse {
   receiverNickname?: string;
-  memberStatus?: 'OFFLINE' | 'ONLINE' | 'WALKING';
+  memberStatus?: "OFFLINE" | "ONLINE" | "WALKING";
 }
 
 export interface BaseResponseListReceivedFriendResponse {
@@ -468,9 +468,11 @@ export interface BaseResponseListReceivedFriendResponse {
 }
 
 export interface ReceivedFriendResponse {
+  /** @format int64 */
+  friendRequestId?: number;
   senderNickname?: string;
   profile?: string;
-  requestStatus?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+  requestStatus?: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
 }
 
 export interface BaseResponseListFriendLocationResponseDTO {
@@ -524,13 +526,13 @@ import type {
   AxiosResponse,
   HeadersDefaults,
   ResponseType,
-} from 'axios';
-import axios from 'axios';
+} from "axios";
+import axios from "axios";
 
 export type QueryParamsType = Record<string | number, any>;
 
 export interface FullRequestParams
-  extends Omit<AxiosRequestConfig, 'data' | 'params' | 'url' | 'responseType'> {
+  extends Omit<AxiosRequestConfig, "data" | "params" | "url" | "responseType"> {
   /** set parameter to `true` for call `securityWorker` for this request */
   secure?: boolean;
   /** request path */
@@ -547,30 +549,30 @@ export interface FullRequestParams
 
 export type RequestParams = Omit<
   FullRequestParams,
-  'body' | 'method' | 'query' | 'path'
+  "body" | "method" | "query" | "path"
 >;
 
 export interface ApiConfig<SecurityDataType = unknown>
-  extends Omit<AxiosRequestConfig, 'data' | 'cancelToken'> {
+  extends Omit<AxiosRequestConfig, "data" | "cancelToken"> {
   securityWorker?: (
-    securityData: SecurityDataType | null
+    securityData: SecurityDataType | null,
   ) => Promise<AxiosRequestConfig | void> | AxiosRequestConfig | void;
   secure?: boolean;
   format?: ResponseType;
 }
 
 export enum ContentType {
-  Json = 'application/json',
-  JsonApi = 'application/vnd.api+json',
-  FormData = 'multipart/form-data',
-  UrlEncoded = 'application/x-www-form-urlencoded',
-  Text = 'text/plain',
+  Json = "application/json",
+  JsonApi = "application/vnd.api+json",
+  FormData = "multipart/form-data",
+  UrlEncoded = "application/x-www-form-urlencoded",
+  Text = "text/plain",
 }
 
 export class HttpClient<SecurityDataType = unknown> {
   public instance: AxiosInstance;
   private securityData: SecurityDataType | null = null;
-  private securityWorker?: ApiConfig<SecurityDataType>['securityWorker'];
+  private securityWorker?: ApiConfig<SecurityDataType>["securityWorker"];
   private secure?: boolean;
   private format?: ResponseType;
 
@@ -582,7 +584,7 @@ export class HttpClient<SecurityDataType = unknown> {
   }: ApiConfig<SecurityDataType> = {}) {
     this.instance = axios.create({
       ...axiosConfig,
-      baseURL: axiosConfig.baseURL || 'http://localhost:8080',
+      baseURL: axiosConfig.baseURL || "http://localhost:8080",
     });
     this.secure = secure;
     this.format = format;
@@ -595,7 +597,7 @@ export class HttpClient<SecurityDataType = unknown> {
 
   protected mergeRequestParams(
     params1: AxiosRequestConfig,
-    params2?: AxiosRequestConfig
+    params2?: AxiosRequestConfig,
   ): AxiosRequestConfig {
     const method = params1.method || (params2 && params2.method);
 
@@ -616,7 +618,7 @@ export class HttpClient<SecurityDataType = unknown> {
   }
 
   protected stringifyFormItem(formItem: unknown) {
-    if (typeof formItem === 'object' && formItem !== null) {
+    if (typeof formItem === "object" && formItem !== null) {
       return JSON.stringify(formItem);
     } else {
       return `${formItem}`;
@@ -636,7 +638,7 @@ export class HttpClient<SecurityDataType = unknown> {
         const isFileType = formItem instanceof Blob || formItem instanceof File;
         formData.append(
           key,
-          isFileType ? formItem : this.stringifyFormItem(formItem)
+          isFileType ? formItem : this.stringifyFormItem(formItem),
         );
       }
 
@@ -654,7 +656,7 @@ export class HttpClient<SecurityDataType = unknown> {
     ...params
   }: FullRequestParams): Promise<AxiosResponse<T>> => {
     const secureParams =
-      ((typeof secure === 'boolean' ? secure : this.secure) &&
+      ((typeof secure === "boolean" ? secure : this.secure) &&
         this.securityWorker &&
         (await this.securityWorker(this.securityData))) ||
       {};
@@ -665,7 +667,7 @@ export class HttpClient<SecurityDataType = unknown> {
       type === ContentType.FormData &&
       body &&
       body !== null &&
-      typeof body === 'object'
+      typeof body === "object"
     ) {
       body = this.createFormData(body as Record<string, unknown>);
     }
@@ -674,7 +676,7 @@ export class HttpClient<SecurityDataType = unknown> {
       type === ContentType.Text &&
       body &&
       body !== null &&
-      typeof body !== 'string'
+      typeof body !== "string"
     ) {
       body = JSON.stringify(body);
     }
@@ -683,7 +685,7 @@ export class HttpClient<SecurityDataType = unknown> {
       ...requestParams,
       headers: {
         ...(requestParams.headers || {}),
-        ...(type ? { 'Content-Type': type } : {}),
+        ...(type ? { "Content-Type": type } : {}),
       },
       params: query,
       responseType: responseFormat,
@@ -716,7 +718,7 @@ export class Api<
     resumeWalk: (walkId: number, params: RequestParams = {}) =>
       this.request<BaseResponseWalkEventResponse, any>({
         path: `/api/walks/${walkId}/resume`,
-        method: 'PUT',
+        method: "PUT",
         ...params,
       }),
 
@@ -731,7 +733,7 @@ export class Api<
     pauseWalk: (walkId: number, params: RequestParams = {}) =>
       this.request<BaseResponseWalkEventResponse, any>({
         path: `/api/walks/${walkId}/pause`,
-        method: 'PUT',
+        method: "PUT",
         ...params,
       }),
 
@@ -746,7 +748,7 @@ export class Api<
     endWalk: (walkId: number, params: RequestParams = {}) =>
       this.request<BaseResponseWalkEventResponse, any>({
         path: `/api/walks/${walkId}/end`,
-        method: 'PUT',
+        method: "PUT",
         ...params,
       }),
 
@@ -762,11 +764,11 @@ export class Api<
     updateReview: (
       reviewId: number,
       data: ReviewUpdateRequest,
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<BaseResponseReviewResponse, any>({
         path: `/api/trails/reviews/${reviewId}`,
-        method: 'PUT',
+        method: "PUT",
         body: data,
         secure: true,
         type: ContentType.Json,
@@ -785,7 +787,7 @@ export class Api<
     deleteReview: (reviewId: number, params: RequestParams = {}) =>
       this.request<BaseResponseVoid, any>({
         path: `/api/trails/reviews/${reviewId}`,
-        method: 'DELETE',
+        method: "DELETE",
         secure: true,
         ...params,
       }),
@@ -802,7 +804,7 @@ export class Api<
     getProfile: (memberId: number, params: RequestParams = {}) =>
       this.request<BaseResponseProfileResponse, any>({
         path: `/api/members/${memberId}`,
-        method: 'GET',
+        method: "GET",
         secure: true,
         ...params,
       }),
@@ -823,11 +825,11 @@ export class Api<
         /** @format binary */
         profileImage?: File;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<BaseResponseProfileResponse, any>({
         path: `/api/members/${memberId}`,
-        method: 'PUT',
+        method: "PUT",
         body: data,
         secure: true,
         type: ContentType.FormData,
@@ -846,11 +848,11 @@ export class Api<
     updateLocation: (
       memberId: number,
       data: LocationDto,
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<BaseResponseLocationDto, any>({
         path: `/api/members/${memberId}/location`,
-        method: 'PUT',
+        method: "PUT",
         body: data,
         secure: true,
         type: ContentType.Json,
@@ -868,11 +870,11 @@ export class Api<
      */
     approveFriendRequest: (
       friendRequestId: number,
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<BaseResponseFriendRequestApprovedResponse, any>({
         path: `/api/friends/request/${friendRequestId}`,
-        method: 'PUT',
+        method: "PUT",
         secure: true,
         ...params,
       }),
@@ -888,11 +890,11 @@ export class Api<
      */
     rejectFriendRequest: (
       friendRequestId: number,
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<BaseResponseVoid, any>({
         path: `/api/friends/request/${friendRequestId}`,
-        method: 'DELETE',
+        method: "DELETE",
         secure: true,
         ...params,
       }),
@@ -908,7 +910,7 @@ export class Api<
     startWalk: (params: RequestParams = {}) =>
       this.request<BaseResponseWalkEventResponse, any>({
         path: `/api/walks/start`,
-        method: 'POST',
+        method: "POST",
         ...params,
       }),
 
@@ -923,7 +925,7 @@ export class Api<
     createWalk: (data: WalkRequest, params: RequestParams = {}) =>
       this.request<BaseResponseWalkCreateResponse, any>({
         path: `/api/walks/new`,
-        method: 'POST',
+        method: "POST",
         body: data,
         type: ContentType.Json,
         ...params,
@@ -941,7 +943,7 @@ export class Api<
     createReview: (data: ReviewRequest, params: RequestParams = {}) =>
       this.request<BaseResponseReviewResponse, any>({
         path: `/api/trails/reviews/new`,
-        method: 'POST',
+        method: "POST",
         body: data,
         secure: true,
         type: ContentType.Json,
@@ -959,7 +961,7 @@ export class Api<
     createTrail: (data: TrailCreateRequest, params: RequestParams = {}) =>
       this.request<BaseResponseTrailCreateResponse, any>({
         path: `/api/trails/new`,
-        method: 'POST',
+        method: "POST",
         body: data,
         type: ContentType.Json,
         ...params,
@@ -978,11 +980,11 @@ export class Api<
       query: {
         targetNickname: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<BaseResponseFriendRequestResponseDTO, any>({
         path: `/api/friends/request`,
-        method: 'POST',
+        method: "POST",
         query: query,
         secure: true,
         ...params,
@@ -1001,11 +1003,11 @@ export class Api<
       query: {
         deviceId: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<BaseResponseVoid, any>({
         path: `/api/auth/reissue`,
-        method: 'POST',
+        method: "POST",
         query: query,
         secure: true,
         ...params,
@@ -1024,11 +1026,11 @@ export class Api<
       query: {
         deviceId: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<BaseResponseVoid, any>({
         path: `/api/auth/logout`,
-        method: 'POST',
+        method: "POST",
         query: query,
         secure: true,
         ...params,
@@ -1046,11 +1048,11 @@ export class Api<
       query: {
         location: LocationDto;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<BaseResponseWeatherForecastResponseDto, any>({
         path: `/api/weather`,
-        method: 'GET',
+        method: "GET",
         query: query,
         ...params,
       }),
@@ -1067,11 +1069,11 @@ export class Api<
       query: {
         location: LocationDto;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<BaseResponseClothResponse, any>({
         path: `/api/weather/clothing`,
-        method: 'GET',
+        method: "GET",
         query: query,
         ...params,
       }),
@@ -1087,7 +1089,7 @@ export class Api<
     getWalkList: (params: RequestParams = {}) =>
       this.request<BaseResponseListWalkListResponse, any>({
         path: `/api/walks`,
-        method: 'GET',
+        method: "GET",
         ...params,
       }),
 
@@ -1107,11 +1109,11 @@ export class Api<
          */
         page?: number;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<BaseResponsePageTrailListResponse, any>({
         path: `/api/trails`,
-        method: 'GET',
+        method: "GET",
         query: query,
         ...params,
       }),
@@ -1127,7 +1129,7 @@ export class Api<
     getTrailDetail: (trailId: number, params: RequestParams = {}) =>
       this.request<BaseResponseTrailDetailResponse, any>({
         path: `/api/trails/${trailId}`,
-        method: 'GET',
+        method: "GET",
         ...params,
       }),
 
@@ -1142,7 +1144,7 @@ export class Api<
     getReviews: (trailId: number, params: RequestParams = {}) =>
       this.request<BaseResponseReviewListResponse, any>({
         path: `/api/trails/${trailId}/reviews`,
-        method: 'GET',
+        method: "GET",
         ...params,
       }),
 
@@ -1158,7 +1160,7 @@ export class Api<
     getFriends: (params: RequestParams = {}) =>
       this.request<BaseResponseFriendListResponseDTO, any>({
         path: `/api/friends`,
-        method: 'GET',
+        method: "GET",
         secure: true,
         ...params,
       }),
@@ -1173,12 +1175,12 @@ export class Api<
      * @secure
      */
     getFriendsByStatus: (
-      status: 'OFFLINE' | 'ONLINE' | 'WALKING',
-      params: RequestParams = {}
+      status: "OFFLINE" | "ONLINE" | "WALKING",
+      params: RequestParams = {},
     ) =>
       this.request<BaseResponseListFriendResponseDTO, any>({
         path: `/api/friends/status/${status}`,
-        method: 'GET',
+        method: "GET",
         secure: true,
         ...params,
       }),
@@ -1195,7 +1197,7 @@ export class Api<
     getSentFriendRequests: (params: RequestParams = {}) =>
       this.request<BaseResponseListSentFriendResponse, any>({
         path: `/api/friends/request/sent`,
-        method: 'GET',
+        method: "GET",
         secure: true,
         ...params,
       }),
@@ -1212,7 +1214,7 @@ export class Api<
     getReceivedFriendRequests: (params: RequestParams = {}) =>
       this.request<BaseResponseListReceivedFriendResponse, any>({
         path: `/api/friends/request/received`,
-        method: 'GET',
+        method: "GET",
         secure: true,
         ...params,
       }),
@@ -1229,7 +1231,7 @@ export class Api<
     getFriendLocations: (params: RequestParams = {}) =>
       this.request<BaseResponseListFriendLocationResponseDTO, any>({
         path: `/api/friends/location`,
-        method: 'GET',
+        method: "GET",
         secure: true,
         ...params,
       }),
@@ -1246,7 +1248,7 @@ export class Api<
     getCurrentUser: (params: RequestParams = {}) =>
       this.request<BaseResponseCurrentUserDto, any>({
         path: `/api/auth/me`,
-        method: 'GET',
+        method: "GET",
         secure: true,
         ...params,
       }),
@@ -1262,7 +1264,7 @@ export class Api<
     deleteWalk: (walkId: number, params: RequestParams = {}) =>
       this.request<BaseResponseWalkDeleteResponse, any>({
         path: `/api/walks/${walkId}`,
-        method: 'DELETE',
+        method: "DELETE",
         ...params,
       }),
 
@@ -1278,7 +1280,7 @@ export class Api<
     deleteFriend: (friendMemberId: number, params: RequestParams = {}) =>
       this.request<BaseResponseVoid, any>({
         path: `/api/friends/${friendMemberId}`,
-        method: 'DELETE',
+        method: "DELETE",
         secure: true,
         ...params,
       }),
@@ -1295,7 +1297,7 @@ export class Api<
     kakaoLoginDocOnly: (params: RequestParams = {}) =>
       this.request<any, void>({
         path: `/swagger/oauth/kakao-login`,
-        method: 'GET',
+        method: "GET",
         ...params,
       }),
 
@@ -1310,7 +1312,7 @@ export class Api<
     googleLoginDocOnly: (params: RequestParams = {}) =>
       this.request<any, void>({
         path: `/swagger/oauth/google-login`,
-        method: 'GET',
+        method: "GET",
         ...params,
       }),
   };

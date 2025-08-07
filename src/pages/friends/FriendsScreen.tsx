@@ -286,6 +286,7 @@ const FriendsScreen = (): React.ReactNode => {
       <FriendRequestModal
         isOpen={isRequestModalOpen}
         onClose={() => setIsRequestModalOpen(false)}
+        onDataChange={fetchFriendsData}
       />
     </div>
   );

@@ -11,7 +11,13 @@ interface ReceivedRequest {
   createdAt: string;
 }
 
-export const ReceivedRequestsTab = (): React.ReactNode => {
+interface ReceivedRequestsTabProps {
+  onDataChange?: () => void;
+}
+
+export const ReceivedRequestsTab = ({
+  onDataChange,
+}: ReceivedRequestsTabProps): React.ReactNode => {
   const [receivedRequests, setReceivedRequests] = useState<ReceivedRequest[]>(
     []
   );
@@ -32,11 +38,11 @@ export const ReceivedRequestsTab = (): React.ReactNode => {
         const requests = response.data.data.map((request: unknown) => {
           const req = request as Record<string, unknown>;
           const mappedRequest = {
-            id: (req.id as number) || (req.friendRequestId as number) || -1,
+            id: (req.friendRequestId as number) || -1, // friendRequestId를 직접 사용
             senderId: (req.senderId as number) || -1,
             senderNickname: (req.senderNickname as string) || 'Unknown',
-            senderProfile: req.senderProfile as string | undefined,
-            status: ((req.status as string) || 'PENDING') as
+            senderProfile: req.profile as string | undefined, // profile 필드명 수정
+            status: ((req.requestStatus as string) || 'PENDING') as  // requestStatus 필드명 수정
               | 'PENDING'
               | 'ACCEPTED'
               | 'REJECTED',
@@ -46,21 +52,29 @@ export const ReceivedRequestsTab = (): React.ReactNode => {
           // 백엔드에서 값을 제대로 못받아온 경우 로깅
           if (import.meta.env.DEV) {
             console.log('🔍 [DEBUG] 개별 요청 원본 데이터:', req);
-            console.log('🔍 [DEBUG] req.id:', req.id, '타입:', typeof req.id);
             console.log(
               '🔍 [DEBUG] req.friendRequestId:',
               req.friendRequestId,
               '타입:',
               typeof req.friendRequestId
             );
+            console.log(
+              '🔍 [DEBUG] req.profile:',
+              req.profile,
+              '타입:',
+              typeof req.profile
+            );
+            console.log(
+              '🔍 [DEBUG] req.requestStatus:',
+              req.requestStatus,
+              '타입:',
+              typeof req.requestStatus
+            );
 
-            if (!req.id && !req.friendRequestId) {
+            if (!req.friendRequestId) {
               console.log(
-                '⚠️ [BACKEND] ID 값을 받아오지 못함 (기본값 -1 설정):',
+                '⚠️ [BACKEND] friendRequestId 값을 받아오지 못함 (실패값 -1 설정):',
                 req
-              );
-              console.log(
-                '🚨 [CRITICAL] 백엔드에서 friendRequestId 필드를 추가해야 합니다!'
               );
             }
             if (!req.senderNickname) {
@@ -121,6 +135,11 @@ export const ReceivedRequestsTab = (): React.ReactNode => {
         prev.filter(request => request.id !== requestId)
       );
 
+      // 부모 컴포넌트에 데이터 변경 알림
+      if (onDataChange) {
+        onDataChange();
+      }
+
       if (import.meta.env.DEV) {
         console.log('✅ [BACKEND] 친구 요청 수락 성공:', requestId);
       }
@@ -155,6 +174,11 @@ export const ReceivedRequestsTab = (): React.ReactNode => {
       setReceivedRequests(prev =>
         prev.filter(request => request.id !== requestId)
       );
+
+      // 부모 컴포넌트에 데이터 변경 알림
+      if (onDataChange) {
+        onDataChange();
+      }
 
       if (import.meta.env.DEV) {
         console.log('✅ [BACKEND] 친구 요청 거절 성공:', requestId);

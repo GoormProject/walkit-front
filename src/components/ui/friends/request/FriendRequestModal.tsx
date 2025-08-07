@@ -5,11 +5,13 @@ import { FriendRequestTabs } from './FriendRequestTabs';
 interface FriendRequestModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onDataChange?: () => void; // 데이터 변경 시 호출할 콜백
 }
 
 export const FriendRequestModal = ({
   isOpen,
   onClose,
+  onDataChange,
 }: FriendRequestModalProps): React.ReactNode => {
   // 모달 외부 클릭 감지
   const handleBackdropClick = (e: React.MouseEvent) => {
@@ -60,7 +62,7 @@ export const FriendRequestModal = ({
 
         {/* 모달 내용 */}
         <div className="p-6 overflow-y-auto max-h-[calc(80vh-120px)]">
-          <FriendRequestTabs />
+          <FriendRequestTabs onDataChange={onDataChange} />
         </div>
       </div>
     </div>
