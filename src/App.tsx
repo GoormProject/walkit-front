@@ -129,7 +129,7 @@ function App() {
           } />
           
           {/* 리뷰 수정 페이지 */}
-          <Route path="/reviews/edit/:reviewId/:trailId" element={
+          <Route path="/reviews/edit/:trailId" element={
             <AuthWrapper requireAuth={true}>
               <ReviewEditPage />
             </AuthWrapper>

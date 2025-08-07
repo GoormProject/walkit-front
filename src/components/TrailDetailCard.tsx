@@ -4,8 +4,7 @@ import type { Trail } from '../types/trail';
 import { getTrailById } from '../utils/mockTrailApi';
 import { convertTrailDetailResponseToTrail } from '../utils/converter/trailConverter';
 import TrailReviewsList from './TrailReviewsList';
-import { getTrailReviews } from '../utils/reviewApi';
-import type { ReviewResponse } from '../types/review';
+import { checkMyReview } from '../utils/reviewApi';
 
 interface TrailDetailCardProps {
   trail: Trail;
@@ -27,7 +26,7 @@ const TrailDetailCard: React.FC<TrailDetailCardProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [detailError, setDetailError] = useState<string | null>(null);
   const [showReviews, setShowReviews] = useState(false);
-  const [myReview, setMyReview] = useState<ReviewResponse | null>(null);
+  const [hasMyReview, setHasMyReview] = useState<boolean | null>(null);
   const [isCheckingReview, setIsCheckingReview] = useState(false);
 
   // 상세 정보 조회
@@ -67,18 +66,15 @@ const TrailDetailCard: React.FC<TrailDetailCardProps> = ({
     fetchTrailDetail();
   }, [trail.id, onTrailPathUpdate]);
 
-  // 내 리뷰 확인
+  // 내 리뷰 작성 여부 확인
   useEffect(() => {
-    const checkMyReview = async () => {
+    const checkMyReviewStatus = async () => {
       if (!detailedTrail.id) return;
       
       try {
         setIsCheckingReview(true);
-        const response = await getTrailReviews(detailedTrail.id);
-        
-        if (response.httpStatus === 200 && response.data) {
-          setMyReview(response.data.myReview);
-        }
+        const hasReview = await checkMyReview(detailedTrail.id);
+        setHasMyReview(hasReview);
       } catch (error) {
         console.error('❌ 내 리뷰 확인 실패:', error);
         // 에러가 발생해도 기본 동작은 유지
@@ -88,7 +84,7 @@ const TrailDetailCard: React.FC<TrailDetailCardProps> = ({
     };
 
     if (detailedTrail.id) {
-      checkMyReview();
+      checkMyReviewStatus();
     }
   }, [detailedTrail.id]);
 
@@ -189,9 +185,9 @@ const TrailDetailCard: React.FC<TrailDetailCardProps> = ({
                   <div className="w-full py-3 bg-gray-100 text-gray-500 rounded-lg text-center">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500 mx-auto"></div>
                   </div>
-                ) : myReview ? (
+                ) : hasMyReview ? (
                   <button
-                    onClick={() => navigate(`/reviews/edit/${myReview.reviewId}/${detailedTrail.id}`)}
+                    onClick={() => navigate(`/reviews/edit/${detailedTrail.id}`)}
                     className="w-full py-3 bg-blue-500 text-white rounded-lg shadow-lg hover:bg-blue-600 transition-all font-medium"
                   >
                     리뷰 수정

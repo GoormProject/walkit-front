@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getTrailReviews } from '../utils/reviewApi';
+import { getTrailReviewsPaginated } from '../utils/reviewApi';
 import type { ReviewListResponse, ReviewResponse } from '../types/review';
 
 interface TrailReviewsListProps {
@@ -11,18 +11,25 @@ const TrailReviewsList: React.FC<TrailReviewsListProps> = ({ trailId, onClose })
   const [reviewsData, setReviewsData] = useState<ReviewListResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   useEffect(() => {
     const fetchReviews = async () => {
       try {
         setIsLoading(true);
         setError(null);
+        setCurrentPage(0);
+        setHasMore(true);
         
         console.log('📋 산책로 리뷰 목록 조회 시작:', trailId);
-        const response = await getTrailReviews(trailId);
+        const response = await getTrailReviewsPaginated(trailId, 0, 10);
         
         if (response.httpStatus === 200 && response.data) {
           setReviewsData(response.data);
+          // 다음 페이지가 있는지 확인 (10개 미만이면 마지막 페이지)
+          setHasMore(response.data.reviews.length === 10);
           console.log('✅ 산책로 리뷰 목록 조회 성공:', response.data.reviews.length);
         } else {
           throw new Error(`API 응답 오류: ${response.message}`);
@@ -37,6 +44,32 @@ const TrailReviewsList: React.FC<TrailReviewsListProps> = ({ trailId, onClose })
 
     fetchReviews();
   }, [trailId]);
+
+  const loadMoreReviews = async () => {
+    if (!hasMore || isLoadingMore) return;
+    
+    try {
+      setIsLoadingMore(true);
+      const nextPage = currentPage + 1;
+      
+      const response = await getTrailReviewsPaginated(trailId, nextPage, 10);
+      
+      if (response.httpStatus === 200 && response.data && reviewsData) {
+        // 기존 리뷰에 새 리뷰 추가
+        const updatedReviewsData = {
+          ...reviewsData,
+          reviews: [...reviewsData.reviews, ...response.data.reviews]
+        };
+        setReviewsData(updatedReviewsData);
+        setCurrentPage(nextPage);
+        setHasMore(response.data.reviews.length === 10);
+      }
+    } catch (error) {
+      console.error('❌ 추가 리뷰 로드 실패:', error);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -156,6 +189,26 @@ const TrailReviewsList: React.FC<TrailReviewsListProps> = ({ trailId, onClose })
                   </p>
                 </div>
               ))}
+              
+              {/* 더보기 버튼 */}
+              {hasMore && (
+                <div className="flex justify-center pt-4">
+                  <button
+                    onClick={loadMoreReviews}
+                    disabled={isLoadingMore}
+                    className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLoadingMore ? (
+                      <div className="flex items-center">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2"></div>
+                        로딩 중...
+                      </div>
+                    ) : (
+                      '더보기'
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-12">
