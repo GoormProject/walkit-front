@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getWalkDetail } from '../../utils/walkApi';
-import { registerTrail, getAddressFromCoordinates } from '../../utils/trailApi';
+import { registerTrail } from '../../utils/trailApi';
 import { formatDistance } from '../../utils/walkUtils';
 import type { WalkDetail } from '../../types/walk';
 import type { TrailRegisterRequest } from '../../types/trail';
@@ -18,6 +18,11 @@ const TrailRegisterPage: React.FC = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
+  
+  // 이미지 업로드 상태
+  const [routeImage, setRouteImage] = useState<File | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [fileSize, setFileSize] = useState<string | null>(null);
 
   // 산책 기록 상세 정보 로드
   useEffect(() => {
@@ -38,14 +43,13 @@ const TrailRegisterPage: React.FC = () => {
           setWalk(response.data);
           setTitle(response.data.title || '');
           
-          // 시작점 좌표로 주소 가져오기
-          if (response.data.startPoint && response.data.startPoint.length === 2) {
-            const address = await getAddressFromCoordinates(
-              response.data.startPoint[0],
-              response.data.startPoint[1]
-            );
-            setLocation(address);
+          // 기본 이미지 설정 (DB에 저장된 이미지가 있으면 사용)
+          if (response.data.routeImageUrl) {
+            setPreviewImage(response.data.routeImageUrl);
           }
+          
+          // 기본 위치 설정 (임시)
+          setLocation('서울시 강남구');
         }
       } catch (err) {
         console.error('산책 기록 상세 조회 실패:', err);
@@ -58,6 +62,43 @@ const TrailRegisterPage: React.FC = () => {
     loadWalkDetail();
   }, [walkId]);
 
+  // 이미지 업로드 핸들러
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // 파일 크기 검증 (5MB = 5 * 1024 * 1024 bytes)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        setError('이미지 크기는 5MB 이하여야 합니다.');
+        e.target.value = ''; // 파일 선택 초기화
+        return;
+      }
+
+      // 파일 타입 검증 (GIF 제외)
+      if (!file.type.startsWith('image/') || file.type === 'image/gif') {
+        setError(
+          'JPG, PNG 이미지 파일만 업로드 가능합니다. (GIF는 지원하지 않습니다)'
+        );
+        e.target.value = '';
+        return;
+      }
+
+      setRouteImage(file);
+      setError(null); // 이전 에러 메시지 제거
+
+      // 파일 크기 표시
+      const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+      setFileSize(`${sizeInMB}MB`);
+
+      // 미리보기 생성
+      const reader = new FileReader();
+      reader.onload = e => {
+        setPreviewImage(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   // 산책로 등록 처리
   const handleSubmit = async () => {
     if (!walk || !title.trim() || !description.trim()) {
@@ -69,7 +110,11 @@ const TrailRegisterPage: React.FC = () => {
       setSubmitting(true);
       setError(null);
 
-      const request: TrailRegisterRequest = {
+      // FormData 객체를 사용하여 이미지와 함께 전송
+      const formData = new FormData();
+      
+      // JSON 데이터를 Blob으로 변환하여 추가
+      const requestData = {
         walkId: walk.walkId,
         title: title.trim(),
         description: description.trim(),
@@ -81,8 +126,18 @@ const TrailRegisterPage: React.FC = () => {
         path: walk.path,
         isUploaded: false,
       };
+      
+      formData.append(
+        'data',
+        new Blob([JSON.stringify(requestData)], { type: 'application/json' })
+      );
 
-      const response = await registerTrail(request);
+      // 이미지 파일 추가
+      if (routeImage) {
+        formData.append('routeImage', routeImage);
+      }
+
+      const response = await registerTrail(formData as any);
       
       if (response.httpStatus === 200) {
         alert('산책로가 성공적으로 등록되었습니다!');
@@ -160,24 +215,51 @@ const TrailRegisterPage: React.FC = () => {
           </div>
         </div>
 
-        {/* 지도 영역 */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <div className="h-64 bg-gray-200 relative">
-            {/* 실제 지도 컴포넌트가 들어갈 자리 */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center text-gray-500">
-                <svg className="w-16 h-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m-6 3l6-3" />
-                </svg>
-                <p>산책 경로 지도</p>
-                <p className="text-sm">총 거리: {formatDistance(walk.totalDistance)}</p>
-              </div>
+        {/* 산책로 이미지 업로드 */}
+        <div className="bg-white rounded-lg p-4 shadow-sm">
+          <div className="text-center">
+            <div className="inline-block relative">
+              <img
+                src={previewImage || '/test_picture/fail_to_loading.jpg'}
+                alt="산책로 이미지"
+                className="w-full h-64 object-cover rounded-lg border-2 border-gray-200 shadow-sm"
+                onError={e => {
+                  e.currentTarget.src = '/test_picture/fail_to_loading.jpg';
+                }}
+              />
+              <label className="absolute bottom-2 right-2 bg-blue-600 text-white p-3 rounded-full cursor-pointer hover:bg-blue-700 transition-colors shadow-lg">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+                📷
+              </label>
             </div>
-            
-            {/* 지도 컨트롤 */}
-            <div className="absolute top-2 right-2 flex space-x-1">
-              <button className="bg-white px-2 py-1 rounded text-xs shadow-sm">지도</button>
-              <button className="bg-white px-2 py-1 rounded text-xs shadow-sm">스카이뷰</button>
+            <div className="mt-3 space-y-2">
+              <p className="text-sm text-gray-600">
+                산책로를 대표할 이미지를 업로드해주세요
+              </p>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-xs text-blue-800 font-medium mb-1">
+                  📋 이미지 업로드 제한사항
+                </p>
+                <ul className="text-xs text-blue-700 space-y-1">
+                  <li>• 파일 형식: JPG, PNG 이미지 파일</li>
+                  <li>• 최대 크기: 5MB</li>
+                  <li>• 개수: 1개 파일만 업로드 가능</li>
+                  <li>• GIF는 지원하지 않습니다</li>
+                </ul>
+                {fileSize && (
+                  <p className="text-xs text-green-700 mt-2 font-medium">
+                    📁 선택된 파일 크기: {fileSize}
+                  </p>
+                )}
+              </div>
+              <p className="text-xs text-gray-500">
+                총 거리: {formatDistance(walk.totalDistance)}
+              </p>
             </div>
           </div>
         </div>

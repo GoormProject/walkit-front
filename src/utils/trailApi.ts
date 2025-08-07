@@ -10,14 +10,19 @@ const getHeaders = () => {
 /**
  * 산책로 등록 API
  */
-export const registerTrail = async (request: TrailRegisterRequest): Promise<TrailRegisterApiResponse> => {
+export const registerTrail = async (request: TrailRegisterRequest | FormData): Promise<TrailRegisterApiResponse> => {
   console.log('🏔️ 산책로 등록 API 호출');
+  
+  // FormData인 경우 Content-Type 헤더를 제거 (브라우저가 자동으로 설정)
+  const headers = request instanceof FormData 
+    ? { 'Accept': 'application/json' }
+    : getHeaders();
   
   const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/trails/new`, {
     method: 'POST',
-    headers: getHeaders(),
+    headers,
     credentials: 'include',
-    body: JSON.stringify(request),
+    body: request instanceof FormData ? request : JSON.stringify(request),
   });
 
   if (!response.ok) {

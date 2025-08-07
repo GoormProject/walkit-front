@@ -8,7 +8,7 @@ import type {
   WalkCreateRequest,
   WalkListRequest,
 } from '../types/walk';
-import { calculateCalories, safeParseInt, safeParseFloat, validateAndSanitizeWalkDetail, isValidWalkDetail } from './walkUtils';
+import { calculateCalories, safeParseInt, safeParseFloat, validateAndSanitizeWalkDetail, isValidWalkDetail, isValidWalkRecord } from './walkUtils';
 
 /**
  * API 호출 헤더 생성
@@ -206,8 +206,8 @@ export const getWalkDetail = async (walkId: number): Promise<WalkDetailResponse>
     throw new Error(`산책 기록을 찾을 수 없습니다: ${walkId}`);
   }
 
-  // API 응답 데이터 유효성 검사
-  if (!isValidWalkDetail(mockData)) {
+  // API 응답 데이터 유효성 검사 (WalkRecord 타입)
+  if (!isValidWalkRecord(mockData)) {
     console.warn('API 응답 데이터 형식이 예상과 다릅니다:', mockData);
   }
   
