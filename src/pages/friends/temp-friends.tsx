@@ -1,8 +1,8 @@
 import React from 'react';
 import FriendsScreen from './FriendsScreen';
 
-const Friends = () => {
+const TempFriendsPage = (): React.ReactNode => {
   return <FriendsScreen />;
 };
 
-export default Friends;
+export default TempFriendsPage;
